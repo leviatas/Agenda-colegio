@@ -883,6 +883,24 @@ footer .version { font-variant-numeric: tabular-nums; opacity: .7; }
 .mine .edit:hover { border-color: var(--per); color: var(--per); }
 .mine .edit:focus-visible { outline: 2px solid var(--per); outline-offset: 1px; }
 
+/* En celular las cuatro columnas (fecha · título · Editar · ×) le dejan al
+   título lo que sobra, y en una pantalla angosta eso son unos pocos caracteres:
+   el texto se parte letra por letra. Cada evento pasa a ser su propio bloque,
+   con la fecha arriba y el título ocupando el ancho menos los dos botones. */
+@media (max-width: 720px) {
+  /* align-items: stretch pisa el `center` de la regla base: en un flex
+     column el eje cruzado es el horizontal y cada fila quedaba centrada
+     y encogida al ancho de su texto. */
+  .mine ul { display: flex; flex-direction: column; align-items: stretch; gap: .75rem; }
+  .mine li {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: .15rem .5rem;
+    align-items: center;
+  }
+  .mine .md { grid-column: 1 / -1; }
+}
+
 /* ══════════ Confirmación de acciones destructivas ══════════ */
 
 .confirm-backdrop {
