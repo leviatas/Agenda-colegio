@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agenda San Gabriel</title>
+    <script>
+      // Aplica el tema guardado antes de que React monte, para que no haya un
+      // flash de tema claro en el primer paint. 'system' no setea nada: el CSS
+      // resuelve solo con prefers-color-scheme (ver components/ThemeSwitch).
+      (function () {
+        try {
+          var v = localStorage.getItem('sg-tema');
+          if (v === 'light' || v === 'dark') document.documentElement.setAttribute('data-theme', v);
+        } catch (e) {}
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500;6..96,600;6..96,700&family=Instrument+Sans:wght@400;500;600;700&display=swap"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

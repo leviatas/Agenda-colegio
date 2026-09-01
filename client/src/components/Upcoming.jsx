@@ -1,0 +1,56 @@
+import { DIAS, MES_AB, isoDow, parse } from '../lib/agenda';
+
+// Las próximas ocho fechas que quedan por delante con los filtros activos.
+export default function Upcoming({ eventos, visible, today }) {
+  const seen = new Set();
+  const lista = eventos
+    .filter((ev) => {
+      if (!visible(ev)) return false;
+      // Un tramo sigue "por delante" hasta que termina, no hasta que empieza.
+      if (parse(ev.endDate || ev.date) < today) return false;
+      // El mismo acto puede estar cargado dos veces (un evento por turno, por
+      // ejemplo); en la tira de próximas fechas alcanza con mostrarlo una vez.
+      const k = `${ev.date}|${ev.title}`;
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    })
+    .sort((a, b) => parse(a.date) - parse(b.date))
+    .slice(0, 8);
+
+  if (!lista.length) {
+    return (
+      <div className="up-row">
+        <p className="empty-note">No queda nada por delante con los filtros activos.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="up-row">
+      {lista.map((ev) => {
+        const s = parse(ev.date);
+        const en = parse(ev.endDate || ev.date);
+        const cuando = ev.endDate
+          ? `${s.getDate()} al ${en.getDate()} ${MES_AB[en.getMonth()]}`
+          : `${s.getDate()} ${MES_AB[s.getMonth()]}`;
+        const diff = Math.round((s - today) / 86400000);
+        const cd = diff > 1 ? `faltan ${diff} días`
+          : diff === 1 ? 'mañana'
+          : diff === 0 ? 'es hoy'
+          : 'en curso';
+
+        return (
+          <div key={`${ev.level}-${ev.id}`} className="up-card" style={{ '--c': `var(--${ev.level})` }}>
+            <span className="dt">{cuando}</span>
+            <span className="cd">{DIAS[isoDow(s)]} · {cd}</span>
+            <span className="tt">
+              {ev.time && <><b>{ev.time}hs</b>{' · '}</>}
+              {ev.title}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}

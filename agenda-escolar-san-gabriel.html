@@ -1,0 +1,1729 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<script>
+(function () {
+  var r = document.documentElement;
+  window.__hostTheme = r.getAttribute('data-theme');   // lo que puso el visor de Claude
+  try {
+    var v = localStorage.getItem('sg-tema');
+    if (v === 'light' || v === 'dark') r.setAttribute('data-theme', v);
+  } catch (e) { /* sin almacenamiento: queda el tema del sistema */ }
+})();
+</script>
+
+<title>Agenda San Gabriel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500;6..96,600;6..96,700&family=Instrument+Sans:wght@400;500;600;700&display=swap">
+
+<style>
+  :root {
+    --paper:        #F5F3EA;
+    --card:         #FCFBF5;
+    --card-2:       #FFFFFF;
+    --ink:          #1A2320;
+    --ink-soft:     #565F58;
+    --ink-faint:    #8C948C;
+    --line:         #E2DDCC;
+    --line-soft:    #EDE9DC;
+    --line-strong:  #CEC7B1;
+
+    --forest:       #1E4634;
+    --forest-2:     #163527;
+    --forest-ink:   #F2EFE4;
+
+    --ini:          #C0392F;
+    --ini-bg:       #F6E2DE;
+    --pri:          #2C8148;
+    --pri-bg:       #DFEEE2;
+    --sec:          #2A64B8;
+    --sec-bg:       #DEE7F5;
+    --ins:          #C87C0A;
+    --ins-bg:       #F7E8CE;
+    --fer:          #4A544E;
+    --fer-bg:       #E5E2D6;
+    --per:          #6F4A9B;
+    --per-bg:       #E9E0F2;
+    --per-ink:      #FFFFFF;
+    --opt-ink:      #FFFCF4;
+    --fer-cell:     #A62B2B;
+    --fer-cell-ink: #FFF3F0;
+    --fer-day:      #A62B2B;
+
+    --btn-bg:       #1E4634;
+    --btn-fg:       #F2EFE4;
+
+    --shadow: 0 1px 1px rgba(26,35,32,.04), 0 10px 26px -16px rgba(26,35,32,.28);
+    --radius: 12px;
+    color-scheme: light;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:       #121815;
+      --card:        #1C2420;
+      --card-2:      #212A26;
+      --ink:         #E8EBE3;
+      --ink-soft:    #A3ABA4;
+      --ink-faint:   #767E78;
+      --line:        #2E3833;
+      --line-soft:   #262F2B;
+      --line-strong: #3F4B45;
+
+      --forest:      #153325;
+      --forest-2:    #0F251B;
+      --forest-ink:  #E4EDE4;
+
+      --ini:         #EA7C70;
+      --ini-bg:      #3A2320;
+      --pri:         #63C287;
+      --pri-bg:      #1D3527;
+      --sec:         #7BABEC;
+      --sec-bg:      #1C2B41;
+      --ins:         #EBAF4F;
+      --ins-bg:      #372910;
+      --fer:         #BFC9C1;
+      --fer-bg:      #2A322D;
+      --per:         #B79AE0;
+      --per-bg:      #2E2440;
+      --per-ink:     #241A33;
+    --opt-ink:     #151C18;
+      --opt-ink:     #151C18;
+      --per:         #B79AE0;
+    --per-bg:      #2E2440;
+    --per-ink:     #241A33;
+    --opt-ink:     #151C18;
+    --fer-cell:    #9A2C2C;
+      --fer-cell-ink: #F9E4E1;
+      --fer-day:     #E9847C;
+
+      --btn-bg:      #DCE7DD;
+      --btn-fg:      #12211A;
+
+      --shadow: 0 1px 1px rgba(0,0,0,.3), 0 14px 32px -18px rgba(0,0,0,.7);
+      color-scheme: dark;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:       #121815;
+    --card:        #1C2420;
+    --card-2:      #212A26;
+    --ink:         #E8EBE3;
+    --ink-soft:    #A3ABA4;
+    --ink-faint:   #767E78;
+    --line:        #2E3833;
+    --line-soft:   #262F2B;
+    --line-strong: #3F4B45;
+
+    --forest:      #153325;
+    --forest-2:    #0F251B;
+    --forest-ink:  #E4EDE4;
+
+    --ini:         #EA7C70;
+    --ini-bg:      #3A2320;
+    --pri:         #63C287;
+    --pri-bg:      #1D3527;
+    --sec:         #7BABEC;
+    --sec-bg:      #1C2B41;
+    --ins:         #EBAF4F;
+    --ins-bg:      #372910;
+    --fer:         #BFC9C1;
+    --fer-bg:      #2A322D;
+    --per:         #B79AE0;
+    --per-bg:      #2E2440;
+    --per-ink:     #241A33;
+    --opt-ink:     #151C18;
+    --fer-cell:    #9A2C2C;
+    --fer-cell-ink: #F9E4E1;
+    --fer-day:     #E9847C;
+
+    --btn-bg:      #DCE7DD;
+    --btn-fg:      #12211A;
+
+    --shadow: 0 1px 1px rgba(0,0,0,.3), 0 14px 32px -18px rgba(0,0,0,.7);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Instrument Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 1.25rem 5rem; }
+
+  /* ══════════ Masthead ══════════ */
+
+  .masthead {
+    background: var(--forest);
+    background-image: linear-gradient(180deg, var(--forest) 0%, var(--forest-2) 100%);
+    color: var(--forest-ink);
+    padding: 2.4rem 0 2rem;
+    margin-bottom: 2rem;
+  }
+  .masthead .wrap { padding-bottom: 0; }
+
+  .kicker {
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    opacity: .72;
+    margin-bottom: .7rem;
+  }
+
+  h1 {
+    font-family: 'Bodoni Moda', 'Bodoni MT', Didot, Georgia, serif;
+    font-weight: 500;
+    font-size: clamp(2.4rem, 7vw, 4rem);
+    line-height: .98;
+    letter-spacing: .005em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .lede {
+    margin: .85rem 0 0;
+    max-width: 44ch;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--forest-ink);
+    opacity: .82;
+  }
+
+  /* ══════════ Selector de tema ══════════ */
+
+  .top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: .7rem;
+  }
+  .top-row .kicker { margin-bottom: 0; }
+
+  .theme {
+    display: inline-flex;
+    gap: 2px;
+    padding: 3px;
+    border-radius: 999px;
+    background: rgba(242,239,228,.12);
+    border: 1px solid rgba(242,239,228,.2);
+    flex: none;
+  }
+  .theme button {
+    width: 2.05rem;
+    height: 1.8rem;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--forest-ink);
+    opacity: .62;
+    cursor: pointer;
+    transition: opacity .15s, background-color .15s;
+  }
+  .theme button:hover { opacity: .95; }
+  .theme button[aria-checked="true"] {
+    background: var(--forest-ink);
+    color: var(--forest-2);
+    opacity: 1;
+  }
+  .theme button:focus-visible { outline: 2px solid var(--ins); outline-offset: 2px; }
+  .theme svg { width: 1.02rem; height: 1.02rem; display: block; }
+
+  /* ══════════ Barra de selección ══════════ */
+
+  .picker-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .75rem 1rem;
+    margin-top: 1.9rem;
+    padding-top: 1.4rem;
+    border-top: 1px solid rgba(242,239,228,.18);
+  }
+
+  .picker-sum {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .4rem;
+    font-size: .88rem;
+    min-height: 1.9rem;
+  }
+  .picker-sum .lbl {
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    opacity: .6;
+    margin-right: .2rem;
+  }
+  .picker-sum .none { opacity: .72; }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .26rem .7rem;
+    border-radius: 999px;
+    font-size: .82rem;
+    font-weight: 600;
+    background: rgba(242,239,228,.13);
+    border: 1px solid rgba(242,239,228,.22);
+    color: var(--forest-ink);
+  }
+  .tag .sw { width: .62rem; height: .62rem; border-radius: 50%; box-shadow: 0 0 0 1px rgba(0,0,0,.25); }
+
+  .btn {
+    font: inherit;
+    font-size: .82rem;
+    font-weight: 600;
+    letter-spacing: .03em;
+    padding: .5rem 1.05rem;
+    border-radius: 999px;
+    cursor: pointer;
+    border: 1.5px solid var(--forest-ink);
+    background: var(--forest-ink);
+    color: var(--forest-2);
+    transition: opacity .15s;
+    white-space: nowrap;
+  }
+  .btn:hover { opacity: .88; }
+  .btn.ghost { background: transparent; color: var(--forest-ink); border-color: rgba(242,239,228,.4); }
+  .btn:focus-visible { outline: 2px solid var(--ins); outline-offset: 2px; }
+
+  /* ══════════ Modal ══════════ */
+
+  dialog#picker {
+    width: min(640px, calc(100vw - 2rem));
+    max-height: min(86vh, 900px);
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--card);
+    color: var(--ink);
+    box-shadow: 0 24px 60px -20px rgba(0,0,0,.45);
+    overflow: hidden;
+  }
+  dialog#picker::backdrop { background: rgba(12,18,15,.55); }
+
+  .modal-in { display: flex; flex-direction: column; max-height: inherit; }
+  .modal-in:focus { outline: none; }
+
+  .modal-head {
+    padding: 1.35rem 1.6rem 1.1rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .modal-head h2 {
+    font-family: 'Bodoni Moda', Georgia, serif;
+    font-weight: 500;
+    font-size: 1.5rem;
+    margin: 0;
+  }
+
+  .modal-body { padding: 1.4rem 1.6rem 1.5rem; overflow-y: auto; }
+
+  .grp { margin-bottom: 1.6rem; }
+  .grp:last-child { margin-bottom: 0; }
+  .grp > h3 {
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    margin: 0 0 .2rem;
+    color: var(--lv);
+  }
+  .grp > p.sub { margin: 0 0 .7rem; font-size: .78rem; color: var(--ink-faint); }
+  .grp.ini { --lv: var(--ini); }
+  .grp.pri { --lv: var(--pri); }
+  .grp.sec { --lv: var(--sec); }
+  .grp.per { --lv: var(--per); }
+
+  .opts { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .9rem; }
+  .opts:last-child { margin-bottom: 0; }
+
+  .row-lbl {
+    margin: 0 0 .4rem;
+    font-size: .7rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .opt {
+    font: inherit;
+    font-size: .85rem;
+    font-weight: 500;
+    padding: .38rem .8rem;
+    border-radius: 999px;
+    border: 1.5px solid var(--line-strong);
+    background: var(--card-2);
+    color: var(--ink);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    transition: border-color .12s, background-color .12s;
+  }
+  .opt .sw {
+    width: .72rem; height: .72rem; border-radius: 50%;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.22);
+    flex: none;
+  }
+  .opt:hover { border-color: var(--lv); }
+  .opt[aria-pressed="true"] {
+    border-color: var(--lv);
+    background: var(--lv);
+    color: var(--opt-ink);
+    font-weight: 600;
+  }
+  .opt[aria-pressed="true"] .sw { box-shadow: inset 0 0 0 1px rgba(255,255,255,.5); }
+  .opt:focus-visible { outline: 2px solid var(--lv); outline-offset: 2px; }
+
+  .modal-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: .8rem;
+    padding: 1rem 1.6rem 1.15rem;
+    border-top: 1px solid var(--line);
+    background: var(--card-2);
+  }
+  .mbtn {
+    font: inherit;
+    font-size: .85rem;
+    font-weight: 600;
+    padding: .55rem 1.2rem;
+    border-radius: 999px;
+    cursor: pointer;
+    border: 1.5px solid var(--line-strong);
+    background: transparent;
+    color: var(--ink-soft);
+  }
+  .mbtn.primary { background: var(--btn-bg); border-color: var(--btn-bg); color: var(--btn-fg); }
+  .mbtn:hover { opacity: .85; }
+  .mbtn:focus-visible { outline: 2px solid var(--ins); outline-offset: 2px; }
+
+  .no-results {
+    text-align: center;
+    padding: 2.5rem 1rem;
+    color: var(--ink-soft);
+    font-size: .95rem;
+  }
+
+  /* ══════════ Section headings ══════════ */
+
+  .sec-head {
+    display: flex;
+    align-items: baseline;
+    gap: .8rem;
+    margin: 0 0 1rem;
+  }
+  .sec-head h2 {
+    font-family: 'Bodoni Moda', Georgia, serif;
+    font-weight: 500;
+    font-size: 1.5rem;
+    margin: 0;
+    letter-spacing: .01em;
+  }
+  .sec-head .rule { flex: 1; height: 1px; background: var(--line); }
+  .sec-head .meta { font-size: .78rem; color: var(--ink-faint); letter-spacing: .04em; }
+
+  /* ══════════ Agregar evento ══════════ */
+
+  .field { display: flex; flex-direction: column; gap: .3rem; margin-bottom: .9rem; }
+  .field label {
+    font-size: .7rem; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--ink-faint);
+  }
+  .field input {
+    font: inherit;
+    font-size: .95rem;
+    padding: .55rem .7rem;
+    border-radius: 8px;
+    border: 1.5px solid var(--line-strong);
+    background: var(--card-2);
+    color: var(--ink);
+    width: 100%;
+  }
+  .field input:focus-visible { outline: 2px solid var(--per); outline-offset: 1px; border-color: var(--per); }
+  .field-row { display: grid; grid-template-columns: 1fr 8rem; gap: .8rem; }
+  @media (max-width: 460px) { .field-row { grid-template-columns: 1fr; } }
+
+  .field input.bad { border-color: var(--ini); }
+  .err {
+    margin: -.3rem 0 .9rem;
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--ini);
+  }
+
+  .mine { margin-top: 1.3rem; padding-top: 1.1rem; border-top: 1px solid var(--line-soft); }
+  .mine ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: .35rem .8rem;
+    align-items: center;
+    font-size: .88rem;
+  }
+  .mine li { display: contents; }
+  .mine .md { font-weight: 600; color: var(--per); white-space: nowrap; }
+  .mine .mt { overflow-wrap: anywhere; }
+  .mine .del {
+    font: inherit; font-size: 1.1rem; line-height: 1;
+    width: 1.6rem; height: 1.6rem;
+    border: 0; border-radius: 50%;
+    background: transparent; color: var(--ink-faint);
+    cursor: pointer;
+  }
+  .mine .del:hover { background: var(--fer-bg); color: var(--ini); }
+  .mine .del:focus-visible { outline: 2px solid var(--ini); outline-offset: 1px; }
+  .mine .none { font-size: .85rem; color: var(--ink-faint); font-style: italic; margin: 0; }
+
+  /* ══════════ Referencia de niveles ══════════ */
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .35rem 1.3rem;
+    padding: 0 0 1.5rem;
+    margin-bottom: 1.75rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .legend .cap {
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-right: .2rem;
+  }
+  .lg {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    font-size: .85rem;
+    color: var(--ink);
+    transition: opacity .15s;
+  }
+  .lg i {
+    width: .6rem; height: .6rem;
+    border-radius: 50%;
+    background: var(--c);
+    flex: none;
+  }
+  .lg .qty { font-size: .74rem; color: var(--ink-faint); }
+  .lg.off { opacity: .32; }
+  .lg.ins { --c: var(--ins); }
+  .lg.fer { --c: var(--fer); }
+  .lg.per { --c: var(--per); }
+  .lg.ini { --c: var(--ini); }
+  .lg.pri { --c: var(--pri); }
+  .lg.sec { --c: var(--sec); }
+
+  /* ══════════ Upcoming ══════════ */
+
+  .upcoming { margin-bottom: 2.75rem; }
+
+  .up-row {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(196px, 1fr);
+    gap: .75rem;
+    overflow-x: auto;
+    padding-bottom: .5rem;
+    scroll-snap-type: x proximity;
+  }
+  .up-card {
+    scroll-snap-align: start;
+    background: var(--card-2);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--c);
+    border-radius: 10px;
+    padding: .85rem .9rem .95rem;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: .1rem;
+  }
+  .up-card .dt {
+    font-family: 'Bodoni Moda', Georgia, serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--c);
+    line-height: 1.15;
+  }
+  .up-card .cd { font-size: .7rem; color: var(--ink-faint); letter-spacing: .03em; }
+  .up-card .tt { font-size: .85rem; line-height: 1.35; margin-top: .45rem; color: var(--ink); }
+
+  /* ══════════ Month ══════════ */
+
+  .month {
+    margin-bottom: 2.75rem;
+    border-top: 2px solid var(--ink);
+    padding-top: .9rem;
+  }
+  .month-title {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+  .month-title h2 {
+    font-family: 'Bodoni Moda', Georgia, serif;
+    font-weight: 500;
+    font-size: clamp(1.9rem, 4.5vw, 2.6rem);
+    margin: 0;
+    line-height: 1;
+    letter-spacing: .01em;
+  }
+  .month-title .count { font-size: .76rem; letter-spacing: .09em; text-transform: uppercase; color: var(--ink-faint); }
+
+  .month-body {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 2.25rem;
+    align-items: start;
+  }
+  @media (max-width: 860px) {
+    .month-body { grid-template-columns: 1fr; gap: 1.5rem; }
+  }
+
+  /* grid */
+  .cal { position: sticky; top: 1.25rem; }
+  @media (max-width: 860px) { .cal { position: static; } }
+
+  .dow, .grid { display: grid; grid-template-columns: repeat(7, 1fr); }
+  .dow span {
+    text-align: center;
+    font-size: .62rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    color: var(--ink-faint);
+    padding-bottom: .45rem;
+  }
+  .grid { border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
+
+  .cell {
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    aspect-ratio: 1 / .92;
+    padding: .28rem .3rem .2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: var(--card-2);
+    position: relative;
+  }
+  .cell.empty { background: var(--line-soft); }
+  .cell.out { background: var(--line-soft); }
+  .cell.out .num { color: var(--ink-faint); font-weight: 400; }
+  .cell.out.has .num { color: var(--ink-soft); font-weight: 600; }
+  .cell .num {
+    font-family: 'Bodoni Moda', Georgia, serif;
+    font-size: .88rem;
+    font-weight: 500;
+    color: var(--ink-soft);
+    line-height: 1;
+  }
+  .cell.has .num { color: var(--ink); font-weight: 600; }
+  .cell.feriado { background: var(--fer-cell); }
+  .cell.feriado .num { color: var(--fer-cell-ink); font-weight: 700; }
+  .cell.feriado .pip { box-shadow: 0 0 0 1px rgba(255,255,255,.45); }
+  .cell.today { box-shadow: inset 0 0 0 2px var(--ins); z-index: 1; }
+  .cell.today .num { color: var(--ins); font-weight: 700; }
+
+  .pips { display: flex; flex-wrap: wrap; gap: 2px; align-content: flex-end; min-height: .5rem; }
+  .pip { width: 5px; height: 5px; border-radius: 50%; }
+  .pip.ini { background: var(--ini); }
+  .pip.pri { background: var(--pri); }
+  .pip.sec { background: var(--sec); }
+  .pip.ins { background: var(--ins); }
+  .pip.fer { background: var(--fer); }
+  .pip.per { background: var(--per); }
+
+  button.cell { font: inherit; border-top: 0; border-left: 0; cursor: pointer; text-align: left; }
+  button.cell:hover { background: var(--card); }
+  button.cell:focus-visible { outline: 2px solid var(--ins); outline-offset: -2px; z-index: 2; }
+
+  /* agenda */
+  .agenda { display: flex; flex-direction: column; gap: .1rem; }
+
+  .day-row {
+    display: grid;
+    grid-template-columns: 3.6rem 1fr;
+    gap: .9rem;
+    padding: .8rem 0;
+    border-top: 1px solid var(--line-soft);
+    scroll-margin-top: 1rem;
+  }
+  .day-row:first-child { border-top: 0; }
+  .day-row.flash { animation: flash 1.4s ease-out; }
+  @keyframes flash { from { background: var(--ins-bg); } to { background: transparent; } }
+  @media (prefers-reduced-motion: reduce) { .day-row.flash { animation: none; outline: 2px solid var(--ins); } }
+
+  .day-key { text-align: right; padding-top: .1rem; }
+  .day-key .d {
+    font-family: 'Bodoni Moda', Georgia, serif;
+    font-size: 1.45rem;
+    font-weight: 500;
+    line-height: 1;
+    display: block;
+    color: var(--ink);
+  }
+  .day-key .w {
+    font-size: .64rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    display: block;
+    margin-top: .2rem;
+  }
+  .day-row.is-feriado .day-key .d { color: var(--fer-day); }
+  .day-row.is-feriado .day-key .w { color: var(--fer-day); }
+  .day-row.is-today .day-key .d { color: var(--ins); }
+  .day-row.is-today .day-key .w { color: var(--ins); font-weight: 700; }
+
+  .ev-list { display: flex; flex-direction: column; gap: .42rem; }
+  .ev {
+    display: grid;
+    grid-template-columns: .5rem auto 1fr;
+    gap: .55rem;
+    align-items: baseline;
+    font-size: .9rem;
+    line-height: 1.4;
+  }
+  .ev .dot {
+    width: .5rem; height: .5rem; border-radius: 50%;
+    align-self: center;
+    margin-top: .05rem;
+  }
+  .ev.ini .dot { background: var(--ini); }
+  .ev.pri .dot { background: var(--pri); }
+  .ev.sec .dot { background: var(--sec); }
+  .ev.ins .dot { background: var(--ins); }
+  .ev.fer .dot { background: var(--fer); }
+  .ev.per .dot { background: var(--per); }
+  .ev .h {
+    font-size: .78rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+    letter-spacing: .01em;
+    white-space: nowrap;
+  }
+  .ev .h:empty { display: none; }
+  .ev .t { color: var(--ink); }
+  .ev.span .t::after {
+    content: attr(data-range);
+    display: inline-block;
+    margin-left: .5rem;
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: .08rem .42rem;
+    border-radius: 999px;
+    vertical-align: .08em;
+  }
+  .ev.span.ini .t::after { background: var(--ini-bg); color: var(--ini); }
+  .ev.span.pri .t::after { background: var(--pri-bg); color: var(--pri); }
+  .ev.span.sec .t::after { background: var(--sec-bg); color: var(--sec); }
+  .ev.span.ins .t::after { background: var(--ins-bg); color: var(--ins); }
+  .ev.span.fer .t::after { background: var(--fer-bg); color: var(--fer); }
+
+  .empty-note {
+    font-size: .88rem;
+    color: var(--ink-faint);
+    font-style: italic;
+    padding: .8rem 0;
+  }
+
+  footer {
+    margin-top: 3rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--line);
+    font-size: .78rem;
+    color: var(--ink-faint);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: .6rem;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <div class="top-row">
+      <div class="kicker">Colegio San Gabriel · Ciclo lectivo 2026</div>
+      <div class="theme" id="theme" role="radiogroup" aria-label="Tema de la página">
+        <button type="button" role="radio" data-set="light"  aria-checked="false" aria-label="Tema claro"  title="Claro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 1.8v2.1M12 20.1v2.1M4.6 4.6l1.5 1.5M17.9 17.9l1.5 1.5M1.8 12h2.1M20.1 12h2.1M4.6 19.4l1.5-1.5M17.9 6.1l1.5-1.5"/></svg></button>
+        <button type="button" role="radio" data-set="dark"   aria-checked="false" aria-label="Tema oscuro" title="Oscuro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 13.4A8.6 8.6 0 1 1 10.6 3.2a6.7 6.7 0 0 0 10.2 10.2z"/></svg></button>
+        <button type="button" role="radio" data-set="system" aria-checked="true"  aria-label="Según el sistema" title="Según el sistema"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.8" y="4.2" width="18.4" height="12.4" rx="2"/><path d="M8.5 20.4h7M12 16.6v3.8"/></svg></button>
+      </div>
+    </div>
+    <h1>Agenda escolar</h1>
+    <div class="picker-bar">
+      <div class="picker-sum" id="sum"></div>
+      <button class="btn" id="open-picker" type="button">Elegir sala y grado</button>
+      <button class="btn ghost" id="open-adder" type="button">Agregar evento +</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="legend" id="legend">
+    <span class="lg per" data-n="per"><i></i>Personales <span class="qty"></span></span>
+    <span class="lg fer" data-n="fer"><i></i>Feriados <span class="qty"></span></span>
+    <span class="lg ins" data-n="ins"><i></i>Institucional <span class="qty"></span></span>
+    <span class="lg ini" data-n="ini"><i></i>Inicial <span class="qty"></span></span>
+    <span class="lg pri" data-n="pri"><i></i>Primaria <span class="qty"></span></span>
+    <span class="lg sec" data-n="sec"><i></i>Secundaria <span class="qty"></span></span>
+  </div>
+
+  <section class="upcoming">
+    <div class="sec-head">
+      <h2>Próximas fechas</h2>
+      <span class="rule"></span>
+      <span class="meta" id="today-meta"></span>
+    </div>
+    <div class="up-row" id="up-row"></div>
+  </section>
+
+  <div id="months"></div>
+
+  <footer>
+    <span>Calendario oficial del Colegio San Gabriel · septiembre a diciembre de 2026</span>
+  </footer>
+
+</div>
+
+<dialog id="picker" aria-labelledby="picker-title">
+  <div class="modal-in" tabindex="-1" autofocus>
+
+    <div class="modal-head">
+      <h2 id="picker-title">¿A quién seguís?</h2>
+    </div>
+
+    <div class="modal-body">
+
+      <div class="grp ini">
+        <h3>Jardín</h3>
+        <div data-opts="salas"></div>
+      </div>
+
+      <div class="grp pri">
+        <h3>Primaria</h3>
+        <div class="opts" data-opts="grados"></div>
+      </div>
+
+      <div class="grp sec">
+        <h3>Secundaria</h3>
+        <div class="opts" data-opts="anios"></div>
+      </div>
+
+      <div class="grp per">
+        <h3>Extras</h3>
+        <div class="opts" data-opts="extras"></div>
+      </div>
+
+    </div>
+
+    <div class="modal-foot">
+      <button class="mbtn" type="button" id="clear-all">Ver todo</button>
+      <button class="mbtn primary" type="button" id="save-picker">Guardar</button>
+    </div>
+
+  </div>
+</dialog>
+
+<dialog id="adder" aria-labelledby="adder-title">
+  <div class="modal-in" tabindex="-1" autofocus>
+
+    <div class="modal-head">
+      <h2 id="adder-title">Agregar evento</h2>
+    </div>
+
+    <div class="modal-body">
+      <div class="field">
+        <label for="ev-t">Título</label>
+        <input type="text" id="ev-t" maxlength="90" autocomplete="off">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="ev-d">Fecha</label>
+          <input type="date" id="ev-d" min="2026-08-31" max="2026-12-31">
+        </div>
+        <div class="field">
+          <label for="ev-h">Hora</label>
+          <input type="time" id="ev-h">
+        </div>
+      </div>
+
+      <p class="err" id="ev-err" hidden></p>
+
+      <div class="mine">
+        <ul id="mine-list"></ul>
+        <p class="none" id="mine-empty">Todavía no agregaste ninguno.</p>
+      </div>
+    </div>
+
+    <div class="modal-foot">
+      <button class="mbtn" type="button" id="close-adder">Cerrar</button>
+      <button class="mbtn primary" type="button" id="save-ev">Agregar</button>
+    </div>
+
+  </div>
+</dialog>
+
+<script>
+(function () {
+  "use strict";
+
+  // catálogo de opciones: salas por color, grupos por edad, grados y años
+  // Cada color de sala ya implica su edad y su sección, así que elegir el color alcanza.
+  var SALAS = [
+    { id:'amarillatm',   n:'Amarilla TM',    c:'#E8C24A', g:'s1', imp:['s1','maternal'] },
+    { id:'amarilladjtt', n:'Amarilla DJ/TT', c:'#E8C24A', g:'s1', imp:['s1','maternal'] },
+    { id:'violeta',      n:'Violeta',        c:'#7A52A8', g:'s1', imp:['s1','maternal'] },
+
+    { id:'rosatm',       n:'Rosa TM',        c:'#E88BA8', g:'s2', imp:['s2','maternal'] },
+    { id:'rosatt',       n:'Rosa TT',        c:'#E88BA8', g:'s2', imp:['s2','maternal'] },
+    { id:'turquesa',     n:'Turquesa',       c:'#3FB3A8', g:'s2', imp:['s2','maternal'] },
+
+    { id:'naranja',      n:'Naranja',        c:'#E8873B', g:'s3', imp:['s3','infantes'] },
+    { id:'celeste',      n:'Celeste',        c:'#7FC4E8', g:'s3', imp:['s3','infantes'] },
+    { id:'fucsia',       n:'Fucsia',         c:'#C94E9A', g:'s3', imp:['s3','infantes'] },
+
+    { id:'verde',        n:'Verde',          c:'#4A9E5C', g:'s4', imp:['s4','infantes'] },
+    { id:'azul',         n:'Azul',           c:'#3B6FC4', g:'s4', imp:['s4','infantes'] },
+    { id:'bordo',        n:'Bordó',          c:'#7A2233', g:'s4', imp:['s4','infantes'] },
+
+    { id:'roja',         n:'Roja',           c:'#C8382F', g:'s5', imp:['s5','infantes'] },
+    { id:'lila',         n:'Lila',           c:'#A98BD1', g:'s5', imp:['s5','infantes'] },
+    { id:'blanca',       n:'Blanca',         c:'#FFFFFF', g:'s5', imp:['s5','infantes'] }
+  ];
+  var GRUPOS = [
+    { k:'s1', lbl:'Sala de 1 · maternal' },
+    { k:'s2', lbl:'Sala de 2 · maternal' },
+    { k:'s3', lbl:'Sala de 3 · infantes' },
+    { k:'s4', lbl:'Sala de 4 · infantes' },
+    { k:'s5', lbl:'Sala de 5 · infantes' }
+  ];
+  var EXTRAS = [
+    { id:'personal',      n:'Personal',      lv:'per' },
+    { id:'feriados',      n:'Feriados',      lv:'fer' },
+    { id:'institucional', n:'Institucional', lv:'ins' }
+  ];
+  var GRADOS = [1,2,3,4,5,6].map(function (i) { return { id:'g'+i, n:i+'° grado' }; });
+  var ANIOS  = [1,2,3,4,5,6].map(function (i) { return { id:'a'+i, n:i+'° año' }; });
+
+  var CAT = {};
+  EXTRAS.concat(SALAS, GRADOS, ANIOS).forEach(function (o) { CAT[o.id] = o; });
+
+  var POOL = { per: ['extras'], ini: ['salas'], pri: ['grados'], sec: ['anios'] };
+  var LISTS = { extras: EXTRAS, salas: SALAS, grados: GRADOS, anios: ANIOS };
+
+  // d: fecha (o inicio). e: fin del tramo. n: nivel. h: horario. t: texto.
+  // g: a qué sala / grado / año aplica. Sin g = a todo el nivel.
+  var EV = [
+    // ── SEPTIEMBRE ──
+    { d:'2026-08-31', n:'pri', h:'8.10',  t:'Renovación Promesas Bautismales y Bautismo 2° C', g:['g2'] },
+    { d:'2026-08-31', n:'ini', h:'15.30', t:'Muestra Sala Naranja', g:['naranja'] },
+    { d:'2026-09-01', e:'2026-09-03', n:'sec', t:'Cenáculo 4° año — Villa Marista', g:['a4'] },
+    { d:'2026-09-01', n:'ini', h:'8.20',  t:'Muestra Sala Celeste', g:['celeste'] },
+    { d:'2026-09-01', n:'ini', h:'11',    t:'Muestra Sala Lila', g:['lila'] },
+    { d:'2026-09-01', n:'ini', h:'15.30', t:'Muestra Sala Fucsia', g:['fucsia'] },
+    { d:'2026-09-02', n:'ini', h:'8.20',  t:'Muestra Sala Verde', g:['verde'] },
+    { d:'2026-09-02', n:'ini', h:'15.30', t:'Muestra Sala Bordo', g:['bordo'] },
+    { d:'2026-09-03', n:'pri', t:'Campamento 1° Año — Casa cura Brochero, Benavídez', g:['g1'] },
+    { d:'2026-09-03', n:'ini', h:'8.20',  t:'Muestra Sala Roja', g:['roja'] },
+    { d:'2026-09-03', n:'ini', h:'15.30', t:'Muestra Sala Blanca', g:['blanca'] },
+    { d:'2026-09-04', n:'ins', t:'Día de la Secretaria' },
+    { d:'2026-09-04', n:'ini', h:'8.20',  t:'Muestra Sala Azul', g:['azul'] },
+    { d:'2026-09-09', n:'sec', t:'Convivencia 1er año', g:['a1'] },
+    { d:'2026-09-10', n:'sec', t:'Instancia regional Olimpíada Matemática' },
+    { d:'2026-09-11', n:'fer', t:'Día del/a Maestro/a' },
+    { d:'2026-09-15', n:'pri', t:'Acto día del maestro — 6° A, B, C (interno)', g:['g6'] },
+    { d:'2026-09-16', n:'ini', t:'Campamento Salas de 3 DJ / TM y TT (alt. 23/9)', g:['s3'] },
+    { d:'2026-09-17', n:'ins', t:'Día del/la Profesor/a' },
+    { d:'2026-09-17', n:'ins', t:'Día del/a Psicopedagogo/a' },
+    { d:'2026-09-17', n:'ins', t:'Actividad Jorge Luis Borges — Lectura institucional' },
+    { d:'2026-09-18', n:'pri', t:'Pastoral Familiar 3° Año', g:['g3'] },
+    { d:'2026-09-18', n:'ins', t:'Evento exalumnos' },
+    { d:'2026-09-19', n:'ins', t:'Día del Preceptor/a' },
+    { d:'2026-09-21', e:'2026-09-25', n:'sec', t:'Semana de las Artes' },
+    { d:'2026-09-21', n:'ins', t:'Día del Estudiante' },
+    { d:'2026-09-21', n:'pri', t:'Intercolor 1° a 6° TM — Club Teléfonos' },
+    { d:'2026-09-22', e:'2026-09-24', n:'pri', t:'Campamento 5° — La Segunda, Villa Lía', g:['g5'] },
+    { d:'2026-09-22', n:'sec', t:'Charla Bergman — 4° con familias', g:['a4'] },
+    { d:'2026-09-23', n:'ini', t:'Alt. Campamento Salas de 3 (16/09)', g:['s3'] },
+    { d:'2026-09-24', n:'sec', t:'Charla Bergman — 4° con familias', g:['a4'] },
+    { d:'2026-09-25', n:'ini', h:'8.15',  t:'Taller de familia ESI — Maternal e Infantes', g:['maternal','infantes'] },
+    { d:'2026-09-25', n:'ini', h:'15.45', t:'Abuelos de sala Violeta', g:['violeta'] },
+    { d:'2026-09-28', e:'2026-09-30', n:'pri', t:'Clases Abiertas' },
+    { d:'2026-09-28', n:'ins', t:'Día del Directivo' },
+    { d:'2026-09-28', n:'ini', h:'15.45', t:'Abuelos de sala Rosa TT', g:['rosatt'] },
+    { d:'2026-09-28', n:'pri', h:'8.10',  t:'Celebración 1° A-B-C con familias (Parroquia)', g:['g1'] },
+    { d:'2026-09-28', n:'pri', t:'Ensayo general concert — Cast B' },
+    { d:'2026-09-29', n:'ini', h:'11.15', t:'Abuelos de sala Rosa TM', g:['rosatm'] },
+    { d:'2026-09-29', n:'ini', h:'15.45', t:'Abuelos de sala Turquesa', g:['turquesa'] },
+    { d:'2026-09-29', n:'ini', t:'Intercolor — Salas de 5', g:['s5'] },
+    { d:'2026-09-29', n:'sec', t:'Charla Bergman — 6° sin familias', g:['a6'] },
+    { d:'2026-09-29', n:'sec', t:'Charla Bergman — 4° con familias', g:['a4'] },
+    { d:'2026-09-29', n:'pri', t:'Ensayo general concert — Cast C' },
+    { d:'2026-09-30', n:'ini', h:'11.15', t:'Abuelos de sala Amarilla TM', g:['amarillatm'] },
+    { d:'2026-09-30', n:'ini', h:'15.45', t:'Abuelos de sala Amarilla DJ y TT', g:['amarilladjtt'] },
+    { d:'2026-09-30', n:'ini', t:'Campamento Salas de 4 DJ / TM y TT (alt. 7/10)', g:['s4'] },
+    { d:'2026-09-30', n:'pri', t:'Ensayo general concert — Cast A' },
+
+    // ── OCTUBRE ──
+    { d:'2026-10-01', e:'2026-10-02', n:'pri', t:'Clases Abiertas' },
+    { d:'2026-10-01', n:'pri', t:'Ensayo general concert — Cast B' },
+    { d:'2026-10-02', n:'pri', t:'Pastoral Familiar 4° Año', g:['g4'] },
+    { d:'2026-10-02', n:'ini', h:'15', t:'Reunión Familias (salas de 2) por articulación en San Gabriel', g:['s2'] },
+    { d:'2026-10-02', n:'pri', t:'Salida educativa a Tierra Santa — 5° A-B-C', g:['g5'] },
+    { d:'2026-10-02', n:'pri', t:'Salida educativa al Hotel de los Inmigrantes — 3° A-B-C', g:['g3'] },
+    { d:'2026-10-05', e:'2026-10-09', n:'sec', t:'Segundo Informe Avances' },
+    { d:'2026-10-06', e:'2026-10-09', n:'sec', t:'Viaje 1° año — San Pedro', g:['a1'] },
+    { d:'2026-10-05', n:'pri', t:'Concert “B”' },
+    { d:'2026-10-05', n:'pri', t:'Ensayo general concert — Cast C' },
+    { d:'2026-10-06', n:'pri', t:'Concert Primaria “C”' },
+    { d:'2026-10-06', n:'sec', h:'8.10', t:'Taller Orientación vocacional — 5°', g:['a5'] },
+    { d:'2026-10-06', n:'pri', t:'Ensayo general concert — Cast A' },
+    { d:'2026-10-07', n:'pri', t:'Concert Primaria “A”' },
+    { d:'2026-10-07', n:'ini', t:'Alternativa Campamento Salas de 4 DJ / TM y TT', g:['s4'] },
+    { d:'2026-10-07', n:'sec', t:'Convivencia — 2°', g:['a2'] },
+    { d:'2026-10-08', n:'pri', t:'Alternativa Concert por lluvia' },
+    { d:'2026-10-09', n:'pri', t:'Clases Abiertas' },
+    { d:'2026-10-12', e:'2026-10-16', n:'pri', t:'Clases Abiertas' },
+    { d:'2026-10-12', n:'ins', t:'Día del Respeto a la Diversidad Cultural' },
+    { d:'2026-10-13', n:'sec', h:'14.30', t:'Orientación vocacional 5° (optativo estudiantes)', g:['a5'] },
+    { d:'2026-10-14', n:'sec', h:'8.15', t:'Orientación vocacional 5° (sin estudiantes)', g:['a5'] },
+    { d:'2026-10-14', n:'ini', t:'Play 4 y 5 años (alt. 15/10, 18.45 / 19.15hs)', g:['s4','s5'] },
+    { d:'2026-10-15', n:'ini', t:'Play 4 y 5 años (si llueve el 14/10)', g:['s4','s5'] },
+    { d:'2026-10-19', e:'2026-10-20', n:'pri', t:'Campamento 3° — San Agustín, Pilar', g:['g3'] },
+    { d:'2026-10-22', n:'ini', t:'Clase abierta de Ed. Física y Música — Maternal', g:['maternal'] },
+    { d:'2026-10-26', n:'sec', h:'8 a 15', t:'Intercolor' },
+    { d:'2026-10-26', n:'pri', t:'Final Exams — 3°, 4° y 6°', g:['g3','g4','g6'] },
+    { d:'2026-10-27', n:'pri', t:'Final Exams — 1°, 2° y 5°', g:['g1','g2','g5'] },
+    { d:'2026-10-28', n:'pri', t:'Final Exams — 6°', g:['g6'] },
+    { d:'2026-10-29', n:'pri', t:'Final Exams (alternativa)' },
+    { d:'2026-10-27', n:'ini', h:'8.20', t:'Clase abierta de inglés — Sala Celeste (salón de actos)', g:['celeste'] },
+    { d:'2026-10-27', n:'sec', t:'Final Exams — 1°B, 1°C', g:['a1'] },
+    { d:'2026-10-28', n:'ini', h:'8.20', t:'Clase abierta de inglés — Sala Naranja (salón de actos)', g:['naranja'] },
+    { d:'2026-10-28', n:'sec', t:'Final Exams — 1°A', g:['a1'] },
+    { d:'2026-10-29', n:'ini', h:'13.20', t:'Clase abierta de inglés — Sala Fucsia (salón de actos)', g:['fucsia'] },
+    { d:'2026-10-29', n:'sec', t:'Final Exams — 1°B, 1°C · 2° y 3° A, B, C', g:['a1','a2','a3'] },
+    { d:'2026-10-30', e:'2026-10-31', n:'sec', t:'Pernoctada 3° año — Colegio San Gabriel', g:['a3'] },
+    { d:'2026-10-30', n:'sec', t:'Final Exams — 2° y 3° A, B, C', g:['a2','a3'] },
+
+    // ── NOVIEMBRE ──
+    { d:'2026-11-02', n:'sec', t:'Final Exams — 1°A', g:['a1'] },
+    { d:'2026-11-02', n:'pri', t:'Final Exams — 3°, 4° y 6°', g:['g3','g4','g6'] },
+    { d:'2026-11-03', n:'pri', t:'Final Exams — 1°, 2° y 5°', g:['g1','g2','g5'] },
+    { d:'2026-11-03', e:'2026-11-06', n:'pri', t:'Campamento 6° — Entre Ríos, Aurora del Palmar', g:['g6'] },
+    { d:'2026-11-03', n:'sec', t:'Final Exams — 1°, 2° y 3° A, B, C', g:['a1','a2','a3'] },
+    { d:'2026-11-04', n:'ini', t:'Celebración salas de 4', g:['s4'] },
+    { d:'2026-11-05', n:'sec', t:'Final Exams — 1°, 2° y 5° A, B, C', g:['a1','a2','a5'] },
+    { d:'2026-11-06', n:'pri', t:'Pastoral Familiar 4°', g:['g4'] },
+    { d:'2026-11-08', n:'ins', t:'Día de la Familia' },
+    { d:'2026-11-09', n:'pri', t:'Final Exams — 3° y 4°', g:['g3','g4'] },
+    { d:'2026-11-09', n:'sec', t:'Convivencia — 1°', g:['a1'] },
+    { d:'2026-11-10', n:'ins', t:'Día de la Tradición' },
+    { d:'2026-11-10', n:'pri', h:'8.15',  t:'Acto 2° A, B, C', g:['g2'] },
+    { d:'2026-11-10', n:'sec', h:'13.30', t:'Parciales 6°', g:['a6'] },
+    { d:'2026-11-13', n:'pri', t:'Pastoral Familiar 3°', g:['g3'] },
+    { d:'2026-11-13', n:'ini', t:'Fogón salas de 5', g:['s5'] },
+    { d:'2026-11-16', e:'2026-11-20', n:'pri', t:'Alto en el camino III' },
+    { d:'2026-11-16', e:'2026-11-20', n:'sec', t:'Período de intensificación y profundización' },
+    { d:'2026-11-16', n:'sec', h:'8.15', t:'Reunión de familias 6°', g:['a6'] },
+    { d:'2026-11-18', n:'ini', t:'Celebración salas de 5', g:['s5'] },
+    { d:'2026-11-19', n:'sec', h:'8.15', t:'Reunión de familias 5°', g:['a5'] },
+    { d:'2026-11-23', n:'fer', t:'Día de la Soberanía Nacional' },
+    { d:'2026-11-24', e:'2026-11-26', n:'pri', t:'Alto en el camino III' },
+    { d:'2026-11-24', e:'2026-11-27', n:'sec', t:'Período de intensificación y profundización' },
+    { d:'2026-11-25', n:'ini', h:'8.20',  t:'Reunión de familias Sala Naranja (salón de actos)', g:['naranja'] },
+    { d:'2026-11-25', n:'ini', h:'15.30', t:'Reunión de familias Sala Bordó (quincho parroquia)', g:['bordo'] },
+    { d:'2026-11-26', n:'ini', h:'8.20',  t:'Reunión de familias Sala Azul (salón de actos)', g:['azul'] },
+    { d:'2026-11-27', n:'ini', h:'8.20',  t:'Reunión de familias Sala Verde (salón de actos)', g:['verde'] },
+    { d:'2026-11-27', n:'ini', h:'15.20', t:'Reunión de familias Sala Fucsia', g:['fucsia'] },
+    { d:'2026-11-27', n:'sec', t:'Último día SECUNDARIA' },
+    { d:'2026-11-29', n:'ins', t:'Día del Personal de Maestranza' },
+    { d:'2026-11-30', n:'ini', h:'8.20',  t:'Reunión de familias Sala Roja', g:['roja'] },
+    { d:'2026-11-30', n:'ini', h:'8.30',  t:'Reunión de familias Sala Rosa TM', g:['rosatm'] },
+    { d:'2026-11-30', n:'ini', h:'15.30', t:'Reunión de familias Sala Rosa TT', g:['rosatt'] },
+    { d:'2026-11-30', n:'ini', h:'15.30', t:'Reunión de familias Sala Blanca', g:['blanca'] },
+
+    // ── DICIEMBRE ──
+    { d:'2026-12-01', n:'pri', h:'8.15',  t:'Encuentro de cierre con familias — 1° A, B, C', g:['g1'] },
+    { d:'2026-12-01', n:'ini', h:'8.20',  t:'Reunión de familias Sala Lila', g:['lila'] },
+    { d:'2026-12-01', n:'ini', h:'15.30', t:'Reunión de familias Sala Turquesa', g:['turquesa'] },
+    { d:'2026-12-01', n:'sec', h:'20',    t:'Misa fin de año 6°', g:['a6'] },
+    { d:'2026-12-02', n:'sec', h:'19',    t:'Acto fin de año 6° (entrega diplomas)', g:['a6'] },
+    { d:'2026-12-02', n:'ini', h:'8.20',  t:'Reunión de familias Sala Celeste', g:['celeste'] },
+    { d:'2026-12-02', n:'pri', t:'Misa de cierre — 3°, 4°, 5°, 6° (solo estudiantes)', g:['g3','g4','g5','g6'] },
+    { d:'2026-12-03', n:'pri', h:'8.15',  t:'Encuentro de cierre con familias — 5° A, B, C (parroquia)', g:['g5'] },
+    { d:'2026-12-03', n:'ini', h:'15.30', t:'Reunión de familias Sala Violeta', g:['violeta'] },
+    { d:'2026-12-03', n:'pri', t:'December Exam — instancia recuperatoria 3°, 4°, 5° y 6°', g:['g3','g4','g5','g6'] },
+    { d:'2026-12-04', n:'pri', h:'8.15',  t:'Encuentro de cierre con familias — 3° A, B, C (parroquia)', g:['g3'] },
+    { d:'2026-12-04', n:'ini', h:'8.30',  t:'Reunión de familias Sala Amarilla TM, DJ y TT', g:['amarillatm','amarilladjtt'] },
+    { d:'2026-12-06', n:'ins', t:'Primer Domingo de Adviento' },
+    { d:'2026-12-07', n:'fer', t:'Feriado puente' },
+    { d:'2026-12-08', n:'fer', t:'Inmaculada Concepción de María' },
+    { d:'2026-12-09', n:'pri', h:'8.15',  t:'Encuentro de cierre con familias — 4° A, B, C (parroquia)', g:['g4'] },
+    { d:'2026-12-09', n:'pri', t:'Convivencia 6° A, B, C — Almuerzo de despedida (solo estudiantes)', g:['g6'] },
+    { d:'2026-12-09', n:'pri', t:'December Exam — instancia recuperatoria 3°, 4°, 5° y 6°', g:['g3','g4','g5','g6'] },
+    { d:'2026-12-10', n:'pri', h:'8.15',  t:'Encuentro de cierre con familias — 2° A, B, C (parroquia)', g:['g2'] },
+    { d:'2026-12-11', n:'pri', h:'12',    t:'Bajada de rampa 6° A, B, C (con familias, luego se retiran)', g:['g6'] },
+    { d:'2026-12-11', n:'pri', t:'Último día 6to E.P.', g:['g6'] },
+    { d:'2026-12-14', n:'pri', h:'8.30',  t:'Acto egreso 6° A, B, C (parroquia)', g:['g6'] },
+    { d:'2026-12-15', n:'ini', t:'ÚLTIMO DÍA DE CLASES (Cordón interno salas de 5)', g:['s5'] },
+    { d:'2026-12-15', n:'ini', t:'ÚLTIMO DÍA DE CLASES (salida especial salas de 2)', g:['s2'] },
+    { d:'2026-12-15', n:'pri', t:'ÚLTIMO DÍA 1° A 5° E.P.', g:['g1','g2','g3','g4','g5'] },
+    { d:'2026-12-16', n:'ini', h:'8.30', t:'Entrega de diplomas' },
+    { d:'2026-12-18', n:'sec', t:'Último día 2026' },
+    { d:'2026-12-24', n:'fer', t:'Noche Buena' },
+    { d:'2026-12-25', n:'fer', t:'Navidad' },
+    { d:'2026-12-31', n:'fer', t:'Año Nuevo' }
+  ];
+
+  var MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  var MES_AB = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  var DIAS   = ['lunes','martes','miércoles','jueves','viernes','sábado','domingo'];
+  var DIAS_AB= ['lun','mar','mié','jue','vie','sáb','dom'];
+
+  function parse(s) { var p = s.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function key(dt) {
+    return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+  }
+  function isoDow(dt) { return (dt.getDay() + 6) % 7; }   // lunes = 0
+  function addDays(dt, n) { var d = new Date(dt); d.setDate(d.getDate() + n); return d; }
+
+  var today = new Date(); today.setHours(0, 0, 0, 0);
+  var todayKey = key(today);
+
+  // ── eventos propios, guardados aparte de los filtros ──
+  var MIOS_KEY = 'sg-eventos';
+  var MIOS = [];
+  try {
+    var rawm = window.localStorage.getItem(MIOS_KEY);
+    if (rawm) {
+      JSON.parse(rawm).forEach(function (o) {
+        if (o && typeof o.t === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(o.d)) {
+          MIOS.push({ d: o.d, n: 'per', t: o.t, h: typeof o.h === 'string' ? o.h : '' });
+        }
+      });
+    }
+  } catch (err) { /* sin almacenamiento */ }
+
+  function saveMios() {
+    try {
+      window.localStorage.setItem(MIOS_KEY, JSON.stringify(MIOS.map(function (o) {
+        return { d: o.d, t: o.t, h: o.h };
+      })));
+    } catch (err) { /* si falla, valen para esta visita */ }
+  }
+
+  function ALL() { return EV.concat(MIOS); }
+
+  var ORDER = { per: 0, fer: 1, ins: 2, ini: 3, pri: 4, sec: 5 };
+
+  // ── expandir tramos de varios días a ocurrencias por fecha ──
+  var byDay = {};      // 'YYYY-MM-DD' -> [occ]
+
+  function buildIndex() {
+    byDay = {};
+    ALL().forEach(function (ev, i) {
+      var start = parse(ev.d);
+      var end = ev.e ? parse(ev.e) : start;
+      var total = Math.round((end - start) / 86400000) + 1;
+      for (var k = 0; k < total; k++) {
+        var kk = key(addDays(start, k));
+        (byDay[kk] = byDay[kk] || []).push({
+          ev: ev, id: i, idx: k, total: total,
+          span: total > 1, first: k === 0
+        });
+      }
+    });
+    Object.keys(byDay).forEach(function (k) {
+      byDay[k].sort(function (a, b) {
+        if (a.span !== b.span) return a.span ? -1 : 1;
+        var ha = a.ev.h ? parseFloat(a.ev.h) : 99, hb = b.ev.h ? parseFloat(b.ev.h) : 99;
+        if (ha !== hb) return ha - hb;
+        return ORDER[a.ev.n] - ORDER[b.ev.n];
+      });
+    });
+  }
+  buildIndex();
+
+  // ── selección guardada en el navegador ──
+  var KEY = 'sg-seleccion-v1';
+  var sel = { picks: [] };
+
+  try {
+    var raw = window.localStorage.getItem(KEY);
+    if (raw) {
+      var o = JSON.parse(raw);
+      if (Array.isArray(o.picks)) sel.picks = o.picks.filter(function (id) { return CAT[id]; });
+    }
+  } catch (err) { /* almacenamiento no disponible: sigue sin guardar */ }
+
+  function save() {
+    try { window.localStorage.setItem(KEY, JSON.stringify(sel)); } catch (err) {}
+  }
+
+  function has(id) { return sel.picks.indexOf(id) >= 0; }
+
+  // ¿el usuario eligió algo de este nivel?
+  function levelChosen(n) {
+    return (POOL[n] || []).some(function (k) {
+      return LISTS[k].some(function (o) { return has(o.id); });
+    });
+  }
+
+  function anyPick() { return sel.picks.length > 0; }
+
+  // Cada pick arrastra lo que implica: Celeste ⇒ sala de 3 ⇒ infantes.
+  var EXP = {};
+  function rebuildExp() {
+    EXP = {};
+    sel.picks.forEach(function (id) {
+      EXP[id] = 1;
+      var o = CAT[id];
+      if (o && o.imp) o.imp.forEach(function (t) { EXP[t] = 1; });
+    });
+  }
+
+  function visible(occ) {
+    var ev = occ.ev;
+    if (!anyPick()) return true;                 // sin nada elegido: se ve todo
+    if (ev.n === 'per') return has('personal');
+    if (ev.n === 'fer') return has('feriados');
+    if (ev.n === 'ins') return has('institucional');
+    if (!levelChosen(ev.n)) return false;        // nivel que no le toca a nadie
+    if (!ev.g || !ev.g.length) return true;      // actividad de todo el nivel
+    return ev.g.some(function (t) { return EXP[t]; });
+  }
+
+  // ── construir los meses ──
+  var MONTHS = [[2026, 8], [2026, 9], [2026, 10], [2026, 11]];
+  var monthsEl = document.getElementById('months');
+
+  MONTHS.forEach(function (m) {
+    var year = m[0], mon = m[1];
+    var first = new Date(year, mon, 1);
+    var days = new Date(year, mon + 1, 0).getDate();
+    var lead = isoDow(first);
+
+    var sec = document.createElement('section');
+    sec.className = 'month';
+    sec.innerHTML =
+      '<div class="month-title"><h2>' + MESES[mon].charAt(0).toUpperCase() + MESES[mon].slice(1) + '</h2>' +
+      '<span class="count" data-count="' + mon + '"></span></div>' +
+      '<div class="month-body">' +
+        '<div class="cal"><div class="dow">' +
+          DIAS_AB.map(function (d) { return '<span>' + d.charAt(0).toUpperCase() + '</span>'; }).join('') +
+        '</div><div class="grid" data-grid="' + mon + '"></div></div>' +
+        '<div class="agenda" data-agenda="' + mon + '"></div>' +
+      '</div>';
+    monthsEl.appendChild(sec);
+
+    var grid = sec.querySelector('[data-grid]');
+    var trail = (7 - ((lead + days) % 7)) % 7;
+
+    function addCell(dt, out) {
+      var kk = key(dt);
+      var cell = document.createElement('button');
+      cell.type = 'button';
+      cell.className = 'cell' + (out ? ' out' : '');
+      cell.setAttribute('data-day', kk);
+      cell.innerHTML = '<span class="num">' + dt.getDate() + '</span><span class="pips"></span>';
+      cell.setAttribute('aria-label', dt.getDate() + ' de ' + MESES[dt.getMonth()]);
+      if (kk === todayKey) cell.classList.add('today');
+      grid.appendChild(cell);
+    }
+
+    for (var i = lead; i > 0; i--) addCell(addDays(first, -i), true);
+    for (var d = 1; d <= days; d++) addCell(new Date(year, mon, d), false);
+    var last = new Date(year, mon, days);
+    for (var j = 1; j <= trail; j++) addCell(addDays(last, j), true);
+  });
+
+  // ── render dependiente de filtros ──
+  function render() {
+    rebuildExp();
+    var totalVisible = 0;
+
+    // pips de todas las celdas (incluidas las de meses vecinos)
+    document.querySelectorAll('.cell[data-day]').forEach(function (cell) {
+      var kk = cell.getAttribute('data-day');
+      var occs = (byDay[kk] || []).filter(visible);
+      var feriado = (byDay[kk] || []).some(function (o) { return o.ev.n === 'fer'; });
+      var pips = cell.querySelector('.pips');
+      pips.textContent = '';
+      cell.classList.toggle('has', occs.length > 0);
+      cell.classList.toggle('feriado', feriado && occs.length > 0);
+      var levels = [];
+      occs.forEach(function (o) { if (levels.indexOf(o.ev.n) < 0) levels.push(o.ev.n); });
+      levels.sort(function (a, b) { return ORDER[a] - ORDER[b]; });
+      levels.forEach(function (l) {
+        var p = document.createElement('span');
+        p.className = 'pip ' + l;
+        pips.appendChild(p);
+      });
+    });
+
+    MONTHS.forEach(function (m, mi) {
+      var year = m[0], mon = m[1];
+      var days = new Date(year, mon + 1, 0).getDate();
+      var agenda = document.querySelector('[data-agenda="' + mon + '"]');
+      agenda.textContent = '';
+      var uniq = {};
+
+      // si el mes anterior no se dibuja, sus días de la primera semana entran acá
+      var from = new Date(year, mon, 1);
+      if (mi === 0) from = addDays(from, -isoDow(from));
+      var to = new Date(year, mon, days);
+
+      for (var dt = new Date(from); dt <= to; dt = addDays(dt, 1)) {
+        var kk = key(dt);
+        var occs = (byDay[kk] || []).filter(visible);
+        var feriado = (byDay[kk] || []).some(function (o) { return o.ev.n === 'fer'; });
+
+        if (!occs.length) continue;
+        occs.forEach(function (o) { uniq[o.id] = 1; });
+        totalVisible += occs.length;
+        var d = dt.getDate();
+
+        var row = document.createElement('div');
+        row.className = 'day-row';
+        row.id = 'd-' + kk;
+        if (feriado) row.classList.add('is-feriado');
+        if (kk === todayKey) row.classList.add('is-today');
+
+        var kcol = document.createElement('div');
+        kcol.className = 'day-key';
+        kcol.innerHTML = '<span class="d">' + d + '</span><span class="w">' +
+          DIAS_AB[isoDow(dt)] + (dt.getMonth() !== mon ? ' ' + MES_AB[dt.getMonth()] : '') + '</span>';
+        row.appendChild(kcol);
+
+        var list = document.createElement('div');
+        list.className = 'ev-list';
+        occs.forEach(function (o) {
+          var e = document.createElement('div');
+          e.className = 'ev ' + o.ev.n + (o.span ? ' span' : '');
+          var range = '';
+          if (o.span) {
+            var s = parse(o.ev.d), en = parse(o.ev.e);
+            range = 'día ' + (o.idx + 1) + ' de ' + o.total;
+            if (o.first) range = s.getDate() + ' al ' + en.getDate() + ' ' + MES_AB[en.getMonth()];
+          }
+          e.innerHTML = '<span class="dot"></span><span class="h"></span><span class="t"></span>';
+          e.querySelector('.h').textContent = o.ev.h ? o.ev.h + 'hs' : '';
+          var tEl = e.querySelector('.t');
+          tEl.textContent = o.ev.t;
+          if (range) tEl.setAttribute('data-range', range);
+          list.appendChild(e);
+        });
+        row.appendChild(list);
+        agenda.appendChild(row);
+      }
+
+      var n = Object.keys(uniq).length;
+      if (!n) {
+        var note = document.createElement('p');
+        note.className = 'empty-note';
+        note.textContent = 'Nada en este mes con los filtros activos.';
+        agenda.appendChild(note);
+      }
+      var cEl = document.querySelector('[data-count="' + mon + '"]');
+      cEl.textContent = n + (n === 1 ? ' actividad' : ' actividades');
+    });
+
+    renderLegend();
+    renderUpcoming();
+  }
+
+  function renderLegend() {
+    var c = { per: 0, fer: 0, ins: 0, ini: 0, pri: 0, sec: 0 };
+    ALL().forEach(function (ev) { if (visible({ ev: ev })) c[ev.n]++; });
+    document.querySelectorAll('#legend .lg').forEach(function (el) {
+      var n = el.getAttribute('data-n');
+      el.classList.toggle('off', c[n] === 0);
+      el.querySelector('.qty').textContent = c[n] ? c[n] : '—';
+    });
+  }
+
+  function renderUpcoming() {
+    var row = document.getElementById('up-row');
+    row.textContent = '';
+
+    var seen = {};
+    var list = [];
+    ALL().forEach(function (ev) {
+      if (!visible({ ev: ev })) return;
+      var end = parse(ev.e || ev.d);
+      if (end < today) return;
+      var k = ev.d + '|' + ev.t;
+      if (seen[k]) return;
+      seen[k] = 1;
+      list.push(ev);
+    });
+    list.sort(function (a, b) { return parse(a.d) - parse(b.d); });
+    list = list.slice(0, 8);
+
+    if (!list.length) {
+      var p = document.createElement('p');
+      p.className = 'empty-note';
+      p.textContent = 'No queda nada por delante con los filtros activos.';
+      row.appendChild(p);
+      return;
+    }
+
+    list.forEach(function (ev) {
+      var s = parse(ev.d), en = parse(ev.e || ev.d);
+      var when = ev.e
+        ? s.getDate() + ' al ' + en.getDate() + ' ' + MES_AB[en.getMonth()]
+        : s.getDate() + ' ' + MES_AB[s.getMonth()];
+      var diff = Math.round((s - today) / 86400000);
+      var cd = diff > 1 ? 'faltan ' + diff + ' días'
+             : diff === 1 ? 'mañana'
+             : diff === 0 ? 'es hoy'
+             : 'en curso';
+
+      var card = document.createElement('div');
+      card.className = 'up-card';
+      card.style.setProperty('--c', 'var(--' + ev.n + ')');
+      card.innerHTML = '<span class="dt"></span><span class="cd"></span><span class="tt"></span>';
+      card.querySelector('.dt').textContent = when;
+      card.querySelector('.cd').textContent = DIAS[isoDow(s)] + ' · ' + cd;
+      var tt = card.querySelector('.tt');
+      if (ev.h) {
+        var bb = document.createElement('b');
+        bb.textContent = ev.h + 'hs';
+        tt.appendChild(bb);
+        tt.appendChild(document.createTextNode(' · '));
+      }
+      tt.appendChild(document.createTextNode(ev.t));
+      row.appendChild(card);
+    });
+  }
+
+  // ── selector de tema (claro / oscuro / sistema) ──
+  var THEME_KEY = 'sg-tema';
+  var themeBox = document.getElementById('theme');
+
+  function readTheme() {
+    try {
+      var v = window.localStorage.getItem(THEME_KEY);
+      return (v === 'light' || v === 'dark') ? v : 'system';
+    } catch (err) { return 'system'; }
+  }
+
+  function applyTheme(v) {
+    var r = document.documentElement;
+    if (v === 'light' || v === 'dark') {
+      r.setAttribute('data-theme', v);
+    } else if (window.__hostTheme) {
+      r.setAttribute('data-theme', window.__hostTheme);   // devolvemos el tema del visor
+    } else {
+      r.removeAttribute('data-theme');                     // sistema operativo
+    }
+    themeBox.querySelectorAll('button').forEach(function (b) {
+      var on = b.getAttribute('data-set') === v;
+      b.setAttribute('aria-checked', String(on));
+      b.tabIndex = on ? 0 : -1;
+    });
+  }
+
+  function setTheme(v) {
+    try {
+      if (v === 'system') window.localStorage.removeItem(THEME_KEY);
+      else window.localStorage.setItem(THEME_KEY, v);
+    } catch (err) { /* sin almacenamiento: vale para esta visita */ }
+    applyTheme(v);
+  }
+
+  themeBox.addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-set]');
+    if (b) setTheme(b.getAttribute('data-set'));
+  });
+
+  // flechas para moverse dentro del grupo, como espera un radiogroup
+  themeBox.addEventListener('keydown', function (e) {
+    var step = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1
+             : e.key === 'ArrowLeft'  || e.key === 'ArrowUp'   ? -1 : 0;
+    if (!step) return;
+    e.preventDefault();
+    var btns = Array.prototype.slice.call(themeBox.querySelectorAll('button[data-set]'));
+    var i = btns.indexOf(document.activeElement);
+    var next = btns[((i < 0 ? 0 : i) + step + btns.length) % btns.length];
+    setTheme(next.getAttribute('data-set'));
+    next.focus();
+  });
+
+  applyTheme(readTheme());
+
+  // ── agregar / borrar eventos propios ──
+  var adder = document.getElementById('adder');
+  var fT = document.getElementById('ev-t');
+  var fD = document.getElementById('ev-d');
+  var fH = document.getElementById('ev-h');
+  var fErr = document.getElementById('ev-err');
+
+  function fmtHora(v) {                       // "08:15" -> "8.15"
+    if (!v) return '';
+    var p = v.split(':');
+    return String(parseInt(p[0], 10)) + '.' + p[1];
+  }
+
+  function renderMine() {
+    var ul = document.getElementById('mine-list');
+    ul.textContent = '';
+    document.getElementById('mine-empty').hidden = MIOS.length > 0;
+    if (!MIOS.length) return;
+    MIOS.slice().sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : 0; })
+      .forEach(function (o) {
+        var dt = parse(o.d);
+        var li = document.createElement('li');
+
+        var d = document.createElement('span');
+        d.className = 'md';
+        d.textContent = dt.getDate() + ' ' + MES_AB[dt.getMonth()] + (o.h ? ' · ' + o.h : '');
+        li.appendChild(d);
+
+        var t = document.createElement('span');
+        t.className = 'mt';
+        t.textContent = o.t;
+        li.appendChild(t);
+
+        var x = document.createElement('button');
+        x.type = 'button';
+        x.className = 'del';
+        x.textContent = '×';
+        x.setAttribute('aria-label', 'Borrar ' + o.t);
+        x.addEventListener('click', function () {
+          MIOS.splice(MIOS.indexOf(o), 1);
+          saveMios();
+          buildIndex();
+          renderMine();
+          render();
+        });
+        li.appendChild(x);
+
+        ul.appendChild(li);
+      });
+  }
+
+  document.getElementById('open-adder').addEventListener('click', function () {
+    fT.value = '';
+    fH.value = '';
+    fErr.hidden = true;
+    [fT, fD].forEach(function (el) { el.classList.remove('bad'); });
+    if (!fD.value) fD.value = todayKey >= '2026-08-31' && todayKey <= '2026-12-31' ? todayKey : '2026-09-01';
+    renderMine();
+    adder.showModal();
+    fT.focus();
+  });
+
+  document.getElementById('close-adder').addEventListener('click', function () { adder.close(); });
+
+  function flag(el, msg) {
+    el.classList.add('bad');
+    fErr.textContent = msg;
+    fErr.hidden = false;
+    el.focus();
+  }
+
+  function addEv() {
+    fErr.hidden = true;
+    [fT, fD].forEach(function (el) { el.classList.remove('bad'); });
+
+    var t = fT.value.trim();
+    if (!t) { flag(fT, 'Falta el título.'); return; }
+
+    var d = fD.value;
+    if (!d) { flag(fD, 'Falta la fecha.'); return; }
+    if (d < '2026-08-31' || d > '2026-12-31') { flag(fD, 'Tiene que caer entre el 31/08 y el 31/12 de 2026.'); return; }
+
+    var h = fmtHora(fH.value);
+
+    MIOS.push({ d: d, n: 'per', t: t, h: h });
+    saveMios();
+    buildIndex();
+    fT.value = '';
+    fH.value = '';
+    renderMine();
+    render();
+    fT.focus();
+  }
+
+  document.getElementById('save-ev').addEventListener('click', addEv);
+  adder.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); addEv(); }
+  });
+
+  // ── resumen en la cabecera ──
+  function renderSummary() {
+    var sum = document.getElementById('sum');
+    sum.textContent = '';
+
+    var lbl = document.createElement('span');
+    lbl.className = 'lbl';
+    lbl.textContent = 'Viendo';
+    sum.appendChild(lbl);
+
+    if (!anyPick()) {
+      var none = document.createElement('span');
+      none.className = 'none';
+      none.textContent = 'todo';
+      sum.appendChild(none);
+      document.getElementById('open-picker').textContent = 'Elegir sala y grado';
+      return;
+    }
+
+    sel.picks.forEach(function (id) {
+      var o = CAT[id];
+      var t = document.createElement('span');
+      t.className = 'tag';
+      if (o.c) {
+        var sw = document.createElement('span');
+        sw.className = 'sw';
+        sw.style.background = o.c;
+        t.appendChild(sw);
+      }
+      t.appendChild(document.createTextNode(o.c ? 'Sala ' + o.n : o.n));
+      sum.appendChild(t);
+    });
+
+    document.getElementById('open-picker').textContent = 'Cambiar';
+  }
+
+  // ── modal ──
+  var dlg = document.getElementById('picker');
+  var draft = { picks: [] };
+
+  function optBtn(o) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'opt';
+    b.setAttribute('data-id', o.id);
+    b.setAttribute('aria-pressed', 'false');
+    if (o.lv) b.style.setProperty('--lv', 'var(--' + o.lv + ')');
+    if (o.c) {
+      var sw = document.createElement('span');
+      sw.className = 'sw';
+      sw.style.background = o.c;
+      b.appendChild(sw);
+    }
+    b.appendChild(document.createTextNode(o.n));
+    return b;
+  }
+
+  function buildOpts() {
+    var box = document.querySelector('[data-opts="salas"]');
+    GRUPOS.forEach(function (gr) {
+      var lbl = document.createElement('p');
+      lbl.className = 'row-lbl';
+      lbl.textContent = gr.lbl;
+      box.appendChild(lbl);
+      var row = document.createElement('div');
+      row.className = 'opts';
+      SALAS.filter(function (o) { return o.g === gr.k; }).forEach(function (o) {
+        row.appendChild(optBtn(o));
+      });
+      box.appendChild(row);
+    });
+    ['extras', 'grados', 'anios'].forEach(function (k) {
+      var el = document.querySelector('[data-opts="' + k + '"]');
+      LISTS[k].forEach(function (o) { el.appendChild(optBtn(o)); });
+    });
+  }
+  buildOpts();
+
+  function paintDraft() {
+    document.querySelectorAll('.opt').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(draft.picks.indexOf(b.getAttribute('data-id')) >= 0));
+    });
+  }
+
+  function openPicker() {
+    draft = { picks: sel.picks.slice() };
+    paintDraft();
+    dlg.showModal();
+  }
+
+  document.getElementById('open-picker').addEventListener('click', openPicker);
+
+  dlg.addEventListener('click', function (e) {
+    var b = e.target.closest('.opt');
+    if (!b) return;
+    var id = b.getAttribute('data-id');
+    var i = draft.picks.indexOf(id);
+    if (i >= 0) draft.picks.splice(i, 1); else draft.picks.push(id);
+    b.setAttribute('aria-pressed', String(i < 0));
+  });
+
+
+  document.getElementById('save-picker').addEventListener('click', function () {
+    var order = Object.keys(CAT);
+    sel.picks = draft.picks.slice().sort(function (a, b) { return order.indexOf(a) - order.indexOf(b); });
+    save();
+    renderSummary();
+    render();
+    dlg.close();
+  });
+
+  document.getElementById('clear-all').addEventListener('click', function () {
+    sel.picks = [];
+    save();
+    renderSummary();
+    render();
+    dlg.close();
+  });
+
+  document.addEventListener('click', function (e) {
+    var cell = e.target.closest('button.cell');
+    if (!cell) return;
+    var row = document.getElementById('d-' + cell.getAttribute('data-day'));
+    if (!row) return;
+    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    row.classList.remove('flash');
+    void row.offsetWidth;
+    row.classList.add('flash');
+  });
+
+  document.getElementById('today-meta').textContent =
+    'hoy es ' + DIAS[isoDow(today)] + ' ' + today.getDate() + ' de ' + MESES[today.getMonth()];
+
+  renderSummary();
+  render();
+})();
+</script>
+
+</body>
+</html>

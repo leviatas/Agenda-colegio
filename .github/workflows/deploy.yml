@@ -1,0 +1,32 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  # cancel-in-progress: false a propósito — dos pushes seguidos hacen dos
+  # deploys en fila, nunca dos `docker compose up --build` pisándose.
+  group: deploy-main
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    timeout-minutes: 40 # los builds en ARM son lentos
+    steps:
+      # Sin checkout a propósito: se trabaja sobre el clon que ya vive en
+      # DEPLOY_DIR, que es el que tiene el .env con los secretos (ese .env no
+      # está en el repo y hay que crearlo a mano la primera vez).
+      - name: Deploy con deploy.sh
+        run: |
+          DEPLOY_DIR="${{ vars.DEPLOY_DIR }}"
+          DEPLOY_DIR="${DEPLOY_DIR:-$HOME/agenda-sg}"
+          if [ ! -d "$DEPLOY_DIR/.git" ]; then
+            echo "::error::No existe un repo git en $DEPLOY_DIR. Configurá la variable DEPLOY_DIR en GitHub (Settings → Secrets and variables → Actions → Variables)."
+            exit 1
+          fi
+          cd "$DEPLOY_DIR"
+          chmod +x ./deploy.sh
+          ./deploy.sh

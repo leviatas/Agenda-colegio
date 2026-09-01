@@ -1,0 +1,5 @@
+* text=auto eol=lf
+
+# Sin esto, un checkout en Windows convierte los scripts a CRLF y el
+# contenedor falla con "no such file or directory" apuntando al shebang.
+*.sh text eol=lf

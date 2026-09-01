@@ -141,3 +141,11 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# ══ Agenda San Gabriel ══
+# Base SQLite de desarrollo (en Docker la real vive en el volumen agenda_sg_data)
+server/prisma/dev.db
+server/prisma/dev.db-journal
+# Uploads del dev local
+server/data/
+secreto_google.json

@@ -1,0 +1,53 @@
+services:
+  server:
+    build: ./server
+    environment:
+      DATABASE_URL: file:/app/data/prod.db
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:?Set GOOGLE_CLIENT_ID in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      ADMIN_EMAILS: ${ADMIN_EMAILS:-leviatas@gmail.com}
+      CLIENT_ORIGIN: ${CLIENT_ORIGIN:-http://localhost:8099}
+      PORT: 4000
+      # Zona horaria del proceso. Si alguna vez agendás algo a una hora de
+      # pared para clientes en husos distintos, esto no alcanza: es una sola
+      # para toda la instancia. Ahí hay que guardar un offset por empresa.
+      TZ: ${TZ:-America/Argentina/Buenos_Aires}
+    volumes:
+      # Todo lo que tenga que sobrevivir a un rebuild va acá adentro: la base
+      # y los uploads. Lo que quede fuera de /app/data se pierde.
+      - agenda_sg_data:/app/data
+    restart: unless-stopped
+
+  client:
+    build:
+      context: ./client
+      args:
+        VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:?Set GOOGLE_CLIENT_ID in .env}
+    ports:
+      - "${CLIENT_PORT:-8099}:80"
+    depends_on:
+      - server
+    restart: unless-stopped
+
+  # Opcional: expone la app a internet por un Cloudflare Tunnel, sin abrir
+  # puertos ni port-forwarding en el host. No se crea salvo que pidas el
+  # profile explícitamente:
+  #   docker compose --profile cloudflare up -d --build
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run
+    environment:
+      # :- y NO :? como en los otros servicios. Compose interpola el archivo
+      # ENTERO antes de aplicar los profiles, así que un :? acá hace fallar
+      # `docker compose up` aunque este servicio ni se cree — y el .env.example
+      # deja la variable vacía a propósito. Con el profile activo y sin token,
+      # el contenedor arranca y se queja en sus propios logs.
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:-}
+    depends_on:
+      - client
+    restart: unless-stopped
+    profiles:
+      - cloudflare
+
+volumes:
+  agenda_sg_data:

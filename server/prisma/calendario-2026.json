@@ -1,0 +1,1461 @@
+[
+  {
+    "date": "2026-08-31",
+    "endDate": null,
+    "level": "pri",
+    "time": "8.10",
+    "title": "Renovación Promesas Bautismales y Bautismo 2° C",
+    "groups": [
+      "g2"
+    ]
+  },
+  {
+    "date": "2026-08-31",
+    "endDate": null,
+    "level": "ini",
+    "time": "15.30",
+    "title": "Muestra Sala Naranja",
+    "groups": [
+      "naranja"
+    ]
+  },
+  {
+    "date": "2026-09-01",
+    "endDate": "2026-09-03",
+    "level": "sec",
+    "time": null,
+    "title": "Cenáculo 4° año — Villa Marista",
+    "groups": [
+      "a4"
+    ]
+  },
+  {
+    "date": "2026-09-01",
+    "endDate": null,
+    "level": "ini",
+    "time": "8.20",
+    "title": "Muestra Sala Celeste",
+    "groups": [
+      "celeste"
+    ]
+  },
+  {
+    "date": "2026-09-01",
+    "endDate": null,
+    "level": "ini",
+    "time": "11",
+    "title": "Muestra Sala Lila",
+    "groups": [
+      "lila"
+    ]
+  },
+  {
+    "date": "2026-09-01",
+    "endDate": null,
+    "level": "ini",
+    "time": "15.30",
+    "title": "Muestra Sala Fucsia",
+    "groups": [
+      "fucsia"
+    ]
+  },
+  {
+    "date": "2026-09-02",
+    "endDate": null,
+    "level": "ini",
+    "time": "8.20",
+    "title": "Muestra Sala Verde",
+    "groups": [
+      "verde"
+    ]
+  },
+  {
+    "date": "2026-09-02",
+    "endDate": null,
+    "level": "ini",
+    "time": "15.30",
+    "title": "Muestra Sala Bordo",
+    "groups": [
+      "bordo"
+    ]
+  },
+  {
+    "date": "2026-09-03",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "Campamento 1° Año — Casa cura Brochero, Benavídez",
+    "groups": [
+      "g1"
+    ]
+  },
+  {
+    "date": "2026-09-03",
+    "endDate": null,
+    "level": "ini",
+    "time": "8.20",
+    "title": "Muestra Sala Roja",
+    "groups": [
+      "roja"
+    ]
+  },
+  {
+    "date": "2026-09-03",
+    "endDate": null,
+    "level": "ini",
+    "time": "15.30",
+    "title": "Muestra Sala Blanca",
+    "groups": [
+      "blanca"
+    ]
+  },
+  {
+    "date": "2026-09-04",
+    "endDate": null,
+    "level": "ins",
+    "time": null,
+    "title": "Día de la Secretaria",
+    "groups": []
+  },
+  {
+    "date": "2026-09-04",
+    "endDate": null,
+    "level": "ini",
+    "time": "8.20",
+    "title": "Muestra Sala Azul",
+    "groups": [
+      "azul"
+    ]
+  },
+  {
+    "date": "2026-09-09",
+    "endDate": null,
+    "level": "sec",
+    "time": null,
+    "title": "Convivencia 1er año",
+    "groups": [
+      "a1"
+    ]
+  },
+  {
+    "date": "2026-09-10",
+    "endDate": null,
+    "level": "sec",
+    "time": null,
+    "title": "Instancia regional Olimpíada Matemática",
+    "groups": []
+  },
+  {
+    "date": "2026-09-11",
+    "endDate": null,
+    "level": "fer",
+    "time": null,
+    "title": "Día del/a Maestro/a",
+    "groups": []
+  },
+  {
+    "date": "2026-09-15",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "Acto día del maestro — 6° A, B, C (interno)",
+    "groups": [
+      "g6"
+    ]
+  },
+  {
+    "date": "2026-09-16",
+    "endDate": null,
+    "level": "ini",
+    "time": null,
+    "title": "Campamento Salas de 3 DJ / TM y TT (alt. 23/9)",
+    "groups": [
+      "s3"
+    ]
+  },
+  {
+    "date": "2026-09-17",
+    "endDate": null,
+    "level": "ins",
+    "time": null,
+    "title": "Día del/la Profesor/a",
+    "groups": []
+  },
+  {
+    "date": "2026-09-17",
+    "endDate": null,
+    "level": "ins",
+    "time": null,
+    "title": "Día del/a Psicopedagogo/a",
+    "groups": []
+  },
+  {
+    "date": "2026-09-17",
+    "endDate": null,
+    "level": "ins",
+    "time": null,
+    "title": "Actividad Jorge Luis Borges — Lectura institucional",
+    "groups": []
+  },
+  {
+    "date": "2026-09-18",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "Pastoral Familiar 3° Año",
+    "groups": [
+      "g3"
+    ]
+  },
+  {
+    "date": "2026-09-18",
+    "endDate": null,
+    "level": "ins",
+    "time": null,
+    "title": "Evento exalumnos",
+    "groups": []
+  },
+  {
+    "date": "2026-09-19",
+    "endDate": null,
+    "level": "ins",
+    "time": null,
+    "title": "Día del Preceptor/a",
+    "groups": []
+  },
+  {
+    "date": "2026-09-21",
+    "endDate": "2026-09-25",
+    "level": "sec",
+    "time": null,
+    "title": "Semana de las Artes",
+    "groups": []
+  },
+  {
+    "date": "2026-09-21",
+    "endDate": null,
+    "level": "ins",
+    "time": null,
+    "title": "Día del Estudiante",
+    "groups": []
+  },
+  {
+    "date": "2026-09-21",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "Intercolor 1° a 6° TM — Club Teléfonos",
+    "groups": []
+  },
+  {
+    "date": "2026-09-22",
+    "endDate": "2026-09-24",
+    "level": "pri",
+    "time": null,
+    "title": "Campamento 5° — La Segunda, Villa Lía",
+    "groups": [
+      "g5"
+    ]
+  },
+  {
+    "date": "2026-09-22",
+    "endDate": null,
+    "level": "sec",
+    "time": null,
+    "title": "Charla Bergman — 4° con familias",
+    "groups": [
+      "a4"
+    ]
+  },
+  {
+    "date": "2026-09-23",
+    "endDate": null,
+    "level": "ini",
+    "time": null,
+    "title": "Alt. Campamento Salas de 3 (16/09)",
+    "groups": [
+      "s3"
+    ]
+  },
+  {
+    "date": "2026-09-24",
+    "endDate": null,
+    "level": "sec",
+    "time": null,
+    "title": "Charla Bergman — 4° con familias",
+    "groups": [
+      "a4"
+    ]
+  },
+  {
+    "date": "2026-09-25",
+    "endDate": null,
+    "level": "ini",
+    "time": "8.15",
+    "title": "Taller de familia ESI — Maternal e Infantes",
+    "groups": [
+      "maternal",
+      "infantes"
+    ]
+  },
+  {
+    "date": "2026-09-25",
+    "endDate": null,
+    "level": "ini",
+    "time": "15.45",
+    "title": "Abuelos de sala Violeta",
+    "groups": [
+      "violeta"
+    ]
+  },
+  {
+    "date": "2026-09-28",
+    "endDate": "2026-09-30",
+    "level": "pri",
+    "time": null,
+    "title": "Clases Abiertas",
+    "groups": []
+  },
+  {
+    "date": "2026-09-28",
+    "endDate": null,
+    "level": "ins",
+    "time": null,
+    "title": "Día del Directivo",
+    "groups": []
+  },
+  {
+    "date": "2026-09-28",
+    "endDate": null,
+    "level": "ini",
+    "time": "15.45",
+    "title": "Abuelos de sala Rosa TT",
+    "groups": [
+      "rosatt"
+    ]
+  },
+  {
+    "date": "2026-09-28",
+    "endDate": null,
+    "level": "pri",
+    "time": "8.10",
+    "title": "Celebración 1° A-B-C con familias (Parroquia)",
+    "groups": [
+      "g1"
+    ]
+  },
+  {
+    "date": "2026-09-28",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "Ensayo general concert — Cast B",
+    "groups": []
+  },
+  {
+    "date": "2026-09-29",
+    "endDate": null,
+    "level": "ini",
+    "time": "11.15",
+    "title": "Abuelos de sala Rosa TM",
+    "groups": [
+      "rosatm"
+    ]
+  },
+  {
+    "date": "2026-09-29",
+    "endDate": null,
+    "level": "ini",
+    "time": "15.45",
+    "title": "Abuelos de sala Turquesa",
+    "groups": [
+      "turquesa"
+    ]
+  },
+  {
+    "date": "2026-09-29",
+    "endDate": null,
+    "level": "ini",
+    "time": null,
+    "title": "Intercolor — Salas de 5",
+    "groups": [
+      "s5"
+    ]
+  },
+  {
+    "date": "2026-09-29",
+    "endDate": null,
+    "level": "sec",
+    "time": null,
+    "title": "Charla Bergman — 6° sin familias",
+    "groups": [
+      "a6"
+    ]
+  },
+  {
+    "date": "2026-09-29",
+    "endDate": null,
+    "level": "sec",
+    "time": null,
+    "title": "Charla Bergman — 4° con familias",
+    "groups": [
+      "a4"
+    ]
+  },
+  {
+    "date": "2026-09-29",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "Ensayo general concert — Cast C",
+    "groups": []
+  },
+  {
+    "date": "2026-09-30",
+    "endDate": null,
+    "level": "ini",
+    "time": "11.15",
+    "title": "Abuelos de sala Amarilla TM",
+    "groups": [
+      "amarillatm"
+    ]
+  },
+  {
+    "date": "2026-09-30",
+    "endDate": null,
+    "level": "ini",
+    "time": "15.45",
+    "title": "Abuelos de sala Amarilla DJ y TT",
+    "groups": [
+      "amarilladjtt"
+    ]
+  },
+  {
+    "date": "2026-09-30",
+    "endDate": null,
+    "level": "ini",
+    "time": null,
+    "title": "Campamento Salas de 4 DJ / TM y TT (alt. 7/10)",
+    "groups": [
+      "s4"
+    ]
+  },
+  {
+    "date": "2026-09-30",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "Ensayo general concert — Cast A",
+    "groups": []
+  },
+  {
+    "date": "2026-10-01",
+    "endDate": "2026-10-02",
+    "level": "pri",
+    "time": null,
+    "title": "Clases Abiertas",
+    "groups": []
+  },
+  {
+    "date": "2026-10-01",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "Ensayo general concert — Cast B",
+    "groups": []
+  },
+  {
+    "date": "2026-10-02",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "Pastoral Familiar 4° Año",
+    "groups": [
+      "g4"
+    ]
+  },
+  {
+    "date": "2026-10-02",
+    "endDate": null,
+    "level": "ini",
+    "time": "15",
+    "title": "Reunión Familias (salas de 2) por articulación en San Gabriel",
+    "groups": [
+      "s2"
+    ]
+  },
+  {
+    "date": "2026-10-02",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "Salida educativa a Tierra Santa — 5° A-B-C",
+    "groups": [
+      "g5"
+    ]
+  },
+  {
+    "date": "2026-10-02",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "Salida educativa al Hotel de los Inmigrantes — 3° A-B-C",
+    "groups": [
+      "g3"
+    ]
+  },
+  {
+    "date": "2026-10-05",
+    "endDate": "2026-10-09",
+    "level": "sec",
+    "time": null,
+    "title": "Segundo Informe Avances",
+    "groups": []
+  },
+  {
+    "date": "2026-10-06",
+    "endDate": "2026-10-09",
+    "level": "sec",
+    "time": null,
+    "title": "Viaje 1° año — San Pedro",
+    "groups": [
+      "a1"
+    ]
+  },
+  {
+    "date": "2026-10-05",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "Concert “B”",
+    "groups": []
+  },
+  {
+    "date": "2026-10-05",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "Ensayo general concert — Cast C",
+    "groups": []
+  },
+  {
+    "date": "2026-10-06",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "Concert Primaria “C”",
+    "groups": []
+  },
+  {
+    "date": "2026-10-06",
+    "endDate": null,
+    "level": "sec",
+    "time": "8.10",
+    "title": "Taller Orientación vocacional — 5°",
+    "groups": [
+      "a5"
+    ]
+  },
+  {
+    "date": "2026-10-06",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "Ensayo general concert — Cast A",
+    "groups": []
+  },
+  {
+    "date": "2026-10-07",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "Concert Primaria “A”",
+    "groups": []
+  },
+  {
+    "date": "2026-10-07",
+    "endDate": null,
+    "level": "ini",
+    "time": null,
+    "title": "Alternativa Campamento Salas de 4 DJ / TM y TT",
+    "groups": [
+      "s4"
+    ]
+  },
+  {
+    "date": "2026-10-07",
+    "endDate": null,
+    "level": "sec",
+    "time": null,
+    "title": "Convivencia — 2°",
+    "groups": [
+      "a2"
+    ]
+  },
+  {
+    "date": "2026-10-08",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "Alternativa Concert por lluvia",
+    "groups": []
+  },
+  {
+    "date": "2026-10-09",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "Clases Abiertas",
+    "groups": []
+  },
+  {
+    "date": "2026-10-12",
+    "endDate": "2026-10-16",
+    "level": "pri",
+    "time": null,
+    "title": "Clases Abiertas",
+    "groups": []
+  },
+  {
+    "date": "2026-10-12",
+    "endDate": null,
+    "level": "ins",
+    "time": null,
+    "title": "Día del Respeto a la Diversidad Cultural",
+    "groups": []
+  },
+  {
+    "date": "2026-10-13",
+    "endDate": null,
+    "level": "sec",
+    "time": "14.30",
+    "title": "Orientación vocacional 5° (optativo estudiantes)",
+    "groups": [
+      "a5"
+    ]
+  },
+  {
+    "date": "2026-10-14",
+    "endDate": null,
+    "level": "sec",
+    "time": "8.15",
+    "title": "Orientación vocacional 5° (sin estudiantes)",
+    "groups": [
+      "a5"
+    ]
+  },
+  {
+    "date": "2026-10-14",
+    "endDate": null,
+    "level": "ini",
+    "time": null,
+    "title": "Play 4 y 5 años (alt. 15/10, 18.45 / 19.15hs)",
+    "groups": [
+      "s4",
+      "s5"
+    ]
+  },
+  {
+    "date": "2026-10-15",
+    "endDate": null,
+    "level": "ini",
+    "time": null,
+    "title": "Play 4 y 5 años (si llueve el 14/10)",
+    "groups": [
+      "s4",
+      "s5"
+    ]
+  },
+  {
+    "date": "2026-10-19",
+    "endDate": "2026-10-20",
+    "level": "pri",
+    "time": null,
+    "title": "Campamento 3° — San Agustín, Pilar",
+    "groups": [
+      "g3"
+    ]
+  },
+  {
+    "date": "2026-10-22",
+    "endDate": null,
+    "level": "ini",
+    "time": null,
+    "title": "Clase abierta de Ed. Física y Música — Maternal",
+    "groups": [
+      "maternal"
+    ]
+  },
+  {
+    "date": "2026-10-26",
+    "endDate": null,
+    "level": "sec",
+    "time": "8 a 15",
+    "title": "Intercolor",
+    "groups": []
+  },
+  {
+    "date": "2026-10-26",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "Final Exams — 3°, 4° y 6°",
+    "groups": [
+      "g3",
+      "g4",
+      "g6"
+    ]
+  },
+  {
+    "date": "2026-10-27",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "Final Exams — 1°, 2° y 5°",
+    "groups": [
+      "g1",
+      "g2",
+      "g5"
+    ]
+  },
+  {
+    "date": "2026-10-28",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "Final Exams — 6°",
+    "groups": [
+      "g6"
+    ]
+  },
+  {
+    "date": "2026-10-29",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "Final Exams (alternativa)",
+    "groups": []
+  },
+  {
+    "date": "2026-10-27",
+    "endDate": null,
+    "level": "ini",
+    "time": "8.20",
+    "title": "Clase abierta de inglés — Sala Celeste (salón de actos)",
+    "groups": [
+      "celeste"
+    ]
+  },
+  {
+    "date": "2026-10-27",
+    "endDate": null,
+    "level": "sec",
+    "time": null,
+    "title": "Final Exams — 1°B, 1°C",
+    "groups": [
+      "a1"
+    ]
+  },
+  {
+    "date": "2026-10-28",
+    "endDate": null,
+    "level": "ini",
+    "time": "8.20",
+    "title": "Clase abierta de inglés — Sala Naranja (salón de actos)",
+    "groups": [
+      "naranja"
+    ]
+  },
+  {
+    "date": "2026-10-28",
+    "endDate": null,
+    "level": "sec",
+    "time": null,
+    "title": "Final Exams — 1°A",
+    "groups": [
+      "a1"
+    ]
+  },
+  {
+    "date": "2026-10-29",
+    "endDate": null,
+    "level": "ini",
+    "time": "13.20",
+    "title": "Clase abierta de inglés — Sala Fucsia (salón de actos)",
+    "groups": [
+      "fucsia"
+    ]
+  },
+  {
+    "date": "2026-10-29",
+    "endDate": null,
+    "level": "sec",
+    "time": null,
+    "title": "Final Exams — 1°B, 1°C · 2° y 3° A, B, C",
+    "groups": [
+      "a1",
+      "a2",
+      "a3"
+    ]
+  },
+  {
+    "date": "2026-10-30",
+    "endDate": "2026-10-31",
+    "level": "sec",
+    "time": null,
+    "title": "Pernoctada 3° año — Colegio San Gabriel",
+    "groups": [
+      "a3"
+    ]
+  },
+  {
+    "date": "2026-10-30",
+    "endDate": null,
+    "level": "sec",
+    "time": null,
+    "title": "Final Exams — 2° y 3° A, B, C",
+    "groups": [
+      "a2",
+      "a3"
+    ]
+  },
+  {
+    "date": "2026-11-02",
+    "endDate": null,
+    "level": "sec",
+    "time": null,
+    "title": "Final Exams — 1°A",
+    "groups": [
+      "a1"
+    ]
+  },
+  {
+    "date": "2026-11-02",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "Final Exams — 3°, 4° y 6°",
+    "groups": [
+      "g3",
+      "g4",
+      "g6"
+    ]
+  },
+  {
+    "date": "2026-11-03",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "Final Exams — 1°, 2° y 5°",
+    "groups": [
+      "g1",
+      "g2",
+      "g5"
+    ]
+  },
+  {
+    "date": "2026-11-03",
+    "endDate": "2026-11-06",
+    "level": "pri",
+    "time": null,
+    "title": "Campamento 6° — Entre Ríos, Aurora del Palmar",
+    "groups": [
+      "g6"
+    ]
+  },
+  {
+    "date": "2026-11-03",
+    "endDate": null,
+    "level": "sec",
+    "time": null,
+    "title": "Final Exams — 1°, 2° y 3° A, B, C",
+    "groups": [
+      "a1",
+      "a2",
+      "a3"
+    ]
+  },
+  {
+    "date": "2026-11-04",
+    "endDate": null,
+    "level": "ini",
+    "time": null,
+    "title": "Celebración salas de 4",
+    "groups": [
+      "s4"
+    ]
+  },
+  {
+    "date": "2026-11-05",
+    "endDate": null,
+    "level": "sec",
+    "time": null,
+    "title": "Final Exams — 1°, 2° y 5° A, B, C",
+    "groups": [
+      "a1",
+      "a2",
+      "a5"
+    ]
+  },
+  {
+    "date": "2026-11-06",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "Pastoral Familiar 4°",
+    "groups": [
+      "g4"
+    ]
+  },
+  {
+    "date": "2026-11-08",
+    "endDate": null,
+    "level": "ins",
+    "time": null,
+    "title": "Día de la Familia",
+    "groups": []
+  },
+  {
+    "date": "2026-11-09",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "Final Exams — 3° y 4°",
+    "groups": [
+      "g3",
+      "g4"
+    ]
+  },
+  {
+    "date": "2026-11-09",
+    "endDate": null,
+    "level": "sec",
+    "time": null,
+    "title": "Convivencia — 1°",
+    "groups": [
+      "a1"
+    ]
+  },
+  {
+    "date": "2026-11-10",
+    "endDate": null,
+    "level": "ins",
+    "time": null,
+    "title": "Día de la Tradición",
+    "groups": []
+  },
+  {
+    "date": "2026-11-10",
+    "endDate": null,
+    "level": "pri",
+    "time": "8.15",
+    "title": "Acto 2° A, B, C",
+    "groups": [
+      "g2"
+    ]
+  },
+  {
+    "date": "2026-11-10",
+    "endDate": null,
+    "level": "sec",
+    "time": "13.30",
+    "title": "Parciales 6°",
+    "groups": [
+      "a6"
+    ]
+  },
+  {
+    "date": "2026-11-13",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "Pastoral Familiar 3°",
+    "groups": [
+      "g3"
+    ]
+  },
+  {
+    "date": "2026-11-13",
+    "endDate": null,
+    "level": "ini",
+    "time": null,
+    "title": "Fogón salas de 5",
+    "groups": [
+      "s5"
+    ]
+  },
+  {
+    "date": "2026-11-16",
+    "endDate": "2026-11-20",
+    "level": "pri",
+    "time": null,
+    "title": "Alto en el camino III",
+    "groups": []
+  },
+  {
+    "date": "2026-11-16",
+    "endDate": "2026-11-20",
+    "level": "sec",
+    "time": null,
+    "title": "Período de intensificación y profundización",
+    "groups": []
+  },
+  {
+    "date": "2026-11-16",
+    "endDate": null,
+    "level": "sec",
+    "time": "8.15",
+    "title": "Reunión de familias 6°",
+    "groups": [
+      "a6"
+    ]
+  },
+  {
+    "date": "2026-11-18",
+    "endDate": null,
+    "level": "ini",
+    "time": null,
+    "title": "Celebración salas de 5",
+    "groups": [
+      "s5"
+    ]
+  },
+  {
+    "date": "2026-11-19",
+    "endDate": null,
+    "level": "sec",
+    "time": "8.15",
+    "title": "Reunión de familias 5°",
+    "groups": [
+      "a5"
+    ]
+  },
+  {
+    "date": "2026-11-23",
+    "endDate": null,
+    "level": "fer",
+    "time": null,
+    "title": "Día de la Soberanía Nacional",
+    "groups": []
+  },
+  {
+    "date": "2026-11-24",
+    "endDate": "2026-11-26",
+    "level": "pri",
+    "time": null,
+    "title": "Alto en el camino III",
+    "groups": []
+  },
+  {
+    "date": "2026-11-24",
+    "endDate": "2026-11-27",
+    "level": "sec",
+    "time": null,
+    "title": "Período de intensificación y profundización",
+    "groups": []
+  },
+  {
+    "date": "2026-11-25",
+    "endDate": null,
+    "level": "ini",
+    "time": "8.20",
+    "title": "Reunión de familias Sala Naranja (salón de actos)",
+    "groups": [
+      "naranja"
+    ]
+  },
+  {
+    "date": "2026-11-25",
+    "endDate": null,
+    "level": "ini",
+    "time": "15.30",
+    "title": "Reunión de familias Sala Bordó (quincho parroquia)",
+    "groups": [
+      "bordo"
+    ]
+  },
+  {
+    "date": "2026-11-26",
+    "endDate": null,
+    "level": "ini",
+    "time": "8.20",
+    "title": "Reunión de familias Sala Azul (salón de actos)",
+    "groups": [
+      "azul"
+    ]
+  },
+  {
+    "date": "2026-11-27",
+    "endDate": null,
+    "level": "ini",
+    "time": "8.20",
+    "title": "Reunión de familias Sala Verde (salón de actos)",
+    "groups": [
+      "verde"
+    ]
+  },
+  {
+    "date": "2026-11-27",
+    "endDate": null,
+    "level": "ini",
+    "time": "15.20",
+    "title": "Reunión de familias Sala Fucsia",
+    "groups": [
+      "fucsia"
+    ]
+  },
+  {
+    "date": "2026-11-27",
+    "endDate": null,
+    "level": "sec",
+    "time": null,
+    "title": "Último día SECUNDARIA",
+    "groups": []
+  },
+  {
+    "date": "2026-11-29",
+    "endDate": null,
+    "level": "ins",
+    "time": null,
+    "title": "Día del Personal de Maestranza",
+    "groups": []
+  },
+  {
+    "date": "2026-11-30",
+    "endDate": null,
+    "level": "ini",
+    "time": "8.20",
+    "title": "Reunión de familias Sala Roja",
+    "groups": [
+      "roja"
+    ]
+  },
+  {
+    "date": "2026-11-30",
+    "endDate": null,
+    "level": "ini",
+    "time": "8.30",
+    "title": "Reunión de familias Sala Rosa TM",
+    "groups": [
+      "rosatm"
+    ]
+  },
+  {
+    "date": "2026-11-30",
+    "endDate": null,
+    "level": "ini",
+    "time": "15.30",
+    "title": "Reunión de familias Sala Rosa TT",
+    "groups": [
+      "rosatt"
+    ]
+  },
+  {
+    "date": "2026-11-30",
+    "endDate": null,
+    "level": "ini",
+    "time": "15.30",
+    "title": "Reunión de familias Sala Blanca",
+    "groups": [
+      "blanca"
+    ]
+  },
+  {
+    "date": "2026-12-01",
+    "endDate": null,
+    "level": "pri",
+    "time": "8.15",
+    "title": "Encuentro de cierre con familias — 1° A, B, C",
+    "groups": [
+      "g1"
+    ]
+  },
+  {
+    "date": "2026-12-01",
+    "endDate": null,
+    "level": "ini",
+    "time": "8.20",
+    "title": "Reunión de familias Sala Lila",
+    "groups": [
+      "lila"
+    ]
+  },
+  {
+    "date": "2026-12-01",
+    "endDate": null,
+    "level": "ini",
+    "time": "15.30",
+    "title": "Reunión de familias Sala Turquesa",
+    "groups": [
+      "turquesa"
+    ]
+  },
+  {
+    "date": "2026-12-01",
+    "endDate": null,
+    "level": "sec",
+    "time": "20",
+    "title": "Misa fin de año 6°",
+    "groups": [
+      "a6"
+    ]
+  },
+  {
+    "date": "2026-12-02",
+    "endDate": null,
+    "level": "sec",
+    "time": "19",
+    "title": "Acto fin de año 6° (entrega diplomas)",
+    "groups": [
+      "a6"
+    ]
+  },
+  {
+    "date": "2026-12-02",
+    "endDate": null,
+    "level": "ini",
+    "time": "8.20",
+    "title": "Reunión de familias Sala Celeste",
+    "groups": [
+      "celeste"
+    ]
+  },
+  {
+    "date": "2026-12-02",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "Misa de cierre — 3°, 4°, 5°, 6° (solo estudiantes)",
+    "groups": [
+      "g3",
+      "g4",
+      "g5",
+      "g6"
+    ]
+  },
+  {
+    "date": "2026-12-03",
+    "endDate": null,
+    "level": "pri",
+    "time": "8.15",
+    "title": "Encuentro de cierre con familias — 5° A, B, C (parroquia)",
+    "groups": [
+      "g5"
+    ]
+  },
+  {
+    "date": "2026-12-03",
+    "endDate": null,
+    "level": "ini",
+    "time": "15.30",
+    "title": "Reunión de familias Sala Violeta",
+    "groups": [
+      "violeta"
+    ]
+  },
+  {
+    "date": "2026-12-03",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "December Exam — instancia recuperatoria 3°, 4°, 5° y 6°",
+    "groups": [
+      "g3",
+      "g4",
+      "g5",
+      "g6"
+    ]
+  },
+  {
+    "date": "2026-12-04",
+    "endDate": null,
+    "level": "pri",
+    "time": "8.15",
+    "title": "Encuentro de cierre con familias — 3° A, B, C (parroquia)",
+    "groups": [
+      "g3"
+    ]
+  },
+  {
+    "date": "2026-12-04",
+    "endDate": null,
+    "level": "ini",
+    "time": "8.30",
+    "title": "Reunión de familias Sala Amarilla TM, DJ y TT",
+    "groups": [
+      "amarillatm",
+      "amarilladjtt"
+    ]
+  },
+  {
+    "date": "2026-12-06",
+    "endDate": null,
+    "level": "ins",
+    "time": null,
+    "title": "Primer Domingo de Adviento",
+    "groups": []
+  },
+  {
+    "date": "2026-12-07",
+    "endDate": null,
+    "level": "fer",
+    "time": null,
+    "title": "Feriado puente",
+    "groups": []
+  },
+  {
+    "date": "2026-12-08",
+    "endDate": null,
+    "level": "fer",
+    "time": null,
+    "title": "Inmaculada Concepción de María",
+    "groups": []
+  },
+  {
+    "date": "2026-12-09",
+    "endDate": null,
+    "level": "pri",
+    "time": "8.15",
+    "title": "Encuentro de cierre con familias — 4° A, B, C (parroquia)",
+    "groups": [
+      "g4"
+    ]
+  },
+  {
+    "date": "2026-12-09",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "Convivencia 6° A, B, C — Almuerzo de despedida (solo estudiantes)",
+    "groups": [
+      "g6"
+    ]
+  },
+  {
+    "date": "2026-12-09",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "December Exam — instancia recuperatoria 3°, 4°, 5° y 6°",
+    "groups": [
+      "g3",
+      "g4",
+      "g5",
+      "g6"
+    ]
+  },
+  {
+    "date": "2026-12-10",
+    "endDate": null,
+    "level": "pri",
+    "time": "8.15",
+    "title": "Encuentro de cierre con familias — 2° A, B, C (parroquia)",
+    "groups": [
+      "g2"
+    ]
+  },
+  {
+    "date": "2026-12-11",
+    "endDate": null,
+    "level": "pri",
+    "time": "12",
+    "title": "Bajada de rampa 6° A, B, C (con familias, luego se retiran)",
+    "groups": [
+      "g6"
+    ]
+  },
+  {
+    "date": "2026-12-11",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "Último día 6to E.P.",
+    "groups": [
+      "g6"
+    ]
+  },
+  {
+    "date": "2026-12-14",
+    "endDate": null,
+    "level": "pri",
+    "time": "8.30",
+    "title": "Acto egreso 6° A, B, C (parroquia)",
+    "groups": [
+      "g6"
+    ]
+  },
+  {
+    "date": "2026-12-15",
+    "endDate": null,
+    "level": "ini",
+    "time": null,
+    "title": "ÚLTIMO DÍA DE CLASES (Cordón interno salas de 5)",
+    "groups": [
+      "s5"
+    ]
+  },
+  {
+    "date": "2026-12-15",
+    "endDate": null,
+    "level": "ini",
+    "time": null,
+    "title": "ÚLTIMO DÍA DE CLASES (salida especial salas de 2)",
+    "groups": [
+      "s2"
+    ]
+  },
+  {
+    "date": "2026-12-15",
+    "endDate": null,
+    "level": "pri",
+    "time": null,
+    "title": "ÚLTIMO DÍA 1° A 5° E.P.",
+    "groups": [
+      "g1",
+      "g2",
+      "g3",
+      "g4",
+      "g5"
+    ]
+  },
+  {
+    "date": "2026-12-16",
+    "endDate": null,
+    "level": "ini",
+    "time": "8.30",
+    "title": "Entrega de diplomas",
+    "groups": []
+  },
+  {
+    "date": "2026-12-18",
+    "endDate": null,
+    "level": "sec",
+    "time": null,
+    "title": "Último día 2026",
+    "groups": []
+  },
+  {
+    "date": "2026-12-24",
+    "endDate": null,
+    "level": "fer",
+    "time": null,
+    "title": "Noche Buena",
+    "groups": []
+  },
+  {
+    "date": "2026-12-25",
+    "endDate": null,
+    "level": "fer",
+    "time": null,
+    "title": "Navidad",
+    "groups": []
+  },
+  {
+    "date": "2026-12-31",
+    "endDate": null,
+    "level": "fer",
+    "time": null,
+    "title": "Año Nuevo",
+    "groups": []
+  }
+]

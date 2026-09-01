@@ -1,0 +1,84 @@
+generator client {
+  provider      = "prisma-client-js"
+  // "native" cubre el dev local (Windows/macOS/Debian); el target musl es
+  // obligatorio para la imagen node:20-alpine del Dockerfile.
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Una sola organización (un colegio), así que no hay Company/Membership: el
+// único rol es isAdmin, que sale de ADMIN_EMAILS en cada login. Cualquier
+// cuenta de Google que entra puede cargar sus eventos personales de una, sin
+// esperar aprobación de nadie; lo único reservado al admin es editar el
+// calendario oficial.
+model User {
+  id        Int      @id @default(autoincrement())
+  googleId  String   @unique
+  email     String   @unique
+  name      String
+  avatarUrl String?
+  isAdmin   Boolean  @default(false)
+
+  // Los filtros del picker ("Sala Celeste", "3° grado"…) como JSON: un array
+  // de ids del catálogo del cliente (client/src/lib/agenda.js). Va acá y no en
+  // una tabla aparte porque siempre se lee y se escribe entero, y porque el
+  // catálogo es del cliente — la base no tiene por qué conocer los ids.
+  picks String @default("[]")
+
+  createdAt DateTime @default(now())
+
+  events PersonalEvent[]
+}
+
+// Calendario oficial del colegio. Lo edita SOLO un admin (routes/oficial.js);
+// se lee sin login.
+model Event {
+  id    Int     @id @default(autoincrement())
+  // Fechas como String 'YYYY-MM-DD', NO DateTime: son fechas de calendario sin
+  // hora. Un DateTime en SQLite se guarda en UTC, así que un 2026-09-01 local
+  // vuelve como 2026-08-31T21:00Z y el evento se corre un día según el huso de
+  // quien lo lea. Con String la fecha es la que se cargó, siempre.
+  date    String
+  endDate String? // tramos de varios días: último día, inclusive
+
+  // 'ini' | 'pri' | 'sec' | 'ins' | 'fer'. SQLite no tiene enums: se valida en
+  // la capa de aplicación (LEVELS en routes/oficial.js). 'per' NO es válido
+  // acá: los personales viven en PersonalEvent.
+  level String
+
+  // Hora en el formato que muestra la agenda ('8.15', '13.30', '8 a 15'), como
+  // texto libre: hay eventos con rango y otros sin hora.
+  time  String?
+  title String
+
+  // A qué salas / grados / años aplica, como JSON de tags del catálogo
+  // (['g2'], ['s3'], ['celeste'], ['maternal']). Vacío = a todo el nivel.
+  groups String @default("[]")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([date])
+}
+
+// Los "eventos extras" de cada familia. Son privados: nadie más los ve, ni
+// siquiera el admin. Se muestran con el nivel 'per' del cliente.
+model PersonalEvent {
+  id     Int  @id @default(autoincrement())
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  date    String
+  endDate String?
+  time    String?
+  title   String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, date])
+}
