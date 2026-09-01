@@ -44,7 +44,9 @@ export default function Calendario() {
 
   return (
     <>
-      <div className="wrap">
+      {/* wrap-bar: el padding de abajo de .wrap es el aire del FINAL de la
+          página; acá abajo sigue el calendario, así que lleva el suyo. */}
+      <div className="wrap wrap-bar">
         <div className="picker-bar">
           <div className="picker-sum">
             <span className="lbl">Viendo</span>

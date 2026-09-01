@@ -140,6 +140,10 @@ body {
 }
 
 .wrap { max-width: 1080px; margin: 0 auto; padding: 0 1.25rem 5rem; }
+/* Los 5rem de abajo son para cerrar la página. Cuando un .wrap tiene otro
+   .wrap debajo —la barra de selección y el calendario— ese aire queda en el
+   medio y abre un vacío que no dice nada. */
+.wrap-bar { padding-bottom: 1.6rem; }
 
 /* ══════════ Masthead ══════════ */
 
@@ -1025,6 +1029,15 @@ footer .version { font-variant-numeric: tabular-nums; opacity: .7; }
 .of-acciones .del:hover { background: var(--fer-bg); color: var(--ini); }
 .of-acciones .edit:focus-visible,
 .of-acciones .del:focus-visible { outline: 2px solid var(--per); outline-offset: 1px; }
+
+/* En celular el alto es lo escaso: la separación entre el header y la barra de
+   selección, y entre la barra y la referencia, se achica para que el calendario
+   empiece más arriba. */
+@media (max-width: 720px) {
+  .masthead { margin-bottom: 1rem; }
+  .picker-bar { margin-top: .9rem; padding-top: 1rem; }
+  .wrap-bar { padding-bottom: 1.1rem; }
+}
 
 @media (max-width: 720px) {
   .of-list li { grid-template-columns: auto 1fr; }
