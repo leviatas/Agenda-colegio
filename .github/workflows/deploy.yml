@@ -22,7 +22,7 @@ jobs:
       - name: Deploy con deploy.sh
         run: |
           DEPLOY_DIR="${{ vars.DEPLOY_DIR }}"
-          DEPLOY_DIR="${DEPLOY_DIR:-$HOME/agenda-sg}"
+          DEPLOY_DIR="${DEPLOY_DIR:-$HOME/proyectos/sanga/Agenda-colegio}"
           if [ ! -d "$DEPLOY_DIR/.git" ]; then
             echo "::error::No existe un repo git en $DEPLOY_DIR. Configurá la variable DEPLOY_DIR en GitHub (Settings → Secrets and variables → Actions → Variables)."
             exit 1
