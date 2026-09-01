@@ -883,6 +883,24 @@ footer .version { font-variant-numeric: tabular-nums; opacity: .7; }
 .mine .edit:hover { border-color: var(--per); color: var(--per); }
 .mine .edit:focus-visible { outline: 2px solid var(--per); outline-offset: 1px; }
 
+/* En celular las cuatro columnas (fecha · título · Editar · ×) le dejan al
+   título lo que sobra, y en una pantalla angosta eso son unos pocos caracteres:
+   el texto se parte letra por letra. Cada evento pasa a ser su propio bloque,
+   con la fecha arriba y el título ocupando el ancho menos los dos botones. */
+@media (max-width: 720px) {
+  /* align-items: stretch pisa el `center` de la regla base: en un flex
+     column el eje cruzado es el horizontal y cada fila quedaba centrada
+     y encogida al ancho de su texto. */
+  .mine ul { display: flex; flex-direction: column; align-items: stretch; gap: .75rem; }
+  .mine li {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: .15rem .5rem;
+    align-items: center;
+  }
+  .mine .md { grid-column: 1 / -1; }
+}
+
 /* ══════════ Confirmación de acciones destructivas ══════════ */
 
 .confirm-backdrop {
@@ -1021,15 +1039,24 @@ footer .version { font-variant-numeric: tabular-nums; opacity: .7; }
    modal queda más alto que la pantalla. El diálogo de confirmación queda
    centrado a propósito — es una pregunta corta, no un formulario. */
 @media (max-width: 720px) {
+  /* Alto EXACTO de pantalla, no `min-height` sin tope: el <dialog> modal es
+     fijo al viewport y `overflow: hidden`, así que si lo dejamos crecer con el
+     contenido, lo que pasa el borde de abajo queda fuera de alcance — no
+     scrollea ni el diálogo ni .modal-body, que sin un alto que lo apriete
+     nunca desborda. En el picker eso se comía «Extras» y los botones. */
   dialog {
     width: 100vw;
     max-width: 100vw;
-    max-height: none;
-    min-height: 100dvh;
+    height: 100dvh;
+    max-height: 100dvh;
     margin: 0;
     border: 0;
     border-radius: 0;
   }
-  .modal-in { min-height: 100dvh; }
-  .modal-body { flex: 1; }
+  .modal-in { height: 100dvh; }
+  /* min-height: 0 para que el hijo flex pueda achicarse por debajo de su
+     contenido; sin eso el cuerpo empuja el alto y el scroll no aparece. */
+  .modal-body { flex: 1; min-height: 0; }
+  /* El indicador de home de iOS se come el borde de abajo y tapa los botones. */
+  .modal-foot { padding-bottom: max(1.15rem, env(safe-area-inset-bottom)); }
 }
