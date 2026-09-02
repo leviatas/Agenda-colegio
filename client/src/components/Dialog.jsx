@@ -6,7 +6,18 @@ import { useEffect, useRef } from 'react';
 //
 // El contenido se monta sólo cuando `open` es true a propósito: cada apertura
 // arranca con los campos en su estado inicial, sin tener que resetearlos.
-export default function Dialog({ open, onClose, id, labelledBy, className = '', children }) {
+export default function Dialog({
+  open,
+  onClose,
+  id,
+  labelledBy,
+  role,
+  className = '',
+  // Un <dialog> nativo NO se cierra al tocar el backdrop, así que el que lo
+  // quiera lo pide (hoy, la confirmación).
+  cerrarAfuera = false,
+  children,
+}) {
   const ref = useRef(null);
 
   useEffect(() => {
@@ -30,8 +41,23 @@ export default function Dialog({ open, onClose, id, labelledBy, className = '', 
     return () => el.removeEventListener('cancel', cerrar);
   }, [onClose]);
 
+  // El click cae en el <dialog> mismo sólo cuando pasó por el backdrop: el
+  // contenido está adentro de .modal-in y no llega hasta acá.
+  const onClick = cerrarAfuera
+    ? (e) => {
+        if (e.target === ref.current) onClose();
+      }
+    : undefined;
+
   return (
-    <dialog ref={ref} id={id} aria-labelledby={labelledBy} className={className}>
+    <dialog
+      ref={ref}
+      id={id}
+      role={role}
+      aria-labelledby={labelledBy}
+      className={className}
+      onClick={onClick}
+    >
       {open && (
         <div className="modal-in" tabIndex={-1}>
           {children}
