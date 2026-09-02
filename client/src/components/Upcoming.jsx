@@ -40,10 +40,21 @@ export default function Upcoming({ eventos, visible, today }) {
           : diff === 0 ? 'es hoy'
           : 'en curso';
 
+        // El feriado se pinta entero de rojo, como la celda del calendario: es
+        // el dato que hay que ver de lejos y con el borde de color del resto
+        // quedaba igual que cualquier otra fecha. El cartelito va además del
+        // color, que solo no alcanza para quien no lo distingue.
+        const esFeriado = ev.level === 'fer';
+
         return (
-          <div key={`${ev.level}-${ev.id}`} className="up-card" style={{ '--c': `var(--${ev.level})` }}>
+          <div
+            key={`${ev.level}-${ev.id}`}
+            className={`up-card${esFeriado ? ' feriado' : ''}`}
+            style={{ '--c': `var(--${ev.level})` }}
+          >
             <span className="dt">{cuando}</span>
             <span className="cd">{DIAS[isoDow(s)]} · {cd}</span>
+            {esFeriado && <span className="marca">Feriado</span>}
             <span className="tt">
               {ev.time && <><b>{ev.time}hs</b>{' · '}</>}
               {ev.title}

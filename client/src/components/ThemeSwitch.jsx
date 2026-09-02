@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useAngosto } from '../lib/media';
 
 const THEME_KEY = 'sg-tema';
 
@@ -60,6 +61,7 @@ function Icono({ v }) {
 
 export default function ThemeSwitch() {
   const [tema, setTema] = useState(leerTema);
+  const angosto = useAngosto();
   const boxRef = useRef(null);
 
   useEffect(() => {
@@ -87,6 +89,29 @@ export default function ThemeSwitch() {
     const next = btns[((i < 0 ? 0 : i) + step + btns.length) % btns.length];
     cambiar(next.getAttribute('data-set'));
     next.focus();
+  }
+
+  // En celular el ancho del header es lo escaso —hay que compartirlo con el
+  // botón de Google— así que en vez de los tres botones va uno solo con el
+  // tema actual, y tocarlo pasa al siguiente. Deja de ser un radiogroup: es
+  // un botón común que cicla, y como tal se anuncia.
+  if (angosto) {
+    const i = OPCIONES.findIndex((o) => o.v === tema);
+    const actual = OPCIONES[i < 0 ? 2 : i];
+    const siguiente = OPCIONES[((i < 0 ? 2 : i) + 1) % OPCIONES.length];
+    return (
+      <div className="theme">
+        <button
+          type="button"
+          className="theme-ciclo"
+          aria-label={`Tema: ${actual.title}. Tocá para pasar a: ${siguiente.title}`}
+          title={actual.title}
+          onClick={() => cambiar(siguiente.v)}
+        >
+          <Icono v={actual.v} />
+        </button>
+      </div>
+    );
   }
 
   return (

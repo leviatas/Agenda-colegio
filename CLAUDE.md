@@ -360,7 +360,13 @@ de costado entera. Para verificarlo, lo que importa es
 `document.documentElement.scrollWidth` contra `clientWidth` en la pantalla real,
 no que se vea bien en una captura.
 
-**Mobile**: el breakpoint es 720 px. Los modales van a pantalla completa
+**Mobile**: el breakpoint es 720 px, y está **en dos lados**: la media query
+de `styles.css` y la constante `ANGOSTO` de `client/src/lib/media.js`, que usan
+los componentes que no sólo se reacomodan sino que **cambian de forma** en
+celular (el selector de tema pasa de tres botones a uno que cicla; el botón de
+Google pasa a su versión de sólo ícono). Si se corre el número hay que correrlo
+en los dos: si quedan distintos, el header se dibuja con la forma de escritorio
+en un ancho donde el CSS ya no le da lugar. Los modales van a pantalla completa
 (`height` y `max-height: 100dvh` — `dvh` y no `vh` porque la barra de
 direcciones se esconde al scrollear; con un alto *exacto* y no un `min-height`
 suelto, porque el `<dialog>` es fijo al viewport y lo que se pase del borde de

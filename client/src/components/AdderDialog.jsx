@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import Dialog from './Dialog';
-import GoogleLoginButton from './GoogleLoginButton';
 import { useAuth } from '../context/AuthContext';
 import { useEventos } from '../context/EventosContext';
 import { useConfirm } from './ConfirmDialog';
@@ -9,28 +8,16 @@ import { DESDE, HASTA, MES_AB, fmtHora, parse, toInputHora } from '../lib/agenda
 const VACIO = { id: null, title: '', date: '', endDate: '', time: '' };
 
 function Cuerpo({ onClose }) {
-  const { user, loginWithCredential } = useAuth();
+  const { user } = useAuth();
   const { personales, agregarMio, editarMio, borrarMio } = useEventos();
   const confirm = useConfirm();
 
   const [form, setForm] = useState(VACIO);
   const [error, setError] = useState('');
   const [guardando, setGuardando] = useState(false);
-  const [errorLogin, setErrorLogin] = useState('');
 
   const editando = form.id !== null;
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
-
-  async function onCredential(credential) {
-    setErrorLogin('');
-    try {
-      // Al entrar, EventosProvider sube estos eventos a la cuenta solo: acá no
-      // hay nada que hacer más que loguear.
-      await loginWithCredential(credential);
-    } catch (err) {
-      setErrorLogin(err.message);
-    }
-  }
 
   async function guardar() {
     setError('');
@@ -149,19 +136,17 @@ function Cuerpo({ onClose }) {
         </div>
 
         {/* Sin cuenta los eventos quedan en este navegador, que alcanza para
-            usar la agenda. El login se ofrece por lo que suma —verlos en el
-            celular y en la computadora—, no como condición para cargarlos. */}
+            usar la agenda. El aviso cuenta lo que suma entrar —verlos en el
+            celular y en la computadora—, no es una condición para cargarlos.
+            El botón de Google vive arriba, en el encabezado, así que acá va el
+            texto solo: dos botones de login en pantalla confunden. */}
         {!user && (
           <div className="nudge">
             <p className="lede muted">
-              Tus eventos quedan guardados en este navegador. Si entrás con Google pasan a tu
-              cuenta y los ves igual desde el celular y desde la computadora. Nadie más los ve,
-              ni el colegio.
+              Tus eventos quedan guardados en este navegador. Si entrás con Google —el botón
+              está arriba de todo— pasan a tu cuenta y los ves igual desde el celular y desde
+              la computadora. Nadie más los ve, ni el colegio.
             </p>
-            <div className="login-box">
-              <GoogleLoginButton onCredential={onCredential} />
-            </div>
-            {errorLogin && <p className="err">{errorLogin}</p>}
           </div>
         )}
       </div>
