@@ -178,6 +178,42 @@ base nueva—, así que sólo inserta lo que falta y no pisa lo que el admin edi
 el próximo arranque.** Es lo que se quiere mientras el JSON sea la fuente del
 calendario oficial; si deja de serlo, hay que sacar el seed del entrypoint.
 
+### Telemetría de visitas
+
+Para saber cuánta gente usa la agenda **no hay tabla ni servicio externo: son
+líneas de log**. El cliente manda un ping por carga
+(`POST /api/telemetria/visita`, `optionalAuth`) y el server escribe una línea
+JSON con el prefijo `[telemetria]` en stdout — en Docker, el log del contenedor
+`server` (`server/src/lib/telemetria.js`).
+
+La persona se identifica con un **id random que genera el navegador** y queda en
+`localStorage` bajo `sg-visitante-v1`. **No se loguea ni el mail, ni la IP, ni
+el user-agent**: para contar visitantes distintos alcanza un número que no
+identifica a nadie, y de las cuentas sale sólo el `id` numérico (el mail ya está
+en `/usuarios`, que es del admin). Como el id es del navegador, la misma familia
+desde el celular y desde la compu cuenta dos, y quien limpia el navegador vuelve
+a contar como visita nueva: es un piso, no un padrón.
+
+Tres tipos de línea: `visita` (una por carga), `login` (ingreso con Google, con
+`nueva: true` si es el primero de esa cuenta) y `resumen` (los totales de un día
+cerrado). Cada `visita` lleva además los totales corridos del día
+(`visitantesHoy`), así la última línea de la jornada ya dice cuántos fueron sin
+tener que deduplicar nada.
+
+Dos cosas a tener presentes:
+
+- **El día se corta a la medianoche de Argentina** (`-03:00` fijo, que no tiene
+  horario de verano), no a la UTC del contenedor: si no, una visita de las 22 de
+  acá caería en el día siguiente.
+- **Los acumulados viven en memoria del proceso** y se pierden en cada reinicio;
+  el `resumen` de un día lo dispara la primera visita del día siguiente, no un
+  timer. Por eso las líneas de `visita` son la fuente de verdad y el resumen es
+  una comodidad. Los `Set` del día están topeados en 20.000 ids para que nadie
+  pueda hacer crecer el proceso mandando un id distinto por request; pasado el
+  tope la línea sale con `tope: true` y los únicos son un piso.
+
+Cómo se leen los números está en el README ("Telemetría").
+
 ### Auth y permisos
 
 El cliente saca el ID token con Google Identity Services →

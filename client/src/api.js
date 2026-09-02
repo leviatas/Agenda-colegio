@@ -42,6 +42,11 @@ export const api = {
     remove: (token, id) => request(`/eventos/mios/${id}`, { method: 'DELETE', token }),
   },
 
+  // Ping de telemetría: una visita por carga de la app. El token es opcional
+  // —la mayoría de las visitas son sin cuenta, y son las que más importa
+  // contar— y la respuesta es 204, no hay nada que leer.
+  visita: (token, vid) => request('/telemetria/visita', { method: 'POST', body: { vid }, token }),
+
   // Lista de cuentas, sólo para el admin (el server la cierra con
   // requireAdmin). No trae nada de los eventos personales de nadie.
   usuarios: (token) => request('/usuarios', { token }),

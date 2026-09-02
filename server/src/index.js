@@ -6,6 +6,7 @@ const authRoutes = require('./routes/auth');
 const { router: eventosRoutes } = require('./routes/eventos');
 const oficialRoutes = require('./routes/oficial');
 const usuariosRoutes = require('./routes/usuarios');
+const telemetriaRoutes = require('./routes/telemetria');
 
 // Fallar temprano y con un mensaje claro: sin estas dos variables la app
 // arranca igual y recién falla en el primer login, que es mucho peor de
@@ -33,6 +34,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/eventos', eventosRoutes);
 app.use('/api/oficial', oficialRoutes);
 app.use('/api/usuarios', usuariosRoutes);
+app.use('/api/telemetria', telemetriaRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err);

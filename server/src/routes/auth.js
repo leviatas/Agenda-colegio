@@ -2,6 +2,7 @@ const express = require('express');
 const { OAuth2Client } = require('google-auth-library');
 const prisma = require('../lib/prisma');
 const { signToken, requireAuth } = require('../middleware/auth');
+const { registrarLogin } = require('../lib/telemetria');
 
 const router = express.Router();
 
@@ -74,6 +75,10 @@ router.post('/google', async (req, res) => {
     (await prisma.user.findUnique({ where: { googleId: payload.sub } })) ||
     (await prisma.user.findUnique({ where: { email } }));
 
+  // Antes de crearla: es el único momento en que se puede saber que es el
+  // primer ingreso de esta familia, y va al log de telemetría.
+  const cuentaNueva = !user;
+
   if (!user) {
     user = await prisma.user.create({
       data: {
@@ -95,6 +100,8 @@ router.post('/google', async (req, res) => {
       },
     });
   }
+
+  registrarLogin({ userId: user.id, nueva: cuentaNueva, admin: user.isAdmin });
 
   res.json({ token: signToken(user), user: serializeUser(user) });
 });
