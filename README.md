@@ -125,6 +125,45 @@ y hay que crear a mano la primera vez).
 > trabajo sin commitear en el checkout de producción. Para sólo rebuildear
 > alcanza con `docker compose up -d --build`.
 
+## Telemetría
+
+Cuánta gente entra a la agenda se lee **en los logs del server**: cada carga de
+la página deja una línea JSON con el prefijo `[telemetria]`. No hay base de
+datos de visitas ni servicio externo, y **no se guarda ni el mail, ni la IP, ni
+el user-agent**: cada navegador manda un id random propio, que sirve para no
+contar diez veces a quien entra diez veces y no identifica a nadie.
+
+```bash
+# Todo lo que registró la telemetría
+docker compose logs server | grep '\[telemetria\]'
+
+# Visitantes distintos de hoy (la última línea del día ya trae el total)
+docker compose logs server | grep '"evento":"visita"' | tail -1
+
+# Visitantes distintos de toda la vida del log
+docker compose logs --no-log-prefix server | sed -n 's/^\[telemetria\] //p' \
+  | jq -r 'select(.evento == "visita") | .vid' | sort -u | wc -l
+
+# Visitantes por día
+docker compose logs --no-log-prefix server | sed -n 's/^\[telemetria\] //p' \
+  | jq -r 'select(.evento == "visita") | "\(.dia) \(.vid)"' | sort -u \
+  | cut -d' ' -f1 | uniq -c
+```
+
+Las líneas son de tres tipos:
+
+| `evento` | Cuándo | Campos propios |
+| --- | --- | --- |
+| `visita` | Cada carga de la agenda | `vid` (navegador), `user` (cuenta o `null`), `nuevo` (primera vez del día), `visitasHoy`, `visitantesHoy`, `cuentasHoy` |
+| `login` | Ingreso con Google | `user`, `nueva` (primer ingreso de esa cuenta), `admin` |
+| `resumen` | Al cerrarse un día | `visitas`, `visitantes`, `cuentas` |
+
+El día se corta a la medianoche de Argentina. Los acumulados viven en memoria
+del proceso, así que un reinicio los reinicia: las líneas de `visita` son la
+fuente de verdad, y `docker compose logs` sólo llega hasta donde llegue la
+retención de logs de Docker. Para conservarlas más tiempo, redirigirlas a un
+archivo (`docker compose logs -f server | grep '\[telemetria\]' >> visitas.log`).
+
 ## Comandos frecuentes
 
 ```bash
