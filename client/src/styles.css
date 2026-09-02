@@ -967,24 +967,20 @@ footer .version { font-variant-numeric: tabular-nums; opacity: .7; }
 
 /* ══════════ Confirmación de acciones destructivas ══════════ */
 
-.confirm-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  display: grid;
-  place-items: center;
-  padding: 1rem;
-  background: rgba(12,18,15,.55);
+/* La caja (fondo, borde, sombra, radio) la pone la regla de `dialog`: acá sólo
+   el tamaño, porque la pregunta es corta y no necesita los 640px de ancho ni
+   el alto de un formulario.
+
+   `height: max-content` y no `auto`: el UA le pone `inset: 0` al <dialog>
+   modal, y con alto automático entre top y bottom la caja se estira hasta el
+   tope (86vh en escritorio, la pantalla entera en celular) con el texto
+   arriba y un vacío enorme abajo. Con un alto definido, el `margin: auto` del
+   UA vuelve a centrarla. */
+.confirm-dialog {
+  width: min(26rem, calc(100vw - 2rem));
+  height: max-content;
 }
-.confirm-modal {
-  width: min(26rem, 100%);
-  padding: 1.4rem 1.5rem 1.2rem;
-  border-radius: 16px;
-  border: 1px solid var(--line);
-  background: var(--card);
-  color: var(--ink);
-  box-shadow: 0 24px 60px -20px rgba(0,0,0,.45);
-}
+.confirm-modal { padding: 1.4rem 1.5rem 1.2rem; }
 .confirm-modal h3 {
   font-family: 'Bodoni Moda', 'Bodoni MT', Didot, Georgia, serif;
   font-weight: 500;
@@ -1127,6 +1123,17 @@ footer .version { font-variant-numeric: tabular-nums; opacity: .7; }
     border-radius: 0;
   }
   .modal-in { height: 100dvh; }
+  /* La confirmación queda centrada y del tamaño de su texto: es una pregunta
+     corta, no un formulario, y a pantalla completa se lee como otra cosa. */
+  .confirm-dialog {
+    width: min(26rem, calc(100vw - 2rem));
+    height: max-content;
+    max-height: calc(100dvh - 2rem);
+    margin: auto;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+  }
+  .confirm-dialog .modal-in { height: auto; }
   /* min-height: 0 para que el hijo flex pueda achicarse por debajo de su
      contenido; sin eso el cuerpo empuja el alto y el scroll no aparece. */
   .modal-body { flex: 1; min-height: 0; }

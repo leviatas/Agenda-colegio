@@ -336,6 +336,15 @@ WebView puede no mostrarse nunca y devolver un valor por defecto—, así que un
 borrado podía salir sin que nadie viera la pregunta. El foco arranca en
 "Cancelar" a propósito.
 
+Va en un `<dialog>` con `showModal()`, **no** en un div con `z-index`: un
+`<dialog>` modal se dibuja en el *top layer* del browser, que está arriba de
+todo `z-index` por alto que sea. Como la confirmación se dispara casi siempre
+desde adentro de otro modal (borrar un evento propio, en el de agregar
+evento), un div quedaba **tapado** por el modal desde el que se lo llamó.
+Entre dos `<dialog>` modales manda el orden de apertura. Su regla de CSS lleva
+`height: max-content` porque el UA le pone `inset: 0`: con alto automático la
+caja se estira de arriba abajo y el texto queda flotando en un vacío.
+
 **Los modales usan `<dialog>` nativo** vía `components/Dialog.jsx`, que llama
 `showModal()`/`close()` por ref. Dos cosas que ese envoltorio resuelve y no hay
 que deshacer: escucha el evento `cancel` (Escape y el botón de cerrar del
@@ -352,8 +361,11 @@ de costado entera. Para verificarlo, lo que importa es
 no que se vea bien en una captura.
 
 **Mobile**: el breakpoint es 720 px. Los modales van a pantalla completa
-(`min-height: 100dvh` — `dvh` y no `vh` porque la barra de direcciones se
-esconde al scrollear), con la excepción del diálogo de confirmación. Ojo: en
+(`height` y `max-height: 100dvh` — `dvh` y no `vh` porque la barra de
+direcciones se esconde al scrollear; con un alto *exacto* y no un `min-height`
+suelto, porque el `<dialog>` es fijo al viewport y lo que se pase del borde de
+abajo queda fuera de alcance), con la excepción del diálogo de confirmación,
+que queda centrado y del tamaño de su texto. Ojo: en
 celular el fondo deja de estar a la vista, así que **todo modal nuevo tiene que
 tener su propio botón de Cancelar/Cerrar** — tocar afuera ya no es una salida
 posible.
