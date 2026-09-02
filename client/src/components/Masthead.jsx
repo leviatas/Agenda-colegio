@@ -6,6 +6,7 @@ export default function Masthead() {
   const { user, logout } = useAuth();
   const { pathname } = useLocation();
   const enOficial = pathname.startsWith('/oficial');
+  const enUsuarios = pathname.startsWith('/usuarios');
 
   return (
     <header className="masthead">
@@ -24,15 +25,16 @@ export default function Masthead() {
           </div>
         </div>
 
-        <h1>{enOficial ? 'Calendario oficial' : 'Agenda escolar'}</h1>
+        <h1>{enOficial ? 'Calendario oficial' : enUsuarios ? 'Cuentas' : 'Agenda escolar'}</h1>
 
         {/* La gestión del calendario sólo aparece para quien lo administra. El
             candado real está en el server; esto es para no mostrar una pantalla
             que nadie más puede usar. */}
         {user && user.isAdmin && (
           <nav className="nav">
-            <Link to="/" className={enOficial ? '' : 'on'}>Ver la agenda</Link>
+            <Link to="/" className={enOficial || enUsuarios ? '' : 'on'}>Ver la agenda</Link>
             <Link to="/oficial" className={enOficial ? 'on' : ''}>Editar el calendario</Link>
+            <Link to="/usuarios" className={enUsuarios ? 'on' : ''}>Cuentas</Link>
           </nav>
         )}
       </div>

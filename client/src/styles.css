@@ -905,6 +905,66 @@ footer .version { font-variant-numeric: tabular-nums; opacity: .7; }
   .mine .md { grid-column: 1 / -1; }
 }
 
+/* ══════════ Lista de cuentas (sólo admin) ══════════ */
+
+.us-nota { max-width: 62ch; }
+
+.us-list { list-style: none; margin: 0; padding: 0; }
+.us-list li {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: .15rem .9rem;
+  padding: .6rem .6rem;
+  font-size: .9rem;
+  border-bottom: 1px solid var(--line-soft);
+}
+.us-foto {
+  grid-row: span 2;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--line);
+}
+/* Google no siempre manda foto: en vez de un hueco, la inicial del nombre. */
+.us-inicial {
+  display: grid;
+  place-items: center;
+  font-size: .95rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  background: var(--card-2);
+}
+.us-nombre { font-weight: 600; overflow-wrap: anywhere; }
+.us-badge {
+  display: inline-block;
+  margin-left: .45rem;
+  padding: .1rem .45rem;
+  border-radius: 999px;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--per);
+  background: var(--per-bg);
+  vertical-align: .1em;
+}
+.us-mail { grid-column: 2; font-size: .82rem; color: var(--ink-faint); overflow-wrap: anywhere; }
+.us-alta {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  font-size: .78rem;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+/* En celular la fecha de alta no entra en su columna: pasa abajo del mail. */
+@media (max-width: 720px) {
+  .us-list li { grid-template-columns: auto 1fr; }
+  .us-alta { grid-column: 2; grid-row: auto; }
+}
+
 /* ══════════ Confirmación de acciones destructivas ══════════ */
 
 .confirm-backdrop {
