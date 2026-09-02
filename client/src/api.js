@@ -42,6 +42,10 @@ export const api = {
     remove: (token, id) => request(`/eventos/mios/${id}`, { method: 'DELETE', token }),
   },
 
+  // Lista de cuentas, sólo para el admin (el server la cierra con
+  // requireAdmin). No trae nada de los eventos personales de nadie.
+  usuarios: (token) => request('/usuarios', { token }),
+
   oficial: {
     list: (token) => request('/oficial', { token }),
     create: (token, data) => request('/oficial', { method: 'POST', body: data, token }),

@@ -43,11 +43,12 @@ async function optionalAuth(req, res, next) {
 }
 
 // Único rol de la app: sale de ADMIN_EMAILS y se resetea en cada login (ver
-// routes/auth.js). Habilita editar el calendario oficial, nada más — los
-// eventos personales de otras cuentas siguen siendo privados para el admin.
+// routes/auth.js). Habilita editar el calendario oficial y ver la lista de
+// cuentas, nada más — los eventos personales de otras cuentas siguen siendo
+// privados para el admin.
 function requireAdmin(req, res, next) {
   if (!req.user.isAdmin) {
-    return res.status(403).json({ error: 'Solo un administrador puede editar el calendario oficial' });
+    return res.status(403).json({ error: 'Esto es sólo para quien administra el calendario del colegio' });
   }
   next();
 }

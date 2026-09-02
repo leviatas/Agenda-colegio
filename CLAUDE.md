@@ -16,7 +16,10 @@ navegador. Entrar con Google sirve para dos cosas:
   "Eventos personales: navegador o cuenta"). **Nadie más los ve**, ni el
   colegio;
 - **los emails de `ADMIN_EMAILS`** (hoy `leviatas@gmail.com`) además pueden
-  editar el calendario oficial en `/oficial`.
+  editar el calendario oficial en `/oficial` y ver en `/usuarios` la lista de
+  cuentas que entraron con Google (nombre, mail, si es admin y desde cuándo).
+  Esa lista **no** muestra los eventos personales de nadie, ni cuántos tiene
+  cada uno: son privados también para el admin.
 
 No hay aprobación ni alta manual: la primera vez que alguien entra con Google
 queda habilitado. `isAdmin` sale siempre de `ADMIN_EMAILS` y se recalcula en
@@ -190,7 +193,8 @@ Tres middlewares en `server/src/middleware/auth.js`:
 - `requireAdmin` — 403 si `!req.user.isAdmin`. Va en el `router.use` de
   `routes/oficial.js` (a diferencia del `requireWriter` del stack genérico)
   porque **todo** ese router escribe: la lectura del calendario es pública y
-  sale por otra ruta.
+  sale por otra ruta. También cierra entero `routes/usuarios.js`, que es de
+  lectura pero no es de nadie más que del admin.
 
 **Los lookups de eventos personales usan `findFirst({ where: { id, userId } })`,
 nunca `findUnique`**: el id de otra persona tiene que dar 404, no devolver ni

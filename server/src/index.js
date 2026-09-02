@@ -5,6 +5,7 @@ const cors = require('cors');
 const authRoutes = require('./routes/auth');
 const { router: eventosRoutes } = require('./routes/eventos');
 const oficialRoutes = require('./routes/oficial');
+const usuariosRoutes = require('./routes/usuarios');
 
 // Fallar temprano y con un mensaje claro: sin estas dos variables la app
 // arranca igual y recién falla en el primer login, que es mucho peor de
@@ -31,6 +32,7 @@ app.get('/api/health', (req, res) => res.json({ ok: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/eventos', eventosRoutes);
 app.use('/api/oficial', oficialRoutes);
+app.use('/api/usuarios', usuariosRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err);
