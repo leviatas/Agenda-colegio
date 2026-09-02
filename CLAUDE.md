@@ -130,6 +130,14 @@ siempre. Por la misma razón el cliente nunca hace `new Date('2026-09-01')`
 —parsearía como UTC— sino `parse()` de `client/src/lib/agenda.js`, que arma la
 `Date` con los tres números por separado.
 
+`time` y `endTime` son texto libre en el formato de la agenda (`'8.15'`, pero
+también `'8 a 15'`, que es como viene el calendario del colegio). `endTime` es
+**independiente de `endDate`**: un acto puede ser "de 8.15 a 12.30" el mismo
+día. Sólo tiene sentido con `time` cargada —sin hora de inicio la API la
+rechaza— y el orden entre las dos se exige sólo cuando las dos son del formato
+`H.MM` y el evento empieza y termina el mismo día: en un tramo de varios días la
+hora de fin es la del último día y puede ser más temprana.
+
 `Event.groups` y `User.picks` son **JSON guardado como texto**: siempre se leen
 y se escriben enteros, y el catálogo de salas/grados es del cliente, así que la
 base no tiene por qué conocer esos ids. Todo `JSON.parse` de esas columnas va

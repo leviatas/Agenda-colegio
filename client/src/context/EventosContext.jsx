@@ -33,7 +33,8 @@ export function EventosProvider({ children }) {
     for (const ev of pendientes) {
       try {
         await api.mios.create(jwt, {
-          title: ev.title, date: ev.date, endDate: ev.endDate, time: ev.time,
+          title: ev.title, date: ev.date, endDate: ev.endDate,
+          time: ev.time, endTime: ev.endTime,
         });
         // Se saca uno por uno apenas el server lo confirma: si el siguiente
         // falla, los ya subidos no se vuelven a mandar y no quedan duplicados.

@@ -3,9 +3,9 @@ import Dialog from './Dialog';
 import { useAuth } from '../context/AuthContext';
 import { useEventos } from '../context/EventosContext';
 import { useConfirm } from './ConfirmDialog';
-import { DESDE, HASTA, MES_AB, fmtHora, parse, toInputHora } from '../lib/agenda';
+import { DESDE, HASTA, MES_AB, fmtHora, parse, textoHora, toInputHora } from '../lib/agenda';
 
-const VACIO = { id: null, title: '', date: '', endDate: '', time: '' };
+const VACIO = { id: null, title: '', date: '', endDate: '', time: '', endTime: '' };
 
 function Cuerpo({ onClose }) {
   const { user } = useAuth();
@@ -30,6 +30,14 @@ function Cuerpo({ onClose }) {
     if (form.endDate && form.endDate < form.date) {
       return setError('La fecha de fin no puede ser anterior al inicio.');
     }
+    if (form.endTime && !form.time) {
+      return setError('Para poner una hora de fin hace falta la hora de inicio.');
+    }
+    // Sólo cuando empieza y termina el mismo día: en un tramo de varios días la
+    // hora de fin es la del último día y puede ser más temprana que la de inicio.
+    if (form.endTime && !form.endDate && form.endTime <= form.time) {
+      return setError('La hora de fin tiene que ser posterior a la de inicio.');
+    }
 
     const data = {
       title,
@@ -38,6 +46,7 @@ function Cuerpo({ onClose }) {
       // La hora se guarda en el formato de la agenda ('8.15'), no en el del
       // input ('08:15'), para que se muestre igual que los eventos oficiales.
       time: fmtHora(form.time),
+      endTime: fmtHora(form.endTime),
     };
 
     setGuardando(true);
@@ -75,6 +84,7 @@ function Cuerpo({ onClose }) {
       date: ev.date,
       endDate: ev.endDate || '',
       time: toInputHora(ev.time),
+      endTime: toInputHora(ev.endTime),
     });
   }
 
@@ -92,20 +102,30 @@ function Cuerpo({ onClose }) {
           <input id="ev-t" type="text" maxLength={90} autoComplete="off" value={form.title} onChange={set('title')} />
         </div>
 
+        {/* Dos filas simétricas: arriba cuándo empieza, abajo cuándo termina.
+            Las dos partes del final son independientes — un evento puede tener
+            hora de fin sin durar varios días ("de 17 a 19"), o durar varios
+            días sin hora ninguna. */}
         <div className="field-row">
           <div className="field">
             <label htmlFor="ev-d">Fecha</label>
             <input id="ev-d" type="date" min={DESDE} max={HASTA} value={form.date} onChange={set('date')} />
           </div>
           <div className="field">
-            <label htmlFor="ev-h">Hora</label>
+            <label htmlFor="ev-h">Hora <span className="hint">(opcional)</span></label>
             <input id="ev-h" type="time" value={form.time} onChange={set('time')} />
           </div>
         </div>
 
-        <div className="field">
-          <label htmlFor="ev-e">Hasta <span className="hint">(opcional, si dura varios días)</span></label>
-          <input id="ev-e" type="date" min={form.date || DESDE} max={HASTA} value={form.endDate} onChange={set('endDate')} />
+        <div className="field-row">
+          <div className="field">
+            <label htmlFor="ev-e">Hasta <span className="hint">(opcional, si dura varios días)</span></label>
+            <input id="ev-e" type="date" min={form.date || DESDE} max={HASTA} value={form.endDate} onChange={set('endDate')} />
+          </div>
+          <div className="field">
+            <label htmlFor="ev-hh">Hora hasta <span className="hint">(opcional)</span></label>
+            <input id="ev-hh" type="time" value={form.endTime} onChange={set('endTime')} />
+          </div>
         </div>
 
         {error && <p className="err">{error}</p>}
@@ -119,7 +139,7 @@ function Cuerpo({ onClose }) {
                 return (
                   <li key={ev.id}>
                     <span className="md">
-                      {dt.getDate()} {MES_AB[dt.getMonth()]}{ev.time ? ` · ${ev.time}` : ''}
+                      {dt.getDate()} {MES_AB[dt.getMonth()]}{ev.time ? ` · ${textoHora(ev)}` : ''}
                     </span>
                     <span className="mt">{ev.title}</span>
                     <button type="button" className="edit" aria-label={`Editar ${ev.title}`} onClick={() => editar(ev)}>

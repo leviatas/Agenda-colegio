@@ -1,4 +1,4 @@
-import { DIAS, MES_AB, isoDow, parse } from '../lib/agenda';
+import { DIAS, MES_AB, isoDow, parse, textoHora } from '../lib/agenda';
 
 // Las próximas ocho fechas que quedan por delante con los filtros activos.
 export default function Upcoming({ eventos, visible, today }) {
@@ -56,7 +56,7 @@ export default function Upcoming({ eventos, visible, today }) {
             <span className="cd">{DIAS[isoDow(s)]} · {cd}</span>
             {esFeriado && <span className="marca">Feriado</span>}
             <span className="tt">
-              {ev.time && <><b>{ev.time}hs</b>{' · '}</>}
+              {ev.time && <><b>{textoHora(ev)}hs</b>{' · '}</>}
               {ev.title}
             </span>
           </div>

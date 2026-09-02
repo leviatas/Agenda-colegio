@@ -12,6 +12,7 @@ function serializeOficial(e) {
     endDate: e.endDate,
     level: e.level,
     time: e.time,
+    endTime: e.endTime,
     title: e.title,
     groups: parseGroups(e.groups),
   };
@@ -36,6 +37,7 @@ function serializePersonal(e) {
     endDate: e.endDate,
     level: 'per',
     time: e.time,
+    endTime: e.endTime,
     title: e.title,
     groups: [],
   };

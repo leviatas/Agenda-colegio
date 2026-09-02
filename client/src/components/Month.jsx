@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { MESES, MES_AB, DIAS_AB, addDays, isoDow, key, parse } from '../lib/agenda';
+import { MESES, MES_AB, DIAS_AB, addDays, isoDow, key, parse, textoHora } from '../lib/agenda';
 
 // Un mes: la grilla de celdas a la izquierda y la agenda de días con eventos a
 // la derecha. `esPrimero` hace que el mes de arranque absorba los días de la
@@ -133,7 +133,7 @@ function Evento({ occ }) {
   return (
     <div className={`ev ${ev.level}${occ.span ? ' span' : ''}`}>
       <span className="dot" />
-      <span className="h">{ev.time ? `${ev.time}hs` : ''}</span>
+      <span className="h">{ev.time ? `${textoHora(ev)}hs` : ''}</span>
       <span className="t" data-range={range || undefined}>{ev.title}</span>
     </div>
   );

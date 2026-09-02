@@ -18,6 +18,17 @@ function esFecha(v) {
   return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === v;
 }
 
+// Una hora del formato de la agenda ('8.15') en minutos desde medianoche, o
+// null si no tiene esa forma. Sólo sirve para comparar dos horas entre sí.
+function minutos(v) {
+  const m = /^(\d{1,2})\.(\d{2})$/.exec(v);
+  if (!m) return null;
+  const h = Number(m[1]);
+  const mm = Number(m[2]);
+  if (h > 23 || mm > 59) return null;
+  return h * 60 + mm;
+}
+
 // Devuelve { ok: true, value } o { ok: false, error } — nunca tira.
 function parseEvento(body) {
   const title = typeof body.title === 'string' ? body.title.trim() : '';
@@ -49,7 +60,28 @@ function parseEvento(body) {
   if (time.length > 20) return { ok: false, error: 'La hora es demasiado larga.' };
   time = time || null;
 
-  return { ok: true, value: { title, date, endDate, time } };
+  // La hora de fin es independiente de endDate: un acto puede ser "de 8.15 a
+  // 12.30" el mismo día. Ausente, vacía o null son lo mismo, así que un cliente
+  // viejo que no manda el campo guarda null y el evento se ve como siempre.
+  let endTime = typeof body.endTime === 'string' ? body.endTime.trim() : '';
+  if (endTime.length > 20) return { ok: false, error: 'La hora de fin es demasiado larga.' };
+  endTime = endTime || null;
+  if (endTime && !time) {
+    return { ok: false, error: 'Para poner una hora de fin hace falta la hora de inicio.' };
+  }
+  // El orden sólo se puede exigir cuando las dos horas son del formato H.MM
+  // (el calendario oficial tiene textos como "8 a 15", que no se comparan) y
+  // cuando empiezan y terminan el mismo día: en un tramo de varios días la hora
+  // de fin es la del último día y puede ser más temprana que la de inicio.
+  if (endTime && !endDate) {
+    const a = minutos(time);
+    const b = minutos(endTime);
+    if (a !== null && b !== null && b <= a) {
+      return { ok: false, error: 'La hora de fin tiene que ser posterior a la de inicio.' };
+    }
+  }
+
+  return { ok: true, value: { title, date, endDate, time, endTime } };
 }
 
 module.exports = { parseEvento, esFecha, DESDE, HASTA };

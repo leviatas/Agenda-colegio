@@ -456,7 +456,14 @@ dialog::backdrop { background: rgba(12,18,15,.55); }
   width: 100%;
 }
 .field input:focus-visible { outline: 2px solid var(--per); outline-offset: 1px; border-color: var(--per); }
-.field-row { display: grid; grid-template-columns: 1fr 8rem; gap: .8rem; }
+/* `align-items: end` y no el stretch por defecto: los campos de una fila tienen
+   etiquetas de largo distinto ("Hasta (opcional, si dura varios días)" contra
+   "Hora hasta"), y en una columna angosta una envuelve a dos líneas y la otra
+   no. Estirados, cada campo apoya su etiqueta arriba y el input queda más abajo
+   en la columna que envolvió: las cajas de la misma fila no se alinean. Con los
+   campos pegados abajo, los inputs quedan siempre a la misma altura y lo que se
+   corre es la etiqueta, que es lo que no se nota. */
+.field-row { display: grid; grid-template-columns: 1fr 8rem; gap: .8rem; align-items: end; }
 @media (max-width: 460px) { .field-row { grid-template-columns: 1fr; } }
 
 .field input.bad { border-color: var(--ini); }
@@ -751,7 +758,11 @@ button.cell:focus-visible { outline: 2px solid var(--ins); outline-offset: -2px;
   white-space: nowrap;
 }
 .ev .h:empty { display: none; }
-.ev .t { color: var(--ink); }
+/* La hora no se parte nunca ("8.15 a 12.30" en dos líneas no se lee), así que
+   la columna del título es la que tiene que ceder: sin esto un título de una
+   palabra larga, con el rango al lado, estira la fila y saca de cuadro a la
+   página entera en celular. */
+.ev .t { color: var(--ink); overflow-wrap: anywhere; }
 .ev.span .t::after {
   content: attr(data-range);
   display: inline-block;

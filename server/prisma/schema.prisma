@@ -52,8 +52,12 @@ model Event {
 
   // Hora en el formato que muestra la agenda ('8.15', '13.30', '8 a 15'), como
   // texto libre: hay eventos con rango y otros sin hora.
-  time  String?
-  title String
+  time String?
+  // Hora de fin, opcional e independiente de endDate: un acto puede ser "de
+  // 8.15 a 12.30" el mismo día. Sólo tiene sentido con `time` cargada; se
+  // valida en la aplicación (parseEvento). Nula en todo lo que ya estaba.
+  endTime String?
+  title   String
 
   // A qué salas / grados / años aplica, como JSON de tags del catálogo
   // (['g2'], ['s3'], ['celeste'], ['maternal']). Vacío = a todo el nivel.
@@ -75,6 +79,7 @@ model PersonalEvent {
   date    String
   endDate String?
   time    String?
+  endTime String?
   title   String
 
   createdAt DateTime @default(now())

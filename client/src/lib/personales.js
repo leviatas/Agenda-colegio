@@ -57,6 +57,10 @@ function normalizar(e) {
     endDate: e.endDate && e.endDate !== e.date ? e.endDate : null,
     level: 'per',
     time: e.time || null,
+    // Sin hora de inicio no hay hora de fin que mostrar: la misma regla que
+    // aplica el server, para que un evento local se vea igual antes y después
+    // de migrar a la cuenta.
+    endTime: (e.time && e.endTime) || null,
     title: e.title,
     groups: [],
   };

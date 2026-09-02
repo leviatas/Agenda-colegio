@@ -5,10 +5,10 @@ import { useConfirm } from '../components/ConfirmDialog';
 import { api } from '../api';
 import {
   ANIOS, CAT, DESDE, GRADOS, GRUPOS, HASTA, MESES, MES_AB, NIVELES, SALAS,
-  fmtHora, parse,
+  fmtHora, parse, textoHora,
 } from '../lib/agenda';
 
-const VACIO = { id: null, title: '', date: '', endDate: '', time: '', level: 'ins', groups: [] };
+const VACIO = { id: null, title: '', date: '', endDate: '', time: '', endTime: '', level: 'ins', groups: [] };
 
 // Qué tags tiene sentido marcar según el nivel. Un feriado o un evento
 // institucional son de todo el colegio: no llevan tags, y por eso no se
@@ -106,6 +106,7 @@ export default function Oficial() {
       date: form.date,
       endDate: form.endDate || null,
       time: fmtHora(form.time),
+      endTime: fmtHora(form.endTime),
       level: form.level,
       groups: form.groups,
     };
@@ -151,6 +152,7 @@ export default function Oficial() {
       // así que mostrarla en formato de <input type="time"> ("08:10") sólo
       // confundiría. fmtHora la deja igual al guardar.
       time: ev.time || '',
+      endTime: ev.endTime || '',
       level: ev.level,
       groups: ev.groups,
     });
@@ -195,6 +197,12 @@ export default function Oficial() {
                 tiene horarios como "8 a 15" que el input nativo no acepta. */}
             <label htmlFor="of-h">Hora <span className="hint">(8.15, 8 a 15…)</span></label>
             <input id="of-h" type="text" maxLength={20} value={form.time} onChange={set('time')} />
+          </div>
+          <div className="field">
+            {/* Independiente de "Hasta": un acto puede ser de 8.15 a 12.30 el
+                mismo día. Sin hora de inicio el server la rechaza. */}
+            <label htmlFor="of-hh">Hora hasta <span className="hint">(opcional)</span></label>
+            <input id="of-hh" type="text" maxLength={20} value={form.endTime} onChange={set('endTime')} />
           </div>
         </div>
 
@@ -267,7 +275,7 @@ export default function Oficial() {
                   <span className="of-fecha">
                     {s.getDate()} {MES_AB[s.getMonth()]}
                     {en && ` al ${en.getDate()} ${MES_AB[en.getMonth()]}`}
-                    {ev.time && <em>{ev.time}hs</em>}
+                    {ev.time && <em>{textoHora(ev)}hs</em>}
                   </span>
                   <span className="of-titulo">
                     {ev.title}

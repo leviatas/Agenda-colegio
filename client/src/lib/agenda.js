@@ -134,6 +134,16 @@ export function toInputHora(v) {
   return `${m[1].padStart(2, '0')}:${m[2]}`;
 }
 
+// Cómo se muestra la hora de un evento: la hora sola ("8.15") o el rango
+// ("8.15 a 12.30") cuando además tiene hora de fin. La hora de fin es
+// independiente de endDate: un acto puede empezar y terminar el mismo día.
+// Devuelve '' si el evento no tiene hora — las pantallas cuentan con eso para
+// no dibujar un "hs" pelado.
+export function textoHora(ev) {
+  if (!ev.time) return '';
+  return ev.endTime ? `${ev.time} a ${ev.endTime}` : ev.time;
+}
+
 // ── índice por día ────────────────────────────────────────────────────────
 // Un evento de varios días se expande a una ocurrencia por fecha, para que cada
 // celda del calendario sepa qué mostrar sin recorrer la lista entera.
