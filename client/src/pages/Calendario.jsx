@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import Legend from '../components/Legend';
 import Month from '../components/Month';
 import Upcoming from '../components/Upcoming';
@@ -12,6 +13,13 @@ import { CAT, DIAS, MESES, MONTHS, hoy, isoDow, key, matcher, ordenarPicks } fro
 export default function Calendario() {
   const { picks, setPicks } = useAuth();
   const { todos, byDay, loading, error } = useEventos();
+
+  // "Eventos Personales" (Masthead.jsx) es la misma pantalla, no una lista
+  // aparte: sólo cambia el filtro de qué se ve y qué barra de arriba se
+  // muestra. /personales existe como ruta (en vez de un simple toggle local)
+  // para que el link y el botón de "atrás" del navegador funcionen.
+  const { pathname } = useLocation();
+  const soloPersonales = pathname.startsWith('/personales');
 
   const [picker, setPicker] = useState(false);
   // "Agregar evento +" abre AdderDialog, que sólo carga eventos nuevos.
@@ -28,7 +36,13 @@ export default function Calendario() {
   const today = useMemo(hoy, []);
   const todayKey = useMemo(() => key(today), [today]);
 
-  const visible = useMemo(() => matcher(picks), [picks]);
+  // En "Eventos Personales" el picker de sala/grado no aplica: se ven todos
+  // los propios (y los compartidos con vos), sin importar los picks guardados
+  // para la vista general.
+  const visible = useMemo(
+    () => (soloPersonales ? (ev) => ev.level === 'per' : matcher(picks)),
+    [soloPersonales, picks],
+  );
 
   // Click en una celda del calendario: lleva a la fila del día en la agenda y
   // la resalta un momento. El flash se limpia solo para que volver a tocar el
@@ -59,29 +73,36 @@ export default function Calendario() {
           página; acá abajo sigue el calendario, así que lleva el suyo. */}
       <div className="wrap wrap-bar">
         <div className="picker-bar">
-          <div className="picker-sum">
-            <span className="lbl">Viendo</span>
-            {picks.length === 0 ? (
-              <span className="none">todo</span>
-            ) : (
-              picks.map((id) => {
-                const o = CAT[id];
-                if (!o) return null;
-                return (
-                  <span key={id} className="tag">
-                    {o.c && <span className="sw" style={{ background: o.c }} />}
-                    {o.c ? `Sala ${o.n}` : o.n}
-                  </span>
-                );
-              })
-            )}
-          </div>
-          <button className="btn" type="button" onClick={() => setPicker(true)}>
-            {picks.length ? 'Cambiar' : 'Elegir sala y grado'}
-          </button>
-          <button className="btn ghost" type="button" onClick={() => setAdder(true)}>
-            Agregar evento +
-          </button>
+          {soloPersonales ? (
+            // Acá no hay picks que resumir (no aplica el filtro de sala/grado):
+            // la única acción de esta barra es cargar un evento nuevo.
+            <button className="btn ghost" type="button" onClick={() => setAdder(true)}>
+              Agregar evento +
+            </button>
+          ) : (
+            <>
+              <div className="picker-sum">
+                <span className="lbl">Viendo</span>
+                {picks.length === 0 ? (
+                  <span className="none">todo</span>
+                ) : (
+                  picks.map((id) => {
+                    const o = CAT[id];
+                    if (!o) return null;
+                    return (
+                      <span key={id} className="tag">
+                        {o.c && <span className="sw" style={{ background: o.c }} />}
+                        {o.c ? `Sala ${o.n}` : o.n}
+                      </span>
+                    );
+                  })
+                )}
+              </div>
+              <button className="btn" type="button" onClick={() => setPicker(true)}>
+                {picks.length ? 'Cambiar' : 'Elegir sala y grado'}
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -91,7 +112,9 @@ export default function Calendario() {
 
         {!loading && (
           <>
-            <Legend eventos={todos} visible={visible} />
+            {/* Un solo nivel en esta vista: la referencia de todos los niveles
+                no suma nada acá. */}
+            {!soloPersonales && <Legend eventos={todos} visible={visible} />}
 
             <section className="upcoming">
               <div className="sec-head">
