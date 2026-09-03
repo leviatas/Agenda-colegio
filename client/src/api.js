@@ -40,6 +40,28 @@ export const api = {
     create: (token, data) => request('/eventos/mios', { method: 'POST', body: data, token }),
     update: (token, id, data) => request(`/eventos/mios/${id}`, { method: 'PUT', body: data, token }),
     remove: (token, id) => request(`/eventos/mios/${id}`, { method: 'DELETE', token }),
+    // Genera el link de UN evento. La vista previa (compartir.previa) es
+    // pública a propósito, así que no vive acá adentro: no hace falta cuenta
+    // para mirar de qué evento se trata, sólo para aceptarlo.
+    compartir: (token, id) => request(`/eventos/mios/${id}/compartir`, { method: 'POST', token }),
+  },
+
+  // Los dos mecanismos de compartir eventos personales: el link de uno solo
+  // (`evento`, arriba en mios.compartir para generarlo) y la suscripción en
+  // vivo a todos los de otra cuenta, por código.
+  compartir: {
+    previa: (evToken) => request(`/eventos/compartir/evento/${evToken}`),
+    aceptar: (token, evToken) => request(`/eventos/compartir/evento/${evToken}/aceptar`, { method: 'POST', token }),
+    codigo: {
+      get: (token) => request('/eventos/compartir/codigo', { token }),
+      generar: (token) => request('/eventos/compartir/codigo', { method: 'POST', token }),
+      apagar: (token) => request('/eventos/compartir/codigo', { method: 'DELETE', token }),
+    },
+    canjear: (token, codigo) => request('/eventos/compartir/canjear', { method: 'POST', body: { codigo }, token }),
+    suscriptores: (token) => request('/eventos/compartir/suscriptores', { token }),
+    quitarSuscriptor: (token, userId) => request(`/eventos/compartir/suscriptores/${userId}`, { method: 'DELETE', token }),
+    suscripciones: (token) => request('/eventos/compartir/suscripciones', { token }),
+    dejarDeVer: (token, ownerId) => request(`/eventos/compartir/suscripciones/${ownerId}`, { method: 'DELETE', token }),
   },
 
   // Ping de telemetría: una visita por carga de la app. El token es opcional

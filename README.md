@@ -6,7 +6,9 @@ Calendario escolar del Colegio San Gabriel, ciclo lectivo 2026.
   directo. Se filtra por sala, grado o año, y la selección queda guardada.
 - **Cada familia suma sus propias fechas, con cuenta o sin cuenta.** Sin entrar
   quedan guardadas en ese navegador; al entrar con Google pasan a la cuenta y
-  aparecen igual en el celular y en la computadora. **Nadie más las ve.**
+  aparecen igual en el celular y en la computadora. **Nadie más las ve**, salvo
+  que la propia cuenta decida compartir un evento por link o todos por código
+  (ver "Compartir eventos personales" en [`CLAUDE.md`](CLAUDE.md)).
 - **Los emails de `ADMIN_EMAILS`** editan el calendario oficial desde
   `/oficial`. Nadie más.
 

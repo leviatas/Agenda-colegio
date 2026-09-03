@@ -763,6 +763,10 @@ button.cell:focus-visible { outline: 2px solid var(--ins); outline-offset: -2px;
    palabra larga, con el rango al lado, estira la fila y saca de cuadro a la
    página entera en celular. */
 .ev .t { color: var(--ink); overflow-wrap: anywhere; }
+/* Sólo lo llevan los eventos que llegan de una suscripción (ver `de` en
+   serializeCompartido, server/src/routes/eventos.js): quién los cargó, en voz
+   más baja que el título para no competir con él. */
+.de { color: var(--ink-faint); font-weight: 400; }
 .ev.span .t::after {
   content: attr(data-range);
   display: inline-block;
@@ -918,7 +922,12 @@ footer .version { font-variant-numeric: tabular-nums; opacity: .7; }
 
 /* ══════════ Eventos propios: se sumó "Editar" a la fila ══════════ */
 
-.mine ul { grid-template-columns: auto 1fr auto auto; }
+/* auto 1fr auto auto auto: fecha · título · Editar · Compartir · ×. Un evento
+   local (sin cuenta todavía) no tiene botón de Compartir, pero deja un <span>
+   vacío en su lugar — con `.mine li { display: contents }` las columnas son
+   del <ul> entero, así que toda fila tiene que aportar la misma cantidad de
+   celdas o se desalinean las de abajo. */
+.mine ul { grid-template-columns: auto 1fr auto auto auto; }
 .mine .edit {
   font: inherit;
   font-size: .74rem;
@@ -933,10 +942,10 @@ footer .version { font-variant-numeric: tabular-nums; opacity: .7; }
 .mine .edit:hover { border-color: var(--per); color: var(--per); }
 .mine .edit:focus-visible { outline: 2px solid var(--per); outline-offset: 1px; }
 
-/* En celular las cuatro columnas (fecha · título · Editar · ×) le dejan al
+/* En celular las columnas (fecha · título · Editar · Compartir · ×) le dejan al
    título lo que sobra, y en una pantalla angosta eso son unos pocos caracteres:
    el texto se parte letra por letra. Cada evento pasa a ser su propio bloque,
-   con la fecha arriba y el título ocupando el ancho menos los dos botones. */
+   con la fecha arriba y el título ocupando el ancho menos los botones. */
 @media (max-width: 720px) {
   /* align-items: stretch pisa el `center` de la regla base: en un flex
      column el eje cruzado es el horizontal y cada fila quedaba centrada
@@ -944,12 +953,63 @@ footer .version { font-variant-numeric: tabular-nums; opacity: .7; }
   .mine ul { display: flex; flex-direction: column; align-items: stretch; gap: .75rem; }
   .mine li {
     display: grid;
-    grid-template-columns: 1fr auto auto;
+    grid-template-columns: 1fr auto auto auto;
     gap: .15rem .5rem;
     align-items: center;
   }
   .mine .md { grid-column: 1 / -1; }
 }
+
+/* ══════════ Compartir ══════════ */
+
+/* Mismo separador que .mine para que las secciones del modal de "mis eventos"
+   sigan leyéndose como una sola columna de bloques (ver CLAUDE.md). */
+.mine.compartir h3 {
+  font-size: .95rem;
+  margin: 1.1rem 0 .3rem;
+}
+.mine.compartir h3:first-child { margin-top: 0; }
+
+.codigo-activo {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  margin-top: .6rem;
+}
+.codigo-activo code {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  padding: .4rem .7rem;
+  border-radius: 8px;
+  background: var(--per-bg);
+  color: var(--per);
+}
+
+.compartir-lista {
+  list-style: none;
+  margin: .7rem 0 0;
+  padding: 0;
+  font-size: .85rem;
+}
+.compartir-lista li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .6rem;
+  padding: .3rem 0;
+}
+.compartir-lista-titulo {
+  font-weight: 600;
+  color: var(--ink-soft);
+  justify-content: flex-start !important;
+}
+
+/* Fila de "input + botón" del link recién generado y del código a canjear:
+   comparten forma porque las dos son "pegá/escribí algo y confirmá". */
+.share-link { margin-top: 1.1rem; }
+.share-link-row { display: flex; gap: .6rem; margin-top: .5rem; }
+.share-link-row input { flex: 1; min-width: 0; }
 
 /* ══════════ Lista de cuentas (sólo admin) ══════════ */
 
@@ -1190,3 +1250,26 @@ footer .version { font-variant-numeric: tabular-nums; opacity: .7; }
   /* El indicador de home de iOS se come el borde de abajo y tapa los botones. */
   .modal-foot { padding-bottom: max(1.15rem, env(safe-area-inset-bottom)); }
 }
+
+/* ══════════ Página del link de un evento compartido ══════════ */
+
+.compartir-evento { display: flex; justify-content: center; padding-top: 1rem; }
+.compartir-card {
+  width: min(28rem, 100%);
+  background: var(--card-2);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--per);
+  border-radius: 10px;
+  padding: 1.3rem 1.4rem 1.5rem;
+  box-shadow: var(--shadow);
+}
+.compartir-card h2 {
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-weight: 500;
+  font-size: 1.35rem;
+  margin: .2rem 0;
+  overflow-wrap: anywhere;
+}
+.compartir-card .cuando { font-size: .9rem; color: var(--ink-soft); margin: 0 0 1.1rem; }
+.compartir-card .lede.muted { max-width: none; }
+.compartir-card .mbtn { margin-top: .3rem; }

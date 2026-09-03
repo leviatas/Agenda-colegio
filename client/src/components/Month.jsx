@@ -134,7 +134,13 @@ function Evento({ occ }) {
     <div className={`ev ${ev.level}${occ.span ? ' span' : ''}`}>
       <span className="dot" />
       <span className="h">{ev.time ? `${textoHora(ev)}hs` : ''}</span>
-      <span className="t" data-range={range || undefined}>{ev.title}</span>
+      <span className="t" data-range={range || undefined}>
+        {ev.title}
+        {/* Sólo los eventos que llegan por una suscripción traen `de`: son los
+            únicos que se mezclan con el nivel 'per' de otra cuenta, así que
+            hace falta decir de quién son. Los propios no llevan nada acá. */}
+        {ev.de && <span className="de"> · {ev.de}</span>}
+      </span>
     </div>
   );
 }

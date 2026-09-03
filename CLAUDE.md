@@ -14,7 +14,8 @@ navegador. Entrar con Google sirve para dos cosas:
   el celular y en la computadora y no se pierden si se limpia el navegador. Los
   que ya estaban en el navegador se suben solos en el primer ingreso (ver
   "Eventos personales: navegador o cuenta"). **Nadie más los ve**, ni el
-  colegio;
+  colegio, salvo que la propia cuenta decida compartirlos (ver "Compartir
+  eventos personales") — eso es opt-in y explícito, no cambia el default;
 - **los emails de `ADMIN_EMAILS`** (hoy `leviatas@gmail.com`) además pueden
   editar el calendario oficial en `/oficial` y ver en `/usuarios` la lista de
   cuentas que entraron con Google (nombre, mail, si es admin y desde cuándo).
@@ -119,8 +120,10 @@ Cloudflare Tunnel; sólo arranca con `docker compose --profile cloudflare up` o
 
 ### Modelo de datos (`server/prisma/schema.prisma`)
 
-Tres modelos: `User`, `Event` (el calendario oficial) y `PersonalEvent` (los
-eventos de cada familia).
+Cuatro modelos: `User`, `Event` (el calendario oficial), `PersonalEvent` (los
+eventos de cada familia) y `EventSubscription` (quién suscribió el código de
+quién, ver "Compartir eventos personales" — el link de un solo evento no
+tiene modelo propio, es un JWT que apunta a un `PersonalEvent` existente).
 
 **Las fechas son `String 'YYYY-MM-DD'`, no `DateTime`.** Son fechas de
 calendario sin hora, y un `DateTime` en SQLite se guarda en UTC: un
@@ -300,6 +303,56 @@ como local, visible y editable, en vez de desaparecer sin aviso.
 
 Al cerrar sesión los eventos de la cuenta dejan de verse —quedan en la base, no
 se copian al navegador— y los locales que hubiera siguen ahí.
+
+### Compartir eventos personales
+
+Dos mecanismos independientes, los dos exigen cuenta en las dos puntas —sin
+eso no hay dónde guardar ni el código ni la copia que acepta la otra
+persona—, y los dos son opt-in: nada de esto cambia lo que dice más arriba
+("Nadie más los ve, ni el colegio") salvo que la propia cuenta decida
+generar un link o un código.
+
+**Link de UN evento** (`server/src/routes/eventos.js`, `POST /mios/:id/compartir`
+y el par `GET/POST /compartir/evento/:token`): el token es un JWT firmado que
+sólo guarda el id del `PersonalEvent` (`server/src/lib/compartir.js`), **sin
+tabla propia** — no hace falta persistir nada porque el evento ya está
+guardado, el token sólo prueba que quien lo tiene puede verlo. Sin
+`expiresIn`: compartir un cumpleaños no debería vencer. Se invalida solo si
+el evento se borra, porque la vista previa y la aceptación vuelven a buscarlo
+en la base en cada uso en vez de confiar en algo que viajó en el token.
+
+La vista previa (`GET /compartir/evento/:token`) es **pública a propósito**,
+igual que el calendario oficial: hace falta poder ver de qué evento se trata
+antes de que se pida entrar con Google, no para mirar. Aceptar
+(`POST .../aceptar`) sí pide cuenta, y crea una **copia independiente** en
+la cuenta de quien acepta — no queda vinculada al original, así que editar o
+borrar uno no le toca nada al otro. El mismo link se puede aceptar más de
+una vez y por gente distinta: no hay nada que marcar como "usado".
+
+**Código de "compartir todos mis eventos"** (`User.shareCode`, modelo
+`EventSubscription` en `schema.prisma`): es una **suscripción en vivo** y de
+**un solo sentido** — mientras exista la fila, quien canjeó el código ve los
+eventos personales del dueño mezclados en su propio calendario (nivel
+`per`, de sólo lectura, con `de` diciendo de quién son porque acá sí hace
+falta distinguirlos), incluidos los que el dueño cargue **después** de
+compartir, sin que haga falta volver a compartir nada. Nunca al revés:
+compartir tus eventos no hace que veas los de quien canjeó tu código.
+
+El código y el acceso son cosas separadas a propósito: **apagar el código
+(`DELETE /compartir/codigo`) sólo cierra la puerta a canjes nuevos**, no le
+toca nada a quien ya lo usó — para eso está sacarlo puntualmente de la lista
+de suscriptores (`DELETE /compartir/suscriptores/:userId`, del lado del
+dueño) o que se autodesuscriba (`DELETE /compartir/suscripciones/:ownerId`,
+del lado de quien mira). Si no fuera así, regenerar el código para compartírselo
+a alguien nuevo le cortaría el acceso a todos los que ya lo tenían, que no es
+lo que nadie espera de "generar un código nuevo".
+
+En el cliente todo esto vive en `AdderDialog.jsx` (el modal de "mis
+eventos"): el botón "Compartir" por evento, y la sección "Compartir todos
+tus eventos" que junta código propio, lista de quién te suscribió y a quién
+suscribiste vos. La página del link (`/compartir/evento/:token`,
+`CompartirEvento.jsx`) es una ruta aparte porque la abre alguien que
+capaz nunca usó la agenda.
 
 ### Resolución de la URL del server
 
