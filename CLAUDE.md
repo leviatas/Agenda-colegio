@@ -355,9 +355,9 @@ trabajo, no uno solo que hace de todo:
 - **`EditEventDialog.jsx`** — editar, borrar o compartir UN evento
   puntual. No hay ninguna lista de "mis eventos" en ningún lado: se abre
   clickeando el evento directo en el calendario o en "Próximas fechas", con
-  el ícono de compartir al lado del título y "Borrar" en rojo (mismo tono
-  que la confirmación de borrado) en el pie. Guardar o borrar cierra el
-  modal, igual que `AdderDialog`. Lo que decide si un evento es
+  el ícono de compartir al lado del título y el tacho de basura en rojo
+  (mismo tono que la confirmación de borrado) en el pie. Guardar o borrar
+  cierra el modal, igual que `AdderDialog`. Lo que decide si un evento es
   clickeable es `level === 'per' && !de`
   (`Month.jsx`, `Upcoming.jsx`) — un compartido también es `'per'` pero
   trae `de`, así que queda como un `<div>` sin más, de sólo lectura como

@@ -6,6 +6,7 @@ import { useConfirm } from './ConfirmDialog';
 import { api } from '../api';
 import { esLocal } from '../lib/personales';
 import IconoCompartir from './IconoCompartir';
+import IconoBorrar from './IconoBorrar';
 import { DESDE, HASTA, fmtHora, toInputHora } from '../lib/agenda';
 
 // Editar, borrar o compartir UN evento propio, abierto clickeándolo directo
@@ -185,7 +186,9 @@ function Cuerpo({ evento, onClose }) {
       </div>
 
       <div className="modal-foot">
-        <button className="mbtn btn-danger" type="button" onClick={borrar}>Borrar</button>
+        <button className="mbtn btn-danger icon-only" type="button" onClick={borrar} title="Borrar" aria-label={`Borrar ${form.title}`}>
+          <IconoBorrar />
+        </button>
         <div className="modal-foot-right">
           <button className="mbtn" type="button" onClick={onClose}>Cancelar</button>
           <button className="mbtn primary" type="button" onClick={guardar} disabled={guardando}>
