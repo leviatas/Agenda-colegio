@@ -347,30 +347,42 @@ del lado de quien mira). Si no fuera así, regenerar el código para compartírs
 a alguien nuevo le cortaría el acceso a todos los que ya lo tenían, que no es
 lo que nadie espera de "generar un código nuevo".
 
-En el cliente todo esto vive en `AdderDialog.jsx` (el modal de "mis
-eventos"): el ícono de compartir por evento —el típico de flecha saliendo de
-una bandeja, no un botón de texto—, y la sección "Compartir todos tus
-eventos" que junta código propio, lista de quién te suscribió y a quién
-suscribiste vos. Tocarlo abre el panel nativo del sistema
-(`navigator.share`) cuando el navegador lo tiene —así la persona elige
-WhatsApp, Mail, lo que tenga— y si no existe (la mayoría de los navegadores
-de escritorio) cae al link copiado solo en un input, que sigue ahí para
-pegarlo a mano. Cancelar el panel nativo tira `AbortError`, que no se trata
-como error. La página del link (`/compartir/evento/:token`,
-`CompartirEvento.jsx`) es una ruta aparte porque la abre alguien que
-capaz nunca usó la agenda.
+En el cliente esto vive repartido en tres modales, cada uno con un solo
+trabajo, no uno solo que hace de todo:
 
-Un evento propio (no un oficial, no uno que llegó por suscripción) también
-se puede editar o compartir clickeándolo directo en el calendario o en
-"Próximas fechas", sin pasar por la lista de `AdderDialog`: abre el mismo
-modal, ya en modo edición sobre ese evento, con el ícono de compartir al
-lado del título. Lo que decide si un evento es clickeable es `level ===
-'per' && !de` (`Month.jsx`, `Upcoming.jsx`) — un compartido también es
-`'per'` pero trae `de`, así que queda como un `<div>` sin más, de sólo
-lectura como corresponde. Ese renglón clickeable es un `<button>` real, no
-un `<div onClick>`: todo lo interactivo de la app ya lo es (las celdas del
-calendario, por ejemplo), para que funcione con teclado y lector de
-pantalla sin nada extra.
+- **`AdderDialog.jsx`** — sólo carga un evento nuevo. Guardar limpia el
+  formulario y lo deja abierto (para cargar varios seguidos); no sabe nada
+  de editar, borrar ni compartir.
+- **`EditEventDialog.jsx`** — editar, borrar o compartir UN evento
+  puntual. No hay ninguna lista de "mis eventos" en ningún lado: se abre
+  clickeando el evento directo en el calendario o en "Próximas fechas", con
+  el ícono de compartir al lado del título y "Borrar" en el pie. Guardar
+  (o borrar) cierra el modal, a diferencia de `AdderDialog`, porque acá no
+  tiene sentido dejarlo abierto para "el próximo": es de un evento solo.
+  Lo que decide si un evento es clickeable es `level === 'per' && !de`
+  (`Month.jsx`, `Upcoming.jsx`) — un compartido también es `'per'` pero
+  trae `de`, así que queda como un `<div>` sin más, de sólo lectura como
+  corresponde. Ese renglón clickeable es un `<button>` real, no un `<div
+  onClick>`: todo lo interactivo de la app ya lo es (las celdas del
+  calendario, por ejemplo), para que funcione con teclado y lector de
+  pantalla sin nada extra.
+- **`CompartirTodoDialog.jsx`** — código propio, lista de quién te
+  suscribió y a quién suscribiste vos. Se abre desde el ícono de compartir
+  al lado de la cuenta en `Masthead.jsx` (junto al avatar, no en el
+  calendario): compartir TODOS tus eventos no es una acción sobre un
+  evento puntual, así que no vive ahí.
+
+El ícono de compartir —una flecha saliendo de una bandeja, no un botón de
+texto— es el mismo componente (`IconoCompartir.jsx`) en los dos lugares
+donde aparece (`EditEventDialog` y `Masthead`), con distinto color de fondo
+según si está sobre una tarjeta clara o el header verde oscuro. Tocarlo
+abre el panel nativo del sistema (`navigator.share`) cuando el navegador lo
+tiene —así la persona elige WhatsApp, Mail, lo que tenga— y si no existe
+(la mayoría de los navegadores de escritorio) cae al link copiado solo en
+un input, que sigue ahí para pegarlo a mano. Cancelar el panel nativo tira
+`AbortError`, que no se trata como error. La página del link
+(`/compartir/evento/:token`, `CompartirEvento.jsx`) es una ruta aparte
+porque la abre alguien que capaz nunca usó la agenda.
 
 ### Resolución de la URL del server
 

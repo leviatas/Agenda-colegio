@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import ThemeSwitch from './ThemeSwitch';
 import GoogleLoginButton from './GoogleLoginButton';
+import IconoCompartir from './IconoCompartir';
+import CompartirTodoDialog from './CompartirTodoDialog';
 import { useAuth } from '../context/AuthContext';
 import { useAngosto } from '../lib/media';
 
@@ -10,6 +12,10 @@ export default function Masthead() {
   const { pathname } = useLocation();
   const angosto = useAngosto();
   const [errorLogin, setErrorLogin] = useState('');
+  // Compartir TODOS los eventos (código + suscripciones) es aparte de
+  // compartir uno solo: se abre desde acá, al lado de la cuenta, no desde
+  // ningún evento puntual (ver CompartirTodoDialog.jsx).
+  const [compartirTodo, setCompartirTodo] = useState(false);
   const enOficial = pathname.startsWith('/oficial');
   const enUsuarios = pathname.startsWith('/usuarios');
   const enCompartir = pathname.startsWith('/compartir');
@@ -34,6 +40,17 @@ export default function Masthead() {
             {user ? (
               <div className="cuenta">
                 {user.avatarUrl && <img src={user.avatarUrl} alt="" width="24" height="24" />}
+                {/* Al lado del ícono de usuario, no de "Salir": es una acción
+                    sobre la cuenta, como el avatar y el nombre. */}
+                <button
+                  type="button"
+                  className="share"
+                  title="Compartir tus eventos"
+                  aria-label="Compartir todos tus eventos"
+                  onClick={() => setCompartirTodo(true)}
+                >
+                  <IconoCompartir />
+                </button>
                 <span className="nombre">{user.name}</span>
                 <button type="button" className="linkish" onClick={logout}>Salir</button>
               </div>
@@ -69,6 +86,8 @@ export default function Masthead() {
           </nav>
         )}
       </div>
+
+      <CompartirTodoDialog open={compartirTodo} onClose={() => setCompartirTodo(false)} />
     </header>
   );
 }

@@ -402,6 +402,10 @@ dialog::backdrop { background: rgba(12,18,15,.55); }
   border-top: 1px solid var(--line);
   background: var(--card-2);
 }
+/* EditEventDialog tiene tres botones: "Borrar" separado a la izquierda (una
+   acción distinta, sobre el evento entero) y Cancelar/Guardar agrupados a la
+   derecha, para no romper el space-between de arriba en tres partes sueltas. */
+.modal-foot-right { display: flex; align-items: center; gap: .8rem; }
 .mbtn {
   font: inherit;
   font-size: .85rem;
@@ -478,30 +482,11 @@ dialog::backdrop { background: rgba(12,18,15,.55); }
   color: var(--ini);
 }
 
+/* Separador de sección dentro de un modal: lo usa CompartirTodoDialog para
+   distinguir "tu código" de "ver los eventos de otra persona". */
 .mine { margin-top: 1.3rem; padding-top: 1.1rem; border-top: 1px solid var(--line-soft); }
-.mine ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: .35rem .8rem;
-  align-items: center;
-  font-size: .88rem;
-}
-.mine li { display: contents; }
-.mine .md { font-weight: 600; color: var(--per); white-space: nowrap; }
-.mine .mt { overflow-wrap: anywhere; }
-.mine .del {
-  font: inherit; font-size: 1.1rem; line-height: 1;
-  width: 1.6rem; height: 1.6rem;
-  border: 0; border-radius: 50%;
-  background: transparent; color: var(--ink-faint);
-  cursor: pointer;
-}
-.mine .del:hover { background: var(--fer-bg); color: var(--ini); }
-.mine .del:focus-visible { outline: 2px solid var(--ini); outline-offset: 1px; }
-.mine .none { font-size: .85rem; color: var(--ink-faint); font-style: italic; margin: 0; }
+.mine:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+.mine h3 { font-size: .95rem; margin: 0 0 .3rem; }
 
 /* ══════════ Referencia de niveles ══════════ */
 
@@ -952,14 +937,10 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 
 footer .version { font-variant-numeric: tabular-nums; opacity: .7; }
 
-/* ══════════ Eventos propios: se sumó "Editar" a la fila ══════════ */
+/* ══════════ Compartir ══════════ */
 
-/* auto 1fr auto auto auto: fecha · título · Editar · Compartir · ×. Un evento
-   local (sin cuenta todavía) no tiene botón de Compartir, pero deja un <span>
-   vacío en su lugar — con `.mine li { display: contents }` las columnas son
-   del <ul> entero, así que toda fila tiene que aportar la misma cantidad de
-   celdas o se desalinean las de abajo. */
-.mine ul { grid-template-columns: auto 1fr auto auto auto; }
+/* Pill usada para "Quitar" y "Dejar de ver" en las listas de
+   CompartirTodoDialog: quién te suscribió y a quién suscribiste vos. */
 .mine .edit {
   font: inherit;
   font-size: .74rem;
@@ -974,11 +955,9 @@ footer .version { font-variant-numeric: tabular-nums; opacity: .7; }
 .mine .edit:hover { border-color: var(--per); color: var(--per); }
 .mine .edit:focus-visible { outline: 2px solid var(--per); outline-offset: 1px; }
 
-/* Ícono solo, redondo. En la lista queda del mismo tamaño que el círculo de
-   borrar (×) al lado: la fila tiene un texto (Editar) y dos íconos, no tres
-   textos peleando por el ancho angosto de celular. Sin scopear a `.mine`
-   porque el mismo botón se repite en el header del modal al editar un evento
-   clickeado directo desde el calendario (ver AdderDialog.jsx). */
+/* Ícono solo, redondo: el típico de compartir. Lo usan el header de
+   EditEventDialog (un evento puntual) y Masthead (todos los eventos, al lado
+   de la cuenta) — cada uno con su propia variante de color más abajo. */
 .share {
   display: inline-flex;
   align-items: center;
@@ -993,33 +972,12 @@ footer .version { font-variant-numeric: tabular-nums; opacity: .7; }
 .share:hover { background: var(--per-bg); color: var(--per); }
 .share:focus-visible { outline: 2px solid var(--per); outline-offset: 1px; }
 
-/* En celular las columnas (fecha · título · Editar · Compartir · ×) le dejan al
-   título lo que sobra, y en una pantalla angosta eso son unos pocos caracteres:
-   el texto se parte letra por letra. Cada evento pasa a ser su propio bloque,
-   con la fecha arriba y el título ocupando el ancho menos los botones. */
-@media (max-width: 720px) {
-  /* align-items: stretch pisa el `center` de la regla base: en un flex
-     column el eje cruzado es el horizontal y cada fila quedaba centrada
-     y encogida al ancho de su texto. */
-  .mine ul { display: flex; flex-direction: column; align-items: stretch; gap: .75rem; }
-  .mine li {
-    display: grid;
-    grid-template-columns: 1fr auto auto auto;
-    gap: .15rem .5rem;
-    align-items: center;
-  }
-  .mine .md { grid-column: 1 / -1; }
-}
-
-/* ══════════ Compartir ══════════ */
-
-/* Mismo separador que .mine para que las secciones del modal de "mis eventos"
-   sigan leyéndose como una sola columna de bloques (ver CLAUDE.md). */
-.mine.compartir h3 {
-  font-size: .95rem;
-  margin: 1.1rem 0 .3rem;
-}
-.mine.compartir h3:first-child { margin-top: 0; }
+/* El header es verde oscuro: el ícono con los colores de arriba (pensados
+   para el fondo claro del modal) no se leería. Mismo tratamiento que
+   .linkish ("Salir"), que vive al lado. */
+.cuenta .share { color: var(--forest-ink); opacity: .75; }
+.cuenta .share:hover { opacity: 1; background: rgba(242, 239, 228, .14); }
+.cuenta .share:focus-visible { outline: 2px solid var(--ins); outline-offset: 2px; }
 
 .codigo-activo {
   display: flex;
