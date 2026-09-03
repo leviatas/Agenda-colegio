@@ -54,12 +54,11 @@ function Cuerpo({ onClose }) {
     setGuardando(true);
     try {
       await agregarMio(data);
-      // Se limpia y queda abierto: cargar varios eventos seguidos no debería
-      // obligar a reabrir el modal cada vez.
-      setForm(VACIO);
+      // Cierra al terminar: es un modal de "cargar un evento", no una lista
+      // abierta para seguir cargando de a uno.
+      onClose();
     } catch (err) {
       setError(err.message);
-    } finally {
       setGuardando(false);
     }
   }

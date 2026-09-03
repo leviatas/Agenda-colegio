@@ -418,6 +418,10 @@ dialog::backdrop { background: rgba(12,18,15,.55); }
   color: var(--ink-soft);
 }
 .mbtn.primary { background: var(--btn-bg); border-color: var(--btn-bg); color: var(--btn-fg); }
+/* Mismo rojo que el botón de confirmar en ConfirmDialog (.modal-actions
+   .btn-danger): "Borrar" en EditEventDialog vive en el pie del modal, no en
+   la confirmación, así que necesita su propia regla con este selector. */
+.mbtn.btn-danger { background: var(--ini); border-color: var(--ini); color: #FFF; }
 .mbtn:hover { opacity: .85; }
 .mbtn:focus-visible { outline: 2px solid var(--ins); outline-offset: 2px; }
 
