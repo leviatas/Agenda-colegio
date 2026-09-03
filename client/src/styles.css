@@ -422,6 +422,11 @@ dialog::backdrop { background: rgba(12,18,15,.55); }
    .btn-danger): "Borrar" en EditEventDialog vive en el pie del modal, no en
    la confirmación, así que necesita su propia regla con este selector. */
 .mbtn.btn-danger { background: var(--ini); border-color: var(--ini); color: #FFF; }
+/* "Borrar" de EditEventDialog es sólo el tacho, sin texto: la píldora con
+   padding horizontal de .mbtn queda ovalada con un ícono solo, así que este
+   modificador la vuelve circular y centra el SVG. */
+.mbtn.icon-only { display: inline-flex; align-items: center; justify-content: center; width: 2.4rem; height: 2.4rem; padding: 0; }
+.mbtn.icon-only svg { width: 1.1rem; height: 1.1rem; }
 .mbtn:hover { opacity: .85; }
 .mbtn:focus-visible { outline: 2px solid var(--ins); outline-offset: 2px; }
 
