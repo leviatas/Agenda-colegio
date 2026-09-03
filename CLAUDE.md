@@ -278,6 +278,18 @@ Todo acceso a `localStorage` va envuelto en `try/catch`: en modo privado puede
 tirar tanto al leer como al escribir, y sin almacenamiento la app tiene que
 funcionar igual.
 
+**"Ver la agenda" / "Eventos Personales" (`Masthead.jsx`) no son dos pantallas
+distintas**: las dos rutas (`/` y `/personales`) renderizan `Calendario.jsx`, que
+mira `pathname` para decidir el filtro (`soloPersonales`) y qué barra de arriba
+mostrar. En `/personales` el picker de sala/grado no aplica —se ven todos los
+eventos con `level === 'per'`, sin importar los `picks` guardados— y ahí es
+donde vive "Agregar evento +", que en `/` no aparece. El link de estas dos
+pestañas se ve **sin cuenta**, igual que el resto de la navegación: cargar un
+evento propio no pide login (ver "Eventos personales: navegador o cuenta" más
+abajo), así que no hay razón para esconderlas. La única ruta que las oculta es
+la del link de un evento compartido (`/compartir/evento/:token`): a quien la
+abre puede no conocer el resto de la agenda.
+
 ### Eventos personales: navegador o cuenta
 
 Los eventos propios salen de dos lados a la vez y `EventosProvider` los muestra

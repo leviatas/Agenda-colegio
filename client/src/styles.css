@@ -1220,6 +1220,15 @@ footer .version { font-variant-numeric: tabular-nums; opacity: .7; }
      botón solo y el de Google es el de sólo ícono. */
   .top-actions { flex-wrap: nowrap; gap: .5rem; }
   .picker-bar { margin-top: .9rem; padding-top: 1rem; }
+  /* Mismo truco que .top-actions: sin nowrap, ".picker-sum" (que puede tener
+     varias líneas de tags) empuja "Cambiar" a una fila propia en vez de
+     dejarlo al lado. Con nowrap en la barra y min-width: 0 en el resumen, el
+     que se envuelve en varias líneas es el resumen —adentro suyo, con su
+     propio flex-wrap— y el botón queda siempre pegado a la derecha, en la
+     misma fila en la que arranca el resumen. */
+  .picker-bar { flex-wrap: nowrap; align-items: flex-start; }
+  .picker-sum { flex: 1 1 auto; min-width: 0; }
+  .picker-bar > .btn { flex: 0 0 auto; }
   .wrap-bar { padding-bottom: 1.1rem; }
 }
 

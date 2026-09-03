@@ -31,6 +31,9 @@ export default function App() {
       <Masthead />
       <Routes>
         <Route path="/" element={<Calendario />} />
+        {/* Misma pantalla que "/": Calendario decide el filtro mirando la
+            ruta (ver soloPersonales ahí). No es una lista aparte. */}
+        <Route path="/personales" element={<Calendario />} />
         <Route path="/oficial" element={<Oficial />} />
         <Route path="/usuarios" element={<Usuarios />} />
         <Route path="/compartir/evento/:token" element={<CompartirEvento />} />

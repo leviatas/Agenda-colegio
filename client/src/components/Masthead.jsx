@@ -18,6 +18,7 @@ export default function Masthead() {
   const [compartirTodo, setCompartirTodo] = useState(false);
   const enOficial = pathname.startsWith('/oficial');
   const enUsuarios = pathname.startsWith('/usuarios');
+  const enPersonales = pathname.startsWith('/personales');
   const enCompartir = pathname.startsWith('/compartir');
 
   async function onCredential(credential) {
@@ -72,17 +73,31 @@ export default function Masthead() {
         {errorLogin && <p className="err top-err">{errorLogin}</p>}
 
         <h1>
-          {enOficial ? 'Calendario oficial' : enUsuarios ? 'Cuentas' : enCompartir ? 'Evento compartido' : 'Agenda escolar'}
+          {enOficial ? 'Calendario oficial'
+            : enUsuarios ? 'Cuentas'
+            : enCompartir ? 'Evento compartido'
+            : enPersonales ? 'Eventos personales'
+            : 'Agenda escolar'}
         </h1>
 
-        {/* La gestión del calendario sólo aparece para quien lo administra. El
-            candado real está en el server; esto es para no mostrar una pantalla
-            que nadie más puede usar. */}
-        {user && user.isAdmin && (
+        {/* Ver la agenda / Eventos personales las ve cualquiera, con cuenta o
+            sin ella: cargar eventos propios no pide login (ver CLAUDE.md,
+            "Eventos personales: navegador o cuenta"). No se muestra en la
+            página de un link compartido: a quien lo abre puede no conocer el
+            resto de la agenda. La gestión del calendario y la lista de cuentas
+            sí son sólo para quien administra — el candado real está en el
+            server, esto es para no mostrar una pantalla que nadie más puede
+            usar. */}
+        {!enCompartir && (
           <nav className="nav">
-            <Link to="/" className={enOficial || enUsuarios || enCompartir ? '' : 'on'}>Ver la agenda</Link>
-            <Link to="/oficial" className={enOficial ? 'on' : ''}>Editar el calendario</Link>
-            <Link to="/usuarios" className={enUsuarios ? 'on' : ''}>Cuentas</Link>
+            <Link to="/" className={enOficial || enUsuarios || enPersonales ? '' : 'on'}>Ver la agenda</Link>
+            <Link to="/personales" className={enPersonales ? 'on' : ''}>Eventos Personales</Link>
+            {user && user.isAdmin && (
+              <>
+                <Link to="/oficial" className={enOficial ? 'on' : ''}>Editar el calendario</Link>
+                <Link to="/usuarios" className={enUsuarios ? 'on' : ''}>Cuentas</Link>
+              </>
+            )}
           </nav>
         )}
       </div>
