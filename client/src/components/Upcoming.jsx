@@ -58,6 +58,7 @@ export default function Upcoming({ eventos, visible, today }) {
             <span className="tt">
               {ev.time && <><b>{textoHora(ev)}hs</b>{' · '}</>}
               {ev.title}
+              {ev.de && <span className="de"> · {ev.de}</span>}
             </span>
           </div>
         );

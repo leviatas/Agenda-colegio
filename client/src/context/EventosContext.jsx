@@ -19,6 +19,11 @@ export function EventosProvider({ children }) {
   const [oficiales, setOficiales] = useState([]);
   const [remotos, setRemotos] = useState([]);
   const [locales, setLocales] = useState(leerLocales);
+  // Eventos de otras cuentas que suscribieron con su código: de sólo lectura,
+  // llegan mezclados con el nivel 'per' y cada uno trae `de` (ver
+  // serializeCompartido en el server). No pasan por personales.js: no hay
+  // versión local, hace falta cuenta en los dos lados (ver CLAUDE.md).
+  const [compartidos, setCompartidos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -57,6 +62,7 @@ export function EventosProvider({ children }) {
       const data = await api.eventos(token);
       setOficiales(data.oficiales);
       setRemotos(data.personales);
+      setCompartidos(data.compartidos || []);
     } catch (err) {
       setError('No se pudo cargar el calendario. Probá recargar la página.');
     } finally {
@@ -118,11 +124,11 @@ export function EventosProvider({ children }) {
   }, []);
 
   const personales = useMemo(() => [...remotos, ...locales], [remotos, locales]);
-  const todos = useMemo(() => [...oficiales, ...personales], [oficiales, personales]);
+  const todos = useMemo(() => [...oficiales, ...personales, ...compartidos], [oficiales, personales, compartidos]);
   const byDay = useMemo(() => buildIndex(todos), [todos]);
 
   const value = {
-    oficiales, personales, todos, byDay, loading, error, cargar,
+    oficiales, personales, compartidos, todos, byDay, loading, error, cargar,
     agregarMio, editarMio, borrarMio, reemplazarOficial, quitarOficial,
   };
 

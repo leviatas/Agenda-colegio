@@ -12,6 +12,7 @@ export default function Masthead() {
   const [errorLogin, setErrorLogin] = useState('');
   const enOficial = pathname.startsWith('/oficial');
   const enUsuarios = pathname.startsWith('/usuarios');
+  const enCompartir = pathname.startsWith('/compartir');
 
   async function onCredential(credential) {
     setErrorLogin('');
@@ -53,14 +54,16 @@ export default function Masthead() {
 
         {errorLogin && <p className="err top-err">{errorLogin}</p>}
 
-        <h1>{enOficial ? 'Calendario oficial' : enUsuarios ? 'Cuentas' : 'Agenda escolar'}</h1>
+        <h1>
+          {enOficial ? 'Calendario oficial' : enUsuarios ? 'Cuentas' : enCompartir ? 'Evento compartido' : 'Agenda escolar'}
+        </h1>
 
         {/* La gestión del calendario sólo aparece para quien lo administra. El
             candado real está en el server; esto es para no mostrar una pantalla
             que nadie más puede usar. */}
         {user && user.isAdmin && (
           <nav className="nav">
-            <Link to="/" className={enOficial || enUsuarios ? '' : 'on'}>Ver la agenda</Link>
+            <Link to="/" className={enOficial || enUsuarios || enCompartir ? '' : 'on'}>Ver la agenda</Link>
             <Link to="/oficial" className={enOficial ? 'on' : ''}>Editar el calendario</Link>
             <Link to="/usuarios" className={enUsuarios ? 'on' : ''}>Cuentas</Link>
           </nav>

@@ -4,6 +4,7 @@ import Masthead from './components/Masthead';
 import Calendario from './pages/Calendario';
 import Oficial from './pages/Oficial';
 import Usuarios from './pages/Usuarios';
+import CompartirEvento from './pages/CompartirEvento';
 import { useAuth } from './context/AuthContext';
 import { registrarVisita } from './lib/telemetria';
 
@@ -32,6 +33,7 @@ export default function App() {
         <Route path="/" element={<Calendario />} />
         <Route path="/oficial" element={<Oficial />} />
         <Route path="/usuarios" element={<Usuarios />} />
+        <Route path="/compartir/evento/:token" element={<CompartirEvento />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <div className="wrap">

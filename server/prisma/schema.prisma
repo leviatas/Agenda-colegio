@@ -16,12 +16,12 @@ datasource db {
 // esperar aprobación de nadie; lo único reservado al admin es editar el
 // calendario oficial.
 model User {
-  id        Int      @id @default(autoincrement())
-  googleId  String   @unique
-  email     String   @unique
+  id        Int     @id @default(autoincrement())
+  googleId  String  @unique
+  email     String  @unique
   name      String
   avatarUrl String?
-  isAdmin   Boolean  @default(false)
+  isAdmin   Boolean @default(false)
 
   // Los filtros del picker ("Sala Celeste", "3° grado"…) como JSON: un array
   // de ids del catálogo del cliente (client/src/lib/agenda.js). Va acá y no en
@@ -29,15 +29,25 @@ model User {
   // catálogo es del cliente — la base no tiene por qué conocer los ids.
   picks String @default("[]")
 
+  // El código para "compartir todos mis eventos" (ver EventSubscription). Nulo
+  // mientras nadie lo generó o después de apagarlo; no se reutiliza el mismo
+  // valor entre cuentas por el @unique. Apagarlo (ponerlo null) sólo cierra la
+  // puerta a canjes NUEVOS: a quien ya canjeó no se le toca su fila de
+  // EventSubscription, eso es un acto aparte (sacarlo de la lista de
+  // suscriptores).
+  shareCode String? @unique
+
   createdAt DateTime @default(now())
 
-  events PersonalEvent[]
+  events         PersonalEvent[]
+  suscriptoresDe EventSubscription[] @relation("Owner")
+  suscripciones  EventSubscription[] @relation("Subscriber")
 }
 
 // Calendario oficial del colegio. Lo edita SOLO un admin (routes/oficial.js);
 // se lee sin login.
 model Event {
-  id    Int     @id @default(autoincrement())
+  id      Int     @id @default(autoincrement())
   // Fechas como String 'YYYY-MM-DD', NO DateTime: son fechas de calendario sin
   // hora. Un DateTime en SQLite se guarda en UTC, así que un 2026-09-01 local
   // vuelve como 2026-08-31T21:00Z y el evento se corre un día según el huso de
@@ -52,7 +62,7 @@ model Event {
 
   // Hora en el formato que muestra la agenda ('8.15', '13.30', '8 a 15'), como
   // texto libre: hay eventos con rango y otros sin hora.
-  time String?
+  time    String?
   // Hora de fin, opcional e independiente de endDate: un acto puede ser "de
   // 8.15 a 12.30" el mismo día. Sólo tiene sentido con `time` cargada; se
   // valida en la aplicación (parseEvento). Nula en todo lo que ya estaba.
@@ -86,4 +96,24 @@ model PersonalEvent {
   updatedAt DateTime @updatedAt
 
   @@index([userId, date])
+}
+
+// Suscripción en vivo a TODOS los eventos personales de otra cuenta: mientras
+// exista esta fila, `subscriberId` ve los de `ownerId` mezclados en su
+// calendario (de sólo lectura, nunca al revés). Se crea al canjear el
+// `shareCode` del dueño; se borra al desuscribirse una punta o al ser
+// removido por la otra (routes/eventos.js, prefijo /compartir). Es
+// intencional que sea de una sola dirección: compartir tus eventos no hace
+// que veas los de quien canjeó tu código.
+model EventSubscription {
+  id           Int  @id @default(autoincrement())
+  ownerId      Int
+  owner        User @relation("Owner", fields: [ownerId], references: [id], onDelete: Cascade)
+  subscriberId Int
+  subscriber   User @relation("Subscriber", fields: [subscriberId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([ownerId, subscriberId])
+  @@index([subscriberId])
 }
