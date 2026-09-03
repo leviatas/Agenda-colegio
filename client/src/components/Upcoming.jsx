@@ -1,7 +1,7 @@
 import { DIAS, MES_AB, isoDow, parse, textoHora } from '../lib/agenda';
 
 // Las próximas ocho fechas que quedan por delante con los filtros activos.
-export default function Upcoming({ eventos, visible, today }) {
+export default function Upcoming({ eventos, visible, today, onEventoClick }) {
   const seen = new Set();
   const lista = eventos
     .filter((ev) => {
@@ -45,12 +45,19 @@ export default function Upcoming({ eventos, visible, today }) {
         // quedaba igual que cualquier otra fecha. El cartelito va además del
         // color, que solo no alcanza para quien no lo distingue.
         const esFeriado = ev.level === 'fer';
+        // Mismo criterio que en Month.jsx: sólo lo propio se puede tocar para
+        // editar o compartir. Oficiales y compartidos quedan como antes.
+        const esPropio = ev.level === 'per' && !ev.de;
+        const Tag = esPropio ? 'button' : 'div';
 
         return (
-          <div
+          <Tag
             key={`${ev.level}-${ev.id}`}
-            className={`up-card${esFeriado ? ' feriado' : ''}`}
+            type={esPropio ? 'button' : undefined}
+            className={`up-card${esFeriado ? ' feriado' : ''}${esPropio ? ' clickable' : ''}`}
             style={{ '--c': `var(--${ev.level})` }}
+            onClick={esPropio ? () => onEventoClick(ev) : undefined}
+            aria-label={esPropio ? `Editar o compartir "${ev.title}"` : undefined}
           >
             <span className="dt">{cuando}</span>
             <span className="cd">{DIAS[isoDow(s)]} · {cd}</span>
@@ -60,7 +67,7 @@ export default function Upcoming({ eventos, visible, today }) {
               {ev.title}
               {ev.de && <span className="de"> · {ev.de}</span>}
             </span>
-          </div>
+          </Tag>
         );
       })}
     </div>

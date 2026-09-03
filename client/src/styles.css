@@ -319,6 +319,10 @@ dialog::backdrop { background: rgba(12,18,15,.55); }
 .modal-in:focus { outline: none; }
 
 .modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .8rem;
   padding: 1.35rem 1.6rem 1.1rem;
   border-bottom: 1px solid var(--line);
 }
@@ -566,6 +570,12 @@ dialog::backdrop { background: rgba(12,18,15,.55); }
   flex-direction: column;
   gap: .1rem;
 }
+/* Una tarjeta propia es un <button> (ver Upcoming.jsx): el reset le saca la
+   tipografía y el text-align centrado por default del navegador, todo lo
+   demás (fondo, borde, padding) ya lo pone la regla de arriba igual. */
+button.up-card { text-align: left; font: inherit; cursor: pointer; }
+.up-card.clickable:hover { border-color: var(--c); box-shadow: 0 0 0 1px var(--c), var(--shadow); }
+.up-card.clickable:focus-visible { outline: 2px solid var(--per); outline-offset: 2px; }
 .up-card .dt {
   font-family: 'Bodoni Moda', Georgia, serif;
   font-size: 1.15rem;
@@ -739,6 +749,28 @@ button.cell:focus-visible { outline: 2px solid var(--ins); outline-offset: -2px;
   font-size: .9rem;
   line-height: 1.4;
 }
+/* Un evento propio es un <button> (ver Month.jsx): esto le saca el look de
+   botón del navegador para que siga siendo un renglón como cualquier otro,
+   sólo que clickeable. Lo oficial/compartido sigue siendo un <div> sin más. */
+button.ev {
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+/* Margin negativo = padding: el fondo del hover respira un poco sin mover el
+   contenido del lugar donde cae el resto de las filas sin ese fondo. */
+.ev.clickable {
+  border-radius: 6px;
+  margin: -.2rem -.4rem;
+  padding: .2rem .4rem;
+}
+.ev.clickable:hover { background: var(--per-bg); }
+.ev.clickable:focus-visible { outline: 2px solid var(--per); outline-offset: 2px; }
 .ev .dot {
   width: .5rem; height: .5rem; border-radius: 50%;
   align-self: center;
@@ -941,6 +973,25 @@ footer .version { font-variant-numeric: tabular-nums; opacity: .7; }
 }
 .mine .edit:hover { border-color: var(--per); color: var(--per); }
 .mine .edit:focus-visible { outline: 2px solid var(--per); outline-offset: 1px; }
+
+/* Ícono solo, redondo. En la lista queda del mismo tamaño que el círculo de
+   borrar (×) al lado: la fila tiene un texto (Editar) y dos íconos, no tres
+   textos peleando por el ancho angosto de celular. Sin scopear a `.mine`
+   porque el mismo botón se repite en el header del modal al editar un evento
+   clickeado directo desde el calendario (ver AdderDialog.jsx). */
+.share {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 1.6rem; height: 1.6rem;
+  border: 0; border-radius: 50%;
+  background: transparent; color: var(--ink-faint);
+  cursor: pointer;
+}
+.share svg { width: 1rem; height: 1rem; }
+.share:hover { background: var(--per-bg); color: var(--per); }
+.share:focus-visible { outline: 2px solid var(--per); outline-offset: 1px; }
 
 /* En celular las columnas (fecha · título · Editar · Compartir · ×) le dejan al
    título lo que sobra, y en una pantalla angosta eso son unos pocos caracteres:
