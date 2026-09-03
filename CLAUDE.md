@@ -350,16 +350,15 @@ lo que nadie espera de "generar un código nuevo".
 En el cliente esto vive repartido en tres modales, cada uno con un solo
 trabajo, no uno solo que hace de todo:
 
-- **`AdderDialog.jsx`** — sólo carga un evento nuevo. Guardar limpia el
-  formulario y lo deja abierto (para cargar varios seguidos); no sabe nada
-  de editar, borrar ni compartir.
+- **`AdderDialog.jsx`** — sólo carga un evento nuevo. Guardar cierra el
+  modal; no sabe nada de editar, borrar ni compartir.
 - **`EditEventDialog.jsx`** — editar, borrar o compartir UN evento
   puntual. No hay ninguna lista de "mis eventos" en ningún lado: se abre
   clickeando el evento directo en el calendario o en "Próximas fechas", con
-  el ícono de compartir al lado del título y "Borrar" en el pie. Guardar
-  (o borrar) cierra el modal, a diferencia de `AdderDialog`, porque acá no
-  tiene sentido dejarlo abierto para "el próximo": es de un evento solo.
-  Lo que decide si un evento es clickeable es `level === 'per' && !de`
+  el ícono de compartir al lado del título y "Borrar" en rojo (mismo tono
+  que la confirmación de borrado) en el pie. Guardar o borrar cierra el
+  modal, igual que `AdderDialog`. Lo que decide si un evento es
+  clickeable es `level === 'per' && !de`
   (`Month.jsx`, `Upcoming.jsx`) — un compartido también es `'per'` pero
   trae `de`, así que queda como un `<div>` sin más, de sólo lectura como
   corresponde. Ese renglón clickeable es un `<button>` real, no un `<div

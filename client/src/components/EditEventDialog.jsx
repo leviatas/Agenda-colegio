@@ -185,7 +185,7 @@ function Cuerpo({ evento, onClose }) {
       </div>
 
       <div className="modal-foot">
-        <button className="mbtn" type="button" onClick={borrar}>Borrar</button>
+        <button className="mbtn btn-danger" type="button" onClick={borrar}>Borrar</button>
         <div className="modal-foot-right">
           <button className="mbtn" type="button" onClick={onClose}>Cancelar</button>
           <button className="mbtn primary" type="button" onClick={guardar} disabled={guardando}>
