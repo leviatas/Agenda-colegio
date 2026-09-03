@@ -9,12 +9,42 @@ import { DESDE, HASTA, MES_AB, fmtHora, parse, textoHora, toInputHora } from '..
 
 const VACIO = { id: null, title: '', date: '', endDate: '', time: '', endTime: '' };
 
-function Cuerpo({ onClose }) {
+// El ícono típico de "compartir": una flecha saliendo de una bandeja hacia
+// arriba, como en el botón nativo de iOS/Android. Mismas convenciones de trazo
+// que los íconos de ThemeSwitch.jsx (viewBox 24, stroke currentColor).
+function IconoCompartir() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 15V4M12 4 8.5 7.5M12 4l3.5 3.5" />
+      <path d="M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6" />
+    </svg>
+  );
+}
+
+// Arma el form de edición a partir de un evento (de la lista de acá abajo, o
+// de uno clickeado directo en el calendario/"Próximas fechas" — ver `inicial`
+// más abajo). Aparte para no repetirlo entre el useState inicial y `editar()`.
+function formularioDe(ev) {
+  return {
+    id: ev.id,
+    title: ev.title,
+    date: ev.date,
+    endDate: ev.endDate || '',
+    time: toInputHora(ev.time),
+    endTime: toInputHora(ev.endTime),
+  };
+}
+
+function Cuerpo({ onClose, inicial }) {
   const { user, token } = useAuth();
   const { personales, agregarMio, editarMio, borrarMio } = useEventos();
   const confirm = useConfirm();
 
-  const [form, setForm] = useState(VACIO);
+  // `inicial` es el evento propio sobre el que se clickeó en el calendario:
+  // si vino, el modal arranca editándolo directo. Se lee una sola vez, al
+  // montar — Dialog desmonta este componente entero al cerrarse, así que no
+  // hace falta un efecto que lo sincronice después.
+  const [form, setForm] = useState(() => (inicial ? formularioDe(inicial) : VACIO));
   const [error, setError] = useState('');
   const [guardando, setGuardando] = useState(false);
 
@@ -86,24 +116,32 @@ function Cuerpo({ onClose }) {
 
   function editar(ev) {
     setError('');
-    setForm({
-      id: ev.id,
-      title: ev.title,
-      date: ev.date,
-      endDate: ev.endDate || '',
-      time: toInputHora(ev.time),
-      endTime: toInputHora(ev.endTime),
-    });
+    setForm(formularioDe(ev));
   }
 
-  // Genera el link y lo copia solo. Si el navegador no deja copiar (sin
-  // permiso, o sin la API en un contexto no seguro), el link queda igual en el
-  // input de abajo, seleccionable a mano — nunca es un error para la persona.
+  // Con navigator.share disponible (celular, básicamente) se abre el panel
+  // nativo del sistema —WhatsApp, Mensajes, Mail, lo que tenga instalado la
+  // persona— y listo, no hace falta nada más de acá. Cancelar ese panel tira
+  // un AbortError que no es un error de verdad, así que no muestra nada. Sin
+  // navigator.share (la mayoría de los navegadores de escritorio) se cae al
+  // link copiado en el input de abajo, que sigue existiendo para eso.
   async function compartir(ev) {
     setError('');
     try {
       const { token: evToken } = await api.mios.compartir(token, ev.id);
       const url = `${window.location.origin}/compartir/evento/${evToken}`;
+
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: ev.title, text: `Te comparto este evento: ${ev.title}`, url });
+          return;
+        } catch (err) {
+          if (err.name === 'AbortError') return;
+          // Cualquier otro motivo (por ejemplo el panel no llegó a abrir):
+          // sigue de largo al plan B de copiar el link.
+        }
+      }
+
       setLink({ id: ev.id, titulo: ev.title, url });
       try {
         await navigator.clipboard.writeText(url);
@@ -121,6 +159,14 @@ function Cuerpo({ onClose }) {
     <>
       <div className="modal-head">
         <h2 id="adder-title">{editando ? 'Editar evento' : 'Agregar evento'}</h2>
+        {/* Sólo si ya existe en el server: uno local recién clickeado en el
+            calendario todavía no tiene nada que compartir (ver esLocal más
+            abajo, en la lista). */}
+        {editando && !esLocal(form.id) && (
+          <button type="button" className="share" title="Compartir" aria-label={`Compartir ${form.title}`} onClick={() => compartir(form)}>
+            <IconoCompartir />
+          </button>
+        )}
       </div>
 
       <div className="modal-body">
@@ -179,8 +225,8 @@ function Cuerpo({ onClose }) {
                     {esLocal(ev.id) ? (
                       <span aria-hidden="true" />
                     ) : (
-                      <button type="button" className="edit" aria-label={`Compartir ${ev.title}`} onClick={() => compartir(ev)}>
-                        Compartir
+                      <button type="button" className="share" title="Compartir" aria-label={`Compartir ${ev.title}`} onClick={() => compartir(ev)}>
+                        <IconoCompartir />
                       </button>
                     )}
                     <button type="button" className="del" aria-label={`Borrar ${ev.title}`} onClick={() => borrar(ev)}>
@@ -415,10 +461,10 @@ function SeccionCompartir({ token }) {
   );
 }
 
-export default function AdderDialog({ open, onClose }) {
+export default function AdderDialog({ open, onClose, inicial }) {
   return (
     <Dialog open={open} onClose={onClose} id="adder" labelledBy="adder-title">
-      <Cuerpo onClose={onClose} />
+      <Cuerpo onClose={onClose} inicial={inicial} />
     </Dialog>
   );
 }

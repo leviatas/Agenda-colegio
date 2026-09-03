@@ -348,11 +348,29 @@ a alguien nuevo le cortaría el acceso a todos los que ya lo tenían, que no es
 lo que nadie espera de "generar un código nuevo".
 
 En el cliente todo esto vive en `AdderDialog.jsx` (el modal de "mis
-eventos"): el botón "Compartir" por evento, y la sección "Compartir todos
-tus eventos" que junta código propio, lista de quién te suscribió y a quién
-suscribiste vos. La página del link (`/compartir/evento/:token`,
+eventos"): el ícono de compartir por evento —el típico de flecha saliendo de
+una bandeja, no un botón de texto—, y la sección "Compartir todos tus
+eventos" que junta código propio, lista de quién te suscribió y a quién
+suscribiste vos. Tocarlo abre el panel nativo del sistema
+(`navigator.share`) cuando el navegador lo tiene —así la persona elige
+WhatsApp, Mail, lo que tenga— y si no existe (la mayoría de los navegadores
+de escritorio) cae al link copiado solo en un input, que sigue ahí para
+pegarlo a mano. Cancelar el panel nativo tira `AbortError`, que no se trata
+como error. La página del link (`/compartir/evento/:token`,
 `CompartirEvento.jsx`) es una ruta aparte porque la abre alguien que
 capaz nunca usó la agenda.
+
+Un evento propio (no un oficial, no uno que llegó por suscripción) también
+se puede editar o compartir clickeándolo directo en el calendario o en
+"Próximas fechas", sin pasar por la lista de `AdderDialog`: abre el mismo
+modal, ya en modo edición sobre ese evento, con el ícono de compartir al
+lado del título. Lo que decide si un evento es clickeable es `level ===
+'per' && !de` (`Month.jsx`, `Upcoming.jsx`) — un compartido también es
+`'per'` pero trae `de`, así que queda como un `<div>` sin más, de sólo
+lectura como corresponde. Ese renglón clickeable es un `<button>` real, no
+un `<div onClick>`: todo lo interactivo de la app ya lo es (las celdas del
+calendario, por ejemplo), para que funcione con teclado y lector de
+pantalla sin nada extra.
 
 ### Resolución de la URL del server
 

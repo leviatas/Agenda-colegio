@@ -14,6 +14,11 @@ export default function Calendario() {
 
   const [picker, setPicker] = useState(false);
   const [adder, setAdder] = useState(false);
+  // El evento propio sobre el que se hizo click en el calendario o en
+  // "Próximas fechas", para que AdderDialog abra directo en modo edición en
+  // vez de la lista entera. null es el caso normal: abrir para cargar uno
+  // nuevo (el botón "Agregar evento +").
+  const [eventoEditar, setEventoEditar] = useState(null);
   const [flash, setFlash] = useState(null);
   const flashTimer = useRef(null);
 
@@ -42,6 +47,22 @@ export default function Calendario() {
     setPicker(false);
   }, [setPicks]);
 
+  // Click en un evento propio (calendario o "Próximas fechas"): abre el mismo
+  // modal de siempre, pero directo en modo edición sobre ESE evento, en vez de
+  // tener que buscarlo en la lista de abajo. null abre para cargar uno nuevo.
+  const abrirAdder = useCallback((ev = null) => {
+    setEventoEditar(ev);
+    setAdder(true);
+  }, []);
+
+  // Limpia el evento a editar al cerrar: si no, la próxima vez que se abra con
+  // "Agregar evento +" arrancaría editando el último que se tocó en el
+  // calendario en vez de un formulario en blanco.
+  const cerrarAdder = useCallback(() => {
+    setAdder(false);
+    setEventoEditar(null);
+  }, []);
+
   return (
     <>
       {/* wrap-bar: el padding de abajo de .wrap es el aire del FINAL de la
@@ -68,7 +89,7 @@ export default function Calendario() {
           <button className="btn" type="button" onClick={() => setPicker(true)}>
             {picks.length ? 'Cambiar' : 'Elegir sala y grado'}
           </button>
-          <button className="btn ghost" type="button" onClick={() => setAdder(true)}>
+          <button className="btn ghost" type="button" onClick={() => abrirAdder()}>
             Agregar evento +
           </button>
         </div>
@@ -90,7 +111,7 @@ export default function Calendario() {
                   hoy es {DIAS[isoDow(today)]} {today.getDate()} de {MESES[today.getMonth()]}
                 </span>
               </div>
-              <Upcoming eventos={todos} visible={visible} today={today} />
+              <Upcoming eventos={todos} visible={visible} today={today} onEventoClick={abrirAdder} />
             </section>
 
             <div>
@@ -104,6 +125,7 @@ export default function Calendario() {
                   todayKey={todayKey}
                   esPrimero={i === 0}
                   onDayClick={onDayClick}
+                  onEventoClick={abrirAdder}
                   flash={flash}
                 />
               ))}
@@ -113,7 +135,7 @@ export default function Calendario() {
       </div>
 
       <PickerDialog open={picker} picks={picks} onClose={() => setPicker(false)} onSave={guardarPicks} />
-      <AdderDialog open={adder} onClose={() => setAdder(false)} />
+      <AdderDialog open={adder} onClose={cerrarAdder} inicial={eventoEditar} />
     </>
   );
 }

@@ -5,7 +5,7 @@ import { MESES, MES_AB, DIAS_AB, addDays, isoDow, key, parse, textoHora } from '
 // la derecha. `esPrimero` hace que el mes de arranque absorba los días de la
 // semana anterior que caen en el mes previo (no dibujado), para que no queden
 // eventos sin ninguna fila donde mostrarse.
-export default function Month({ year, mon, byDay, visible, todayKey, esPrimero, onDayClick, flash }) {
+export default function Month({ year, mon, byDay, visible, todayKey, esPrimero, onDayClick, onEventoClick, flash }) {
   const { celdas, filas, cuenta } = useMemo(() => {
     const first = new Date(year, mon, 1);
     const dias = new Date(year, mon + 1, 0).getDate();
@@ -108,7 +108,7 @@ export default function Month({ year, mon, byDay, visible, todayKey, esPrimero, 
               </div>
               <div className="ev-list">
                 {f.occs.map((o) => (
-                  <Evento key={`${o.ev.level}-${o.ev.id}-${o.idx}`} occ={o} />
+                  <Evento key={`${o.ev.level}-${o.ev.id}-${o.idx}`} occ={o} onEventoClick={onEventoClick} />
                 ))}
               </div>
             </div>
@@ -119,7 +119,7 @@ export default function Month({ year, mon, byDay, visible, todayKey, esPrimero, 
   );
 }
 
-function Evento({ occ }) {
+function Evento({ occ, onEventoClick }) {
   const { ev } = occ;
   let range = '';
   if (occ.span) {
@@ -130,8 +130,21 @@ function Evento({ occ }) {
       : `día ${occ.idx + 1} de ${occ.total}`;
   }
 
+  // Sólo se puede editar/compartir lo propio: un oficial no es tuyo, y uno
+  // compartido (trae `de`) es de sólo lectura para quien lo ve por suscripción.
+  const esPropio = ev.level === 'per' && !ev.de;
+  // <button> y no un div con onClick: todo lo clickeable de la app ya es un
+  // botón real (las celdas del calendario, acá arriba), por teclado y lector
+  // de pantalla de una. Lo que no es propio sigue siendo un div sin más.
+  const Tag = esPropio ? 'button' : 'div';
+
   return (
-    <div className={`ev ${ev.level}${occ.span ? ' span' : ''}`}>
+    <Tag
+      type={esPropio ? 'button' : undefined}
+      className={`ev ${ev.level}${occ.span ? ' span' : ''}${esPropio ? ' clickable' : ''}`}
+      onClick={esPropio ? () => onEventoClick(ev) : undefined}
+      aria-label={esPropio ? `Editar o compartir "${ev.title}"` : undefined}
+    >
       <span className="dot" />
       <span className="h">{ev.time ? `${textoHora(ev)}hs` : ''}</span>
       <span className="t" data-range={range || undefined}>
@@ -141,6 +154,6 @@ function Evento({ occ }) {
             hace falta decir de quién son. Los propios no llevan nada acá. */}
         {ev.de && <span className="de"> · {ev.de}</span>}
       </span>
-    </div>
+    </Tag>
   );
 }
