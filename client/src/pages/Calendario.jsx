@@ -4,6 +4,7 @@ import Month from '../components/Month';
 import Upcoming from '../components/Upcoming';
 import PickerDialog from '../components/PickerDialog';
 import AdderDialog from '../components/AdderDialog';
+import EditEventDialog from '../components/EditEventDialog';
 import { useAuth } from '../context/AuthContext';
 import { useEventos } from '../context/EventosContext';
 import { CAT, DIAS, MESES, MONTHS, hoy, isoDow, key, matcher, ordenarPicks } from '../lib/agenda';
@@ -13,11 +14,11 @@ export default function Calendario() {
   const { todos, byDay, loading, error } = useEventos();
 
   const [picker, setPicker] = useState(false);
+  // "Agregar evento +" abre AdderDialog, que sólo carga eventos nuevos.
   const [adder, setAdder] = useState(false);
   // El evento propio sobre el que se hizo click en el calendario o en
-  // "Próximas fechas", para que AdderDialog abra directo en modo edición en
-  // vez de la lista entera. null es el caso normal: abrir para cargar uno
-  // nuevo (el botón "Agregar evento +").
+  // "Próximas fechas": abre EditEventDialog, para editarlo/compartirlo/
+  // borrarlo. Los dos modales son independientes, no comparten estado.
   const [eventoEditar, setEventoEditar] = useState(null);
   const [flash, setFlash] = useState(null);
   const flashTimer = useRef(null);
@@ -47,21 +48,10 @@ export default function Calendario() {
     setPicker(false);
   }, [setPicks]);
 
-  // Click en un evento propio (calendario o "Próximas fechas"): abre el mismo
-  // modal de siempre, pero directo en modo edición sobre ESE evento, en vez de
-  // tener que buscarlo en la lista de abajo. null abre para cargar uno nuevo.
-  const abrirAdder = useCallback((ev = null) => {
-    setEventoEditar(ev);
-    setAdder(true);
-  }, []);
-
-  // Limpia el evento a editar al cerrar: si no, la próxima vez que se abra con
-  // "Agregar evento +" arrancaría editando el último que se tocó en el
-  // calendario en vez de un formulario en blanco.
-  const cerrarAdder = useCallback(() => {
-    setAdder(false);
-    setEventoEditar(null);
-  }, []);
+  // Click en un evento propio (calendario o "Próximas fechas"): abre
+  // EditEventDialog sobre ESE evento. Cerrarlo limpia el estado, así la
+  // próxima apertura no arranca con datos viejos.
+  const cerrarEditar = useCallback(() => setEventoEditar(null), []);
 
   return (
     <>
@@ -89,7 +79,7 @@ export default function Calendario() {
           <button className="btn" type="button" onClick={() => setPicker(true)}>
             {picks.length ? 'Cambiar' : 'Elegir sala y grado'}
           </button>
-          <button className="btn ghost" type="button" onClick={() => abrirAdder()}>
+          <button className="btn ghost" type="button" onClick={() => setAdder(true)}>
             Agregar evento +
           </button>
         </div>
@@ -111,7 +101,7 @@ export default function Calendario() {
                   hoy es {DIAS[isoDow(today)]} {today.getDate()} de {MESES[today.getMonth()]}
                 </span>
               </div>
-              <Upcoming eventos={todos} visible={visible} today={today} onEventoClick={abrirAdder} />
+              <Upcoming eventos={todos} visible={visible} today={today} onEventoClick={setEventoEditar} />
             </section>
 
             <div>
@@ -125,7 +115,7 @@ export default function Calendario() {
                   todayKey={todayKey}
                   esPrimero={i === 0}
                   onDayClick={onDayClick}
-                  onEventoClick={abrirAdder}
+                  onEventoClick={setEventoEditar}
                   flash={flash}
                 />
               ))}
@@ -135,7 +125,8 @@ export default function Calendario() {
       </div>
 
       <PickerDialog open={picker} picks={picks} onClose={() => setPicker(false)} onSave={guardarPicks} />
-      <AdderDialog open={adder} onClose={cerrarAdder} inicial={eventoEditar} />
+      <AdderDialog open={adder} onClose={() => setAdder(false)} />
+      <EditEventDialog evento={eventoEditar} onClose={cerrarEditar} />
     </>
   );
 }
