@@ -44,7 +44,17 @@ export default function App() {
       <div className="wrap">
         <footer>
           <span>Calendario del Colegio San Gabriel · septiembre a diciembre de 2026</span>
-          <span className="version">v{__APP_VERSION__}</span>
+          <span className="creditos">
+            <a href="https://dev.leviatas.com" target="_blank" rel="noopener noreferrer">
+              Hecho con ❤️ por Edu · dev.leviatas.com
+            </a>
+            {' · '}
+            <a href="https://calendly.com/leviatas/30min" target="_blank" rel="noopener noreferrer">
+              Agendá 30 min
+            </a>
+            {' · '}
+            <span className="version">v{__APP_VERSION__}</span>
+          </span>
         </footer>
       </div>
     </>
