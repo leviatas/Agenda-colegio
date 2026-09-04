@@ -8,6 +8,7 @@ import AdderDialog from '../components/AdderDialog';
 import EventoMenu from '../components/EventoMenu';
 import EventosPersonales from '../components/EventosPersonales';
 import EditEventDialog from '../components/EditEventDialog';
+import { useCompartirTodo } from '../components/CompartirTodoDialog';
 import { useAuth } from '../context/AuthContext';
 import { useEventos } from '../context/EventosContext';
 import { CAT, DIAS, MESES, MONTHS, hoy, isoDow, key, matcher, ordenarPicks } from '../lib/agenda';
@@ -22,6 +23,10 @@ export default function Calendario() {
   // para que el link y el botón de "atrás" del navegador funcionen.
   const { pathname } = useLocation();
   const soloPersonales = pathname.startsWith('/personales');
+  // "Compartir todos mis eventos" es una acción sobre la cuenta, no sobre un
+  // evento puntual: mismo modal (una única instancia) que el ícono al lado
+  // de la cuenta en Masthead.jsx.
+  const abrirCompartirTodo = useCompartirTodo();
 
   const [picker, setPicker] = useState(false);
   // "Agregar evento +" abre AdderDialog, que sólo carga eventos nuevos.
@@ -84,10 +89,16 @@ export default function Calendario() {
         <div className="picker-bar">
           {soloPersonales ? (
             // Acá no hay picks que resumir (no aplica el filtro de sala/grado):
-            // la única acción de esta barra es cargar un evento nuevo.
-            <button className="btn ghost" type="button" onClick={() => setAdder(true)}>
-              Agregar evento +
-            </button>
+            // las dos acciones de esta barra son sobre la cuenta entera, no
+            // sobre un evento puntual.
+            <>
+              <button className="btn ghost" type="button" onClick={() => setAdder(true)}>
+                Agregar evento +
+              </button>
+              <button className="btn ghost" type="button" onClick={abrirCompartirTodo}>
+                Compartir todos mis eventos
+              </button>
+            </>
           ) : (
             <>
               <div className="picker-sum">

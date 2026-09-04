@@ -331,7 +331,12 @@ aplica, se ven todos los eventos con `level === 'per'` sin importar los
 `picks` guardados. Pero en vez de repetir la grilla de meses y "Próximas
 fechas" con ese filtro, `/personales` reemplaza todo eso por
 `EventosPersonales.jsx`: una lista plana (fecha + título, sin agrupar por
-mes), y ahí vive "Agregar evento +", que en `/` no aparece.
+mes). Arriba de la lista (`Calendario.jsx`, no adentro del componente de la
+lista) van las dos acciones que son sobre la cuenta entera, no sobre un
+evento puntual: "Agregar evento +" y "Compartir todos mis eventos" —esta
+última abre el mismo modal que el ícono al lado de la cuenta en Masthead
+(ver "Compartir eventos personales" más abajo), una única instancia
+compartida entre los dos lugares.
 
 **Cada fila actúa directo, sin pasar por `EventoMenu.jsx`**: lápiz para
 editar (abre `EditEventDialog` igual que desde el calendario general) e
@@ -340,10 +345,7 @@ editar (abre `EditEventDialog` igual que desde el calendario general) e
 con fallback a link copiado y `useConfirm` que usa `EventoMenu`, pero cada
 uno resuelto ahí mismo en la fila en vez de abrir un menú intermedio. Un
 evento compartido con vos (trae `de`) sale de sólo lectura, sin esos tres
-íconos. Al pie de la lista, "Compartir eventos" abre el mismo modal que el
-ícono al lado de la cuenta en Masthead (ver "Compartir eventos personales"
-más abajo) — compartir TODOS los eventos es una acción sobre la cuenta, no
-sobre un evento puntual, así que tiene sentido en los dos lugares.
+íconos.
 
 El link de estas dos pestañas se ve **sin cuenta**, igual que el resto de la
 navegación: cargar un evento propio no pide login (ver "Eventos personales:
@@ -454,11 +456,12 @@ un solo trabajo, no uno solo que hace de todo:
   suscribió y a quién suscribiste vos. Es un Provider + hook
   (`useCompartirTodo()`, mismo patrón que `ConfirmDialog.jsx`) y no un
   simple `open`/`onClose` por prop: se abre desde el ícono al lado de la
-  cuenta en `Masthead.jsx` Y desde el botón "Compartir eventos" al pie de
-  `EventosPersonales.jsx`, dos lugares que no son parientes en el árbol de
-  componentes — de ahí la única instancia montada en `main.jsx`. Compartir
-  TODOS tus eventos no es una acción sobre un evento puntual, así que no
-  vive en ninguno de los dos modales de arriba.
+  cuenta en `Masthead.jsx` Y desde "Compartir todos mis eventos" arriba de
+  la lista en `Calendario.jsx` (no adentro de `EventosPersonales.jsx`: ese
+  componente sólo pinta las filas), dos lugares que no son parientes en el
+  árbol de componentes — de ahí la única instancia montada en `main.jsx`.
+  Compartir TODOS tus eventos no es una acción sobre un evento puntual, así
+  que no vive en ninguno de los dos modales de arriba.
 
 El ícono de compartir —tres puntos unidos por dos palos, el de
 Android/Material, no un botón de texto— es el mismo componente
