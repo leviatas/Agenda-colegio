@@ -296,11 +296,15 @@ hooks**, si no React se rompe cuando cambia la cantidad de hooks entre renders.
 
 ### Estado del cliente
 
-Dos contextos, en este orden (`main.jsx`): `AuthProvider` → `EventosProvider` →
-`ConfirmProvider`. `EventosProvider` va adentro de `AuthProvider` porque la
-carga del calendario necesita saber si hay sesión, y espera a que la sesión
-resuelva antes de pedir: si no, la primera carga saldría sin token y volvería
-sin los eventos personales.
+Cuatro providers, en este orden (`main.jsx`): `AuthProvider` → `EventosProvider`
+→ `ConfirmProvider` → `CompartirTodoProvider`. `EventosProvider` va adentro de
+`AuthProvider` porque la carga del calendario necesita saber si hay sesión, y
+espera a que la sesión resuelva antes de pedir: si no, la primera carga saldría
+sin token y volvería sin los eventos personales. `ConfirmProvider` y
+`CompartirTodoProvider` van más afuera por la misma razón: exponen un modal
+que se abre desde varios lugares del árbol que no son parientes entre sí (ver
+"Compartir eventos personales"), así que necesitan una única instancia por
+encima de todos ellos.
 
 `EventosProvider` es la **única** carga de eventos de la app. El calendario y la
 pantalla de gestión leen del mismo estado, así que editar un evento oficial se
@@ -319,17 +323,34 @@ Todo acceso a `localStorage` va envuelto en `try/catch`: en modo privado puede
 tirar tanto al leer como al escribir, y sin almacenamiento la app tiene que
 funcionar igual.
 
-**"Ver la agenda" / "Eventos Personales" (`Masthead.jsx`) no son dos pantallas
-distintas**: las dos rutas (`/` y `/personales`) renderizan `Calendario.jsx`, que
-mira `pathname` para decidir el filtro (`soloPersonales`) y qué barra de arriba
-mostrar. En `/personales` el picker de sala/grado no aplica —se ven todos los
-eventos con `level === 'per'`, sin importar los `picks` guardados— y ahí es
-donde vive "Agregar evento +", que en `/` no aparece. El link de estas dos
-pestañas se ve **sin cuenta**, igual que el resto de la navegación: cargar un
-evento propio no pide login (ver "Eventos personales: navegador o cuenta" más
-abajo), así que no hay razón para esconderlas. La única ruta que las oculta es
-la del link de un evento compartido (`/compartir/evento/:token`): a quien la
-abre puede no conocer el resto de la agenda.
+**"Ver la agenda" / "Eventos Personales" (`Masthead.jsx`) comparten la misma
+ruta de datos pero pintan cosas distintas**: las dos rutas (`/` y
+`/personales`) renderizan `Calendario.jsx`, que mira `pathname` para decidir
+el filtro (`soloPersonales`) — en `/personales` el picker de sala/grado no
+aplica, se ven todos los eventos con `level === 'per'` sin importar los
+`picks` guardados. Pero en vez de repetir la grilla de meses y "Próximas
+fechas" con ese filtro, `/personales` reemplaza todo eso por
+`EventosPersonales.jsx`: una lista plana (fecha + título, sin agrupar por
+mes), y ahí vive "Agregar evento +", que en `/` no aparece.
+
+**Cada fila actúa directo, sin pasar por `EventoMenu.jsx`**: lápiz para
+editar (abre `EditEventDialog` igual que desde el calendario general) e
+ícono de compartir al lado, cuando el evento ya existe en el server
+(`!esLocal`), más un tacho para borrar — mismo patrón de `navigator.share`
+con fallback a link copiado y `useConfirm` que usa `EventoMenu`, pero cada
+uno resuelto ahí mismo en la fila en vez de abrir un menú intermedio. Un
+evento compartido con vos (trae `de`) sale de sólo lectura, sin esos tres
+íconos. Al pie de la lista, "Compartir eventos" abre el mismo modal que el
+ícono al lado de la cuenta en Masthead (ver "Compartir eventos personales"
+más abajo) — compartir TODOS los eventos es una acción sobre la cuenta, no
+sobre un evento puntual, así que tiene sentido en los dos lugares.
+
+El link de estas dos pestañas se ve **sin cuenta**, igual que el resto de la
+navegación: cargar un evento propio no pide login (ver "Eventos personales:
+navegador o cuenta" más abajo), así que no hay razón para esconderlas. La
+única ruta que las oculta es la del link de un evento compartido
+(`/compartir/evento/:token`): a quien la abre puede no conocer el resto de
+la agenda.
 
 ### Eventos personales: navegador o cuenta
 
@@ -400,44 +421,56 @@ del lado de quien mira). Si no fuera así, regenerar el código para compartírs
 a alguien nuevo le cortaría el acceso a todos los que ya lo tenían, que no es
 lo que nadie espera de "generar un código nuevo".
 
-En el cliente esto vive repartido en cuatro modales, cada uno con un solo
-trabajo, no uno solo que hace de todo:
+En el cliente esto vive repartido en cuatro modales y una lista, cada uno con
+un solo trabajo, no uno solo que hace de todo:
 
 - **`AdderDialog.jsx`** — sólo carga un evento nuevo. Guardar cierra el
   modal; no sabe nada de editar, borrar ni compartir.
-- **`EventoMenu.jsx`** — el menú rápido de UN evento puntual: Editar,
-  Compartir, Eliminar. Es lo primero que se abre al clickear el evento
-  directo en el calendario o en "Próximas fechas" (no hay ninguna lista de
-  "mis eventos" en ningún lado). "Editar" cierra este menú y recién ahí abre
-  `EditEventDialog`; Compartir y Eliminar actúan directo desde acá, sin pasar
-  por el formulario — son la misma lógica de `navigator.share`/link copiado y
-  de `useConfirm` que antes vivía adentro de `EditEventDialog`. Lo que decide
-  si un evento es clickeable (y por lo tanto tiene este menú) es
-  `level === 'per' && !de` (`Month.jsx`, `Upcoming.jsx`) — un compartido
-  también es `'per'` pero trae `de`, así que queda como un `<div>` sin más,
-  de sólo lectura como corresponde. Ese renglón clickeable es un `<button>`
-  real, no un `<div onClick>`: todo lo interactivo de la app ya lo es (las
-  celdas del calendario, por ejemplo), para que funcione con teclado y
-  lector de pantalla sin nada extra.
+- **`EventoMenu.jsx`** — el menú rápido de UN evento puntual, sólo en el
+  calendario general (`/`): Editar, Compartir, Eliminar. Es lo primero que
+  se abre al clickear el evento directo en el calendario o en "Próximas
+  fechas". "Editar" cierra este menú y recién ahí abre `EditEventDialog`;
+  Compartir y Eliminar actúan directo desde acá, sin pasar por el
+  formulario — son la misma lógica de `navigator.share`/link copiado y de
+  `useConfirm` que reaparece, ya sin el menú de por medio, en
+  `EventosPersonales.jsx`. Lo que decide si un evento es clickeable (y por
+  lo tanto tiene este menú) es `level === 'per' && !de` (`Month.jsx`,
+  `Upcoming.jsx`) — un compartido también es `'per'` pero trae `de`, así que
+  queda como un `<div>` sin más, de sólo lectura como corresponde. Ese
+  renglón clickeable es un `<button>` real, no un `<div onClick>`: todo lo
+  interactivo de la app ya lo es (las celdas del calendario, por ejemplo),
+  para que funcione con teclado y lector de pantalla sin nada extra.
+- **`EventosPersonales.jsx`** — la única lista de "mis eventos" de la app
+  (`/personales`, ver más arriba): no es un modal, es el contenido de la
+  página. Cada fila trae lápiz y, si el evento ya existe en el server
+  (`!esLocal`), el ícono de compartir, actuando los dos directo — sin el
+  paso intermedio de `EventoMenu`— porque acá no hace falta: la fila ya está
+  en una lista dedicada a esto, no mezclada con la grilla del calendario.
 - **`EditEventDialog.jsx`** — sólo edita los campos de UN evento puntual
-  (título, fechas, horas). Guardar cierra el modal, igual que `AdderDialog`;
-  no sabe nada de compartir ni de borrar, eso quedó en `EventoMenu`.
+  (título, fechas, horas), venga el click de `EventoMenu` o de
+  `EventosPersonales`. Guardar cierra el modal, igual que `AdderDialog`; no
+  sabe nada de compartir ni de borrar.
 - **`CompartirTodoDialog.jsx`** — código propio, lista de quién te
-  suscribió y a quién suscribiste vos. Se abre desde el ícono de compartir
-  al lado de la cuenta en `Masthead.jsx` (junto al avatar, no en el
-  calendario): compartir TODOS tus eventos no es una acción sobre un
-  evento puntual, así que no vive ahí.
+  suscribió y a quién suscribiste vos. Es un Provider + hook
+  (`useCompartirTodo()`, mismo patrón que `ConfirmDialog.jsx`) y no un
+  simple `open`/`onClose` por prop: se abre desde el ícono al lado de la
+  cuenta en `Masthead.jsx` Y desde el botón "Compartir eventos" al pie de
+  `EventosPersonales.jsx`, dos lugares que no son parientes en el árbol de
+  componentes — de ahí la única instancia montada en `main.jsx`. Compartir
+  TODOS tus eventos no es una acción sobre un evento puntual, así que no
+  vive en ninguno de los dos modales de arriba.
 
 El ícono de compartir —tres puntos unidos por dos palos, el de
 Android/Material, no un botón de texto— es el mismo componente
-(`IconoCompartir.jsx`) en los dos lugares donde aparece (`EventoMenu` y
-Masthead). Tocarlo abre el panel nativo del sistema (`navigator.share`)
-cuando el navegador lo tiene —así la persona elige WhatsApp, Mail, lo que
-tenga— y si no existe (la mayoría de los navegadores de escritorio) cae al
-link copiado solo en un input, que sigue ahí para pegarlo a mano. Cancelar
-el panel nativo tira `AbortError`, que no se trata como error. La página
-del link (`/compartir/evento/:token`, `CompartirEvento.jsx`) es una ruta
-aparte porque la abre alguien que capaz nunca usó la agenda.
+(`IconoCompartir.jsx`) en los tres lugares donde aparece (`EventoMenu`,
+`EventosPersonales` y Masthead). Tocarlo abre el panel nativo del sistema
+(`navigator.share`) cuando el navegador lo tiene —así la persona elige
+WhatsApp, Mail, lo que tenga— y si no existe (la mayoría de los navegadores
+de escritorio) cae al link copiado solo en un input, que sigue ahí para
+pegarlo a mano. Cancelar el panel nativo tira `AbortError`, que no se trata
+como error. La página del link (`/compartir/evento/:token`,
+`CompartirEvento.jsx`) es una ruta aparte porque la abre alguien que capaz
+nunca usó la agenda.
 
 ### Resolución de la URL del server
 

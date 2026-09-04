@@ -1200,6 +1200,53 @@ footer .version { font-variant-numeric: tabular-nums; opacity: .7; }
 .ev-menu-btn:focus-visible .ev-menu-icon { outline: 2px solid var(--ins); outline-offset: 2px; }
 .ev-menu-cancel { width: 100%; margin-top: 1.2rem; }
 
+/* ══════════ Lista de "Eventos Personales" ══════════ */
+
+/* A diferencia del calendario general (donde tocar un evento abre EventoMenu),
+   acá cada fila actúa directo: lápiz y compartir al lado, sin menú de por
+   medio — ver EventosPersonales.jsx. */
+.per-list { list-style: none; margin: 0; padding: 0; }
+.per-item {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr auto;
+  align-items: center;
+  gap: .3rem .9rem;
+  padding: .6rem .6rem;
+  font-size: .9rem;
+  border-bottom: 1px solid var(--line-soft);
+}
+.per-fecha { font-weight: 600; color: var(--ink-soft); white-space: nowrap; }
+.per-titulo { overflow-wrap: anywhere; }
+.per-titulo .de { color: var(--ink-faint); font-size: .85rem; }
+.per-acciones { display: flex; gap: .1rem; }
+/* Mismo tamaño e interacción que .share (Masthead): ícono solo, redondo. */
+.per-acciones .ic {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 1.9rem;
+  height: 1.9rem;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink-faint);
+  cursor: pointer;
+}
+.per-acciones .ic svg { width: .95rem; height: .95rem; }
+.per-acciones .ic:hover { background: var(--per-bg); color: var(--per); }
+.per-acciones .ic:focus-visible { outline: 2px solid var(--per); outline-offset: 1px; }
+.per-acciones .ic.danger:hover { background: var(--ini-bg); color: var(--ini); }
+
+.per-compartir-todo { display: block; margin-top: 1.3rem; }
+
+/* En celular no entran las tres columnas: fecha y acciones arriba, título
+   abajo ocupando todo el ancho (mismo truco de `order` que .of-list). */
+@media (max-width: 720px) {
+  .per-item { grid-template-columns: 1fr auto; }
+  .per-titulo { grid-column: 1 / -1; order: 3; }
+}
+
 /* ══════════ Gestión del calendario oficial ══════════ */
 
 .card-form {
