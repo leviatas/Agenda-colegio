@@ -1238,8 +1238,6 @@ footer .version { font-variant-numeric: tabular-nums; opacity: .7; }
 .per-acciones .ic:focus-visible { outline: 2px solid var(--per); outline-offset: 1px; }
 .per-acciones .ic.danger:hover { background: var(--ini-bg); color: var(--ini); }
 
-.per-compartir-todo { display: block; margin-top: 1.3rem; }
-
 /* En celular no entran las tres columnas: fecha y acciones arriba, título
    abajo ocupando todo el ancho (mismo truco de `order` que .of-list). */
 @media (max-width: 720px) {
@@ -1344,10 +1342,14 @@ footer .version { font-variant-numeric: tabular-nums; opacity: .7; }
      dejarlo al lado. Con nowrap en la barra y min-width: 0 en el resumen, el
      que se envuelve en varias líneas es el resumen —adentro suyo, con su
      propio flex-wrap— y el botón queda siempre pegado a la derecha, en la
-     misma fila en la que arranca el resumen. */
-  .picker-bar { flex-wrap: nowrap; align-items: flex-start; }
+     misma fila en la que arranca el resumen.
+     Va sólo con :has(.picker-sum) porque en /personales esta barra no tiene
+     resumen, son dos botones sueltos ("Agregar evento +" y "Compartir todos
+     mis eventos"): con nowrap ahí, en vez de acomodarse en dos líneas,
+     desbordarían el ancho de la pantalla. */
+  .picker-bar:has(.picker-sum) { flex-wrap: nowrap; align-items: flex-start; }
   .picker-sum { flex: 1 1 auto; min-width: 0; }
-  .picker-bar > .btn { flex: 0 0 auto; }
+  .picker-bar:has(.picker-sum) > .btn { flex: 0 0 auto; }
   .wrap-bar { padding-bottom: 1.1rem; }
 }
 

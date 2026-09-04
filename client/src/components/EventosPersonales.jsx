@@ -3,7 +3,6 @@ import Dialog from './Dialog';
 import { useAuth } from '../context/AuthContext';
 import { useEventos } from '../context/EventosContext';
 import { useConfirm } from './ConfirmDialog';
-import { useCompartirTodo } from './CompartirTodoDialog';
 import { api } from '../api';
 import { esLocal } from '../lib/personales';
 import IconoEditar from './IconoEditar';
@@ -26,7 +25,6 @@ export default function EventosPersonales({ eventos, visible, onEditar }) {
   const { token } = useAuth();
   const { borrarMio } = useEventos();
   const confirm = useConfirm();
-  const abrirCompartirTodo = useCompartirTodo();
 
   const [error, setError] = useState('');
   // Link recién generado, si tocaron compartir y el navegador no tiene panel
@@ -119,13 +117,6 @@ export default function EventosPersonales({ eventos, visible, onEditar }) {
           );
         })}
       </ul>
-
-      {/* Compartir TODOS los eventos es aparte de compartir uno solo: mismo
-          modal que el ícono de Masthead, una única instancia compartida (ver
-          CompartirTodoDialog.jsx). */}
-      <button type="button" className="btn ghost per-compartir-todo" onClick={abrirCompartirTodo}>
-        Compartir eventos
-      </button>
 
       <Dialog open={Boolean(link)} onClose={() => setLink(null)} id="per-link" className="ev-menu-dialog" labelledBy="per-link-title">
         {link && (
