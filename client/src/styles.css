@@ -1076,6 +1076,44 @@ footer .version { font-variant-numeric: tabular-nums; opacity: .7; }
   .us-alta { grid-column: 2; grid-row: auto; }
 }
 
+/* ══════════ Métricas de acceso (sólo admin) ══════════ */
+
+.mt-nota { max-width: 68ch; }
+
+.mt-list { list-style: none; margin: 0; padding: 0; }
+.mt-list li {
+  display: grid;
+  grid-template-columns: 9.5rem 1fr 4.5rem 8rem;
+  align-items: baseline;
+  gap: .2rem .9rem;
+  padding: .55rem .6rem;
+  font-size: .88rem;
+  border-bottom: 1px solid var(--line-soft);
+}
+.mt-list li.mt-head {
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  border-bottom: 1px solid var(--line-strong);
+}
+.mt-ip { font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.mt-usuario { color: var(--ink-soft); overflow-wrap: anywhere; }
+.mt-usuario .muted { color: var(--ink-faint); }
+.mt-visitas { font-variant-numeric: tabular-nums; color: var(--ink-faint); }
+.mt-fecha { font-size: .82rem; color: var(--ink-faint); white-space: nowrap; }
+
+/* En celular no entran las cuatro columnas: la fila pasa a dos líneas (IP +
+   visitas arriba, usuario y fecha abajo) y el encabezado —que ya no tiene
+   nada que alinear— se esconde. */
+@media (max-width: 720px) {
+  .mt-list li { grid-template-columns: 1fr auto; }
+  .mt-list li.mt-head { display: none; }
+  .mt-usuario { grid-column: 1 / -1; }
+  .mt-fecha { grid-column: 1 / -1; }
+}
+
 /* ══════════ Confirmación de acciones destructivas ══════════ */
 
 /* La caja (fondo, borde, sombra, radio) la pone la regla de `dialog`: acá sólo

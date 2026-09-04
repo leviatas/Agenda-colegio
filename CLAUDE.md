@@ -17,10 +17,13 @@ navegador. Entrar con Google sirve para dos cosas:
   colegio, salvo que la propia cuenta decida compartirlos (ver "Compartir
   eventos personales") — eso es opt-in y explícito, no cambia el default;
 - **los emails de `ADMIN_EMAILS`** (hoy `leviatas@gmail.com`) además pueden
-  editar el calendario oficial en `/oficial` y ver en `/usuarios` la lista de
-  cuentas que entraron con Google (nombre, mail, si es admin y desde cuándo).
-  Esa lista **no** muestra los eventos personales de nadie, ni cuántos tiene
-  cada uno: son privados también para el admin.
+  editar el calendario oficial en `/oficial`, ver en `/usuarios` la lista de
+  cuentas que entraron con Google (nombre, mail, si es admin y desde cuándo) y
+  en `/metricas` cuánta gente distinta se logueó y los accesos agrupados por
+  IP, con la cuenta al lado cuando esa IP corresponde a alguien logueado (ver
+  "Telemetría de visitas"). Ninguna de esas pantallas muestra los eventos
+  personales de nadie, ni cuántos tiene cada uno: son privados también para
+  el admin.
 
 No hay aprobación ni alta manual: la primera vez que alguien entra con Google
 queda habilitado. `isAdmin` sale siempre de `ADMIN_EMAILS` y se recalcula en
@@ -190,12 +193,14 @@ JSON con el prefijo `[telemetria]` en stdout — en Docker, el log del contenedo
 `server` (`server/src/lib/telemetria.js`).
 
 La persona se identifica con un **id random que genera el navegador** y queda en
-`localStorage` bajo `sg-visitante-v1`. **No se loguea ni el mail, ni la IP, ni
-el user-agent**: para contar visitantes distintos alcanza un número que no
-identifica a nadie, y de las cuentas sale sólo el `id` numérico (el mail ya está
-en `/usuarios`, que es del admin). Como el id es del navegador, la misma familia
-desde el celular y desde la compu cuenta dos, y quien limpia el navegador vuelve
-a contar como visita nueva: es un piso, no un padrón.
+`localStorage` bajo `sg-visitante-v1`. **En este log no se loguea ni el mail,
+ni la IP, ni el user-agent**: para contar visitantes distintos alcanza un
+número que no identifica a nadie, y de las cuentas sale sólo el `id` numérico
+(el mail ya está en `/usuarios`, que es del admin). Como el id es del
+navegador, la misma familia desde el celular y desde la compu cuenta dos, y
+quien limpia el navegador vuelve a contar como visita nueva: es un piso, no un
+padrón. (El mismo ping SÍ guarda la IP, aparte y sólo para el admin — ver
+"Métricas de acceso" más abajo.)
 
 Tres tipos de línea: `visita` (una por carga), `login` (ingreso con Google, con
 `nueva: true` si es el primero de esa cuenta) y `resumen` (los totales de un día
@@ -216,6 +221,42 @@ Dos cosas a tener presentes:
   tope la línea sale con `tope: true` y los únicos son un piso.
 
 Cómo se leen los números está en el README ("Telemetría").
+
+### Métricas de acceso (admin)
+
+A diferencia de la telemetría de arriba —que es sólo log, sin tabla, y no
+identifica a nadie—, `/metricas` (`client/src/pages/Metricas.jsx`, cerrada por
+`requireAdmin` como `/oficial` y `/usuarios`) sí necesita persistir algo: para
+qué el admin sepa cuánta gente **distinta se logueó** y, si una IP conocida
+corresponde a alguien logueado, quién es. Eso vive en el modelo `Visita`
+(`schema.prisma`): una fila por cada ping de telemetría (`POST
+/api/telemetria/visita`, el mismo de arriba) con la IP (`req.ip`) y el
+`userId` si hay sesión — `server/src/lib/metricas.js` la escribe
+(`registrarAcceso`, fire-and-forget, no debe demorar la respuesta al
+cliente) y la agrupa (`obtenerMetricas`, que arma una fila por IP con la
+cuenta o cuentas de esa IP y cuándo fue la última vez).
+
+**Ese "cuánta gente distinta se logueó" es simplemente `User.count()`**: toda
+fila de `User` se creó en un login con Google (`routes/auth.js`), así que no
+hace falta ningún contador aparte.
+
+Dos cosas a tener presentes:
+
+- **`req.ip` sólo da la IP real detrás de nginx porque `index.js` tiene
+  `app.set('trust proxy', 1)`** — confía en un único salto (el nginx del
+  propio `docker-compose`), no en una lista abierta de proxies. Sin esto
+  todas las filas de `Visita` tendrían la IP interna del contenedor de nginx,
+  no la del navegador.
+- **La tabla se poda sola, sin cron aparte**: cada escritura tiene una
+  probabilidad baja (0,5%) de disparar un `deleteMany` de las filas de más de
+  180 días (`RETENCION_DIAS` en `lib/metricas.js`). Alcanza para un sitio de
+  este tamaño y evita que la tabla crezca sin límite para siempre.
+
+Esto es la única persistencia de IP de toda la app, y es a propósito acotada:
+sólo la ve el admin, sólo sirve para saber quién anda usando la agenda desde
+dónde, y borrar una cuenta no borra sus accesos (`onDelete: SetNull` en
+`Visita.userId`) — quedan como accesos sin cuenta, no desaparecen del
+historial.
 
 ### Auth y permisos
 

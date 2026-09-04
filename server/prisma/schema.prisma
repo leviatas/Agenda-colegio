@@ -42,6 +42,7 @@ model User {
   events         PersonalEvent[]
   suscriptoresDe EventSubscription[] @relation("Owner")
   suscripciones  EventSubscription[] @relation("Subscriber")
+  accesos        Visita[]
 }
 
 // Calendario oficial del colegio. Lo edita SOLO un admin (routes/oficial.js);
@@ -116,4 +117,23 @@ model EventSubscription {
 
   @@unique([ownerId, subscriberId])
   @@index([subscriberId])
+}
+
+// Accesos por IP, para /metricas (sólo admin, ver routes/metricas.js).
+// Aparte de lib/telemetria.js a propósito: ese archivo es el conteo anónimo
+// que sale por stdout y nunca guarda IP ni mail (ver el comentario de ahí).
+// Esta tabla sí persiste la IP, así que vive detrás de requireAdmin en todo
+// momento y sólo cuenta accesos — nunca contenido de nadie. `userId` es nulo
+// en una visita sin sesión; si más tarde esa cuenta se borra, la fila de
+// acceso queda igual (`SetNull`), no desaparece con ella.
+model Visita {
+  id     Int   @id @default(autoincrement())
+  ip     String
+  userId Int?
+  user   User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  creadoEn DateTime @default(now())
+
+  @@index([ip])
+  @@index([creadoEn])
 }
