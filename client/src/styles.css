@@ -402,10 +402,6 @@ dialog::backdrop { background: rgba(12,18,15,.55); }
   border-top: 1px solid var(--line);
   background: var(--card-2);
 }
-/* EditEventDialog tiene tres botones: "Borrar" separado a la izquierda (una
-   acción distinta, sobre el evento entero) y Cancelar/Guardar agrupados a la
-   derecha, para no romper el space-between de arriba en tres partes sueltas. */
-.modal-foot-right { display: flex; align-items: center; gap: .8rem; }
 .mbtn {
   font: inherit;
   font-size: .85rem;
@@ -418,15 +414,6 @@ dialog::backdrop { background: rgba(12,18,15,.55); }
   color: var(--ink-soft);
 }
 .mbtn.primary { background: var(--btn-bg); border-color: var(--btn-bg); color: var(--btn-fg); }
-/* Mismo rojo que el botón de confirmar en ConfirmDialog (.modal-actions
-   .btn-danger): "Borrar" en EditEventDialog vive en el pie del modal, no en
-   la confirmación, así que necesita su propia regla con este selector. */
-.mbtn.btn-danger { background: var(--ini); border-color: var(--ini); color: #FFF; }
-/* "Borrar" de EditEventDialog es sólo el tacho, sin texto: la píldora con
-   padding horizontal de .mbtn queda ovalada con un ícono solo, así que este
-   modificador la vuelve circular y centra el SVG. */
-.mbtn.icon-only { display: inline-flex; align-items: center; justify-content: center; width: 2.4rem; height: 2.4rem; padding: 0; }
-.mbtn.icon-only svg { width: 1.1rem; height: 1.1rem; }
 .mbtn:hover { opacity: .85; }
 .mbtn:focus-visible { outline: 2px solid var(--ins); outline-offset: 2px; }
 
@@ -964,9 +951,9 @@ footer .version { font-variant-numeric: tabular-nums; opacity: .7; }
 .mine .edit:hover { border-color: var(--per); color: var(--per); }
 .mine .edit:focus-visible { outline: 2px solid var(--per); outline-offset: 1px; }
 
-/* Ícono solo, redondo: el típico de compartir. Lo usan el header de
-   EditEventDialog (un evento puntual) y Masthead (todos los eventos, al lado
-   de la cuenta) — cada uno con su propia variante de color más abajo. */
+/* Ícono solo, redondo: el de compartir TODOS los eventos, al lado de la
+   cuenta en Masthead (compartir uno puntual vive en EventoMenu, con su
+   propio estilo de fila de acciones — ver .ev-menu-btn). */
 .share {
   display: inline-flex;
   align-items: center;
@@ -1128,6 +1115,53 @@ footer .version { font-variant-numeric: tabular-nums; opacity: .7; }
 .modal-actions .btn-danger { background: var(--ini); border-color: var(--ini); color: #FFF; }
 .modal-actions button:focus-visible { outline: 2px solid var(--per); outline-offset: 2px; }
 
+/* ══════════ Menú rápido de un evento propio ══════════ */
+
+/* Mismo criterio que .confirm-dialog: es una lista corta de acciones, no un
+   formulario, así que no necesita ni los 640px de ancho ni pantalla completa
+   en celular (ver la excepción de .confirm-dialog en el media query de
+   abajo). */
+.ev-menu-dialog {
+  width: min(22rem, calc(100vw - 2rem));
+  height: max-content;
+}
+.ev-menu { padding: 1.3rem 1.4rem 1.4rem; }
+.ev-menu-title {
+  font-family: 'Bodoni Moda', 'Bodoni MT', Didot, Georgia, serif;
+  font-weight: 500;
+  font-size: 1.2rem;
+  margin: 0 0 1.1rem;
+}
+.ev-menu-row { display: flex; justify-content: space-around; gap: .5rem; }
+.ev-menu-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .4rem;
+  font: inherit;
+  font-size: .78rem;
+  font-weight: 600;
+  background: transparent;
+  border: 0;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.ev-menu-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.7rem;
+  height: 2.7rem;
+  border-radius: 999px;
+}
+.ev-menu-icon svg { width: 1.3rem; height: 1.3rem; }
+.ev-menu-btn:hover .ev-menu-icon, .ev-menu-btn:focus-visible .ev-menu-icon { background: var(--per-bg); color: var(--per); }
+.ev-menu-btn.danger { color: var(--ini); }
+.ev-menu-btn.danger:hover .ev-menu-icon, .ev-menu-btn.danger:focus-visible .ev-menu-icon { background: var(--ini-bg); }
+.ev-menu-btn:focus-visible { outline: none; }
+.ev-menu-btn:focus-visible .ev-menu-icon { outline: 2px solid var(--ins); outline-offset: 2px; }
+.ev-menu-cancel { width: 100%; margin-top: 1.2rem; }
+
 /* ══════════ Gestión del calendario oficial ══════════ */
 
 .card-form {
@@ -1242,8 +1276,9 @@ footer .version { font-variant-numeric: tabular-nums; opacity: .7; }
 /* ══════════ Modales a pantalla completa en celular ══════════ */
 
 /* dvh y no vh: la barra de direcciones se esconde al scrollear y con vh el
-   modal queda más alto que la pantalla. El diálogo de confirmación queda
-   centrado a propósito — es una pregunta corta, no un formulario. */
+   modal queda más alto que la pantalla. El diálogo de confirmación y el menú
+   rápido de un evento quedan centrados a propósito — son una pregunta corta y
+   una lista de acciones, no un formulario. */
 @media (max-width: 720px) {
   /* Alto EXACTO de pantalla, no `min-height` sin tope: el <dialog> modal es
      fijo al viewport y `overflow: hidden`, así que si lo dejamos crecer con el
@@ -1262,7 +1297,8 @@ footer .version { font-variant-numeric: tabular-nums; opacity: .7; }
   .modal-in { height: 100dvh; }
   /* La confirmación queda centrada y del tamaño de su texto: es una pregunta
      corta, no un formulario, y a pantalla completa se lee como otra cosa. */
-  .confirm-dialog {
+  .confirm-dialog,
+  .ev-menu-dialog {
     width: min(26rem, calc(100vw - 2rem));
     height: max-content;
     max-height: calc(100dvh - 2rem);
@@ -1270,7 +1306,8 @@ footer .version { font-variant-numeric: tabular-nums; opacity: .7; }
     border: 1px solid var(--line);
     border-radius: 16px;
   }
-  .confirm-dialog .modal-in { height: auto; }
+  .confirm-dialog .modal-in,
+  .ev-menu-dialog .modal-in { height: auto; }
   /* min-height: 0 para que el hijo flex pueda achicarse por debajo de su
      contenido; sin eso el cuerpo empuja el alto y el scroll no aparece. */
   .modal-body { flex: 1; min-height: 0; }

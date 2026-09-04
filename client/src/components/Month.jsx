@@ -130,8 +130,9 @@ function Evento({ occ, onEventoClick }) {
       : `día ${occ.idx + 1} de ${occ.total}`;
   }
 
-  // Sólo se puede editar/compartir lo propio: un oficial no es tuyo, y uno
-  // compartido (trae `de`) es de sólo lectura para quien lo ve por suscripción.
+  // Sólo se puede editar/compartir/borrar lo propio: un oficial no es tuyo, y
+  // uno compartido (trae `de`) es de sólo lectura para quien lo ve por
+  // suscripción.
   const esPropio = ev.level === 'per' && !ev.de;
   // <button> y no un div con onClick: todo lo clickeable de la app ya es un
   // botón real (las celdas del calendario, acá arriba), por teclado y lector
@@ -143,7 +144,7 @@ function Evento({ occ, onEventoClick }) {
       type={esPropio ? 'button' : undefined}
       className={`ev ${ev.level}${occ.span ? ' span' : ''}${esPropio ? ' clickable' : ''}`}
       onClick={esPropio ? () => onEventoClick(ev) : undefined}
-      aria-label={esPropio ? `Editar o compartir "${ev.title}"` : undefined}
+      aria-label={esPropio ? `Opciones de "${ev.title}"` : undefined}
     >
       <span className="dot" />
       <span className="h">{ev.time ? `${textoHora(ev)}hs` : ''}</span>

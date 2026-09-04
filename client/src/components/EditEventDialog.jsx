@@ -1,18 +1,13 @@
 import { useState } from 'react';
 import Dialog from './Dialog';
-import { useAuth } from '../context/AuthContext';
 import { useEventos } from '../context/EventosContext';
-import { useConfirm } from './ConfirmDialog';
-import { api } from '../api';
-import { esLocal } from '../lib/personales';
-import IconoCompartir from './IconoCompartir';
-import IconoBorrar from './IconoBorrar';
 import { DESDE, HASTA, fmtHora, toInputHora } from '../lib/agenda';
 
-// Editar, borrar o compartir UN evento propio, abierto clickeándolo directo
-// en el calendario o en "Próximas fechas" (Month.jsx, Upcoming.jsx vía
-// Calendario.jsx). No hay lista de "mis eventos" acá: el calendario mismo es
-// la lista.
+// Editar UN evento propio. Se llega acá SÓLO tocando "Editar" en EventoMenu
+// (el menú rápido que se abre al clickear el evento en el calendario o en
+// "Próximas fechas"): compartir y borrar viven en ese menú, así que este
+// modal tiene un solo trabajo. No hay lista de "mis eventos" en ningún lado:
+// el calendario mismo es la lista.
 function formularioDe(ev) {
   return {
     id: ev.id,
@@ -25,9 +20,7 @@ function formularioDe(ev) {
 }
 
 function Cuerpo({ evento, onClose }) {
-  const { token } = useAuth();
-  const { editarMio, borrarMio } = useEventos();
-  const confirm = useConfirm();
+  const { editarMio } = useEventos();
 
   // Se lee una sola vez al montar: Dialog desmonta este componente entero al
   // cerrarse (ver Dialog.jsx), así que cada apertura ya arranca con el evento
@@ -35,10 +28,6 @@ function Cuerpo({ evento, onClose }) {
   const [form, setForm] = useState(() => formularioDe(evento));
   const [error, setError] = useState('');
   const [guardando, setGuardando] = useState(false);
-
-  // Link recién generado para este evento, si tocaron compartir y el
-  // navegador no tiene panel nativo (ver `compartir` más abajo).
-  const [link, setLink] = useState(null);
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
@@ -82,66 +71,10 @@ function Cuerpo({ evento, onClose }) {
     }
   }
 
-  async function borrar() {
-    const ok = await confirm({
-      title: 'Borrar evento',
-      message: `¿Borrar "${form.title}"? No se puede deshacer.`,
-      confirmLabel: 'Borrar',
-    });
-    if (!ok) return;
-    try {
-      await borrarMio(form.id);
-      onClose();
-    } catch (err) {
-      setError(err.message);
-    }
-  }
-
-  // Con navigator.share disponible (celular, básicamente) se abre el panel
-  // nativo del sistema —WhatsApp, Mensajes, Mail, lo que tenga instalado la
-  // persona— y listo, no hace falta nada más de acá. Cancelar ese panel tira
-  // un AbortError que no es un error de verdad, así que no muestra nada. Sin
-  // navigator.share (la mayoría de los navegadores de escritorio) se cae al
-  // link copiado en el input de abajo, que sigue existiendo para eso.
-  async function compartir() {
-    setError('');
-    try {
-      const { token: evToken } = await api.mios.compartir(token, form.id);
-      const url = `${window.location.origin}/compartir/evento/${evToken}`;
-
-      if (navigator.share) {
-        try {
-          await navigator.share({ title: form.title, text: `Te comparto este evento: ${form.title}`, url });
-          return;
-        } catch (err) {
-          if (err.name === 'AbortError') return;
-          // Cualquier otro motivo (por ejemplo el panel no llegó a abrir):
-          // sigue de largo al plan B de copiar el link.
-        }
-      }
-
-      setLink(url);
-      try {
-        await navigator.clipboard.writeText(url);
-      } catch (err) {
-        /* se copia a mano desde el input de abajo */
-      }
-    } catch (err) {
-      setError(err.message);
-    }
-  }
-
   return (
     <>
       <div className="modal-head">
         <h2 id="edit-event-title">Editar evento</h2>
-        {/* Sólo si ya existe en el server: uno local (sin cuenta todavía) no
-            tiene nada que compartir. */}
-        {!esLocal(form.id) && (
-          <button type="button" className="share" title="Compartir" aria-label={`Compartir ${form.title}`} onClick={compartir}>
-            <IconoCompartir />
-          </button>
-        )}
       </div>
 
       <div className="modal-body">
@@ -173,28 +106,13 @@ function Cuerpo({ evento, onClose }) {
         </div>
 
         {error && <p className="err">{error}</p>}
-
-        {link && (
-          <div className="share-link">
-            <p className="lede muted">El link se copió solo. Si no, pegalo a mano desde acá.</p>
-            <div className="share-link-row">
-              <input readOnly value={link} onFocus={(e) => e.target.select()} />
-              <button type="button" className="mbtn" onClick={() => setLink(null)}>Listo</button>
-            </div>
-          </div>
-        )}
       </div>
 
       <div className="modal-foot">
-        <button className="mbtn btn-danger icon-only" type="button" onClick={borrar} title="Borrar" aria-label={`Borrar ${form.title}`}>
-          <IconoBorrar />
+        <button className="mbtn" type="button" onClick={onClose}>Cancelar</button>
+        <button className="mbtn primary" type="button" onClick={guardar} disabled={guardando}>
+          {guardando ? 'Guardando…' : 'Guardar cambios'}
         </button>
-        <div className="modal-foot-right">
-          <button className="mbtn" type="button" onClick={onClose}>Cancelar</button>
-          <button className="mbtn primary" type="button" onClick={guardar} disabled={guardando}>
-            {guardando ? 'Guardando…' : 'Guardar cambios'}
-          </button>
-        </div>
       </div>
     </>
   );
