@@ -932,6 +932,13 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .modal-body .lede.muted { color: var(--ink-faint); font-size: .84rem; margin-top: .5rem; }
 
 footer .version { font-variant-numeric: tabular-nums; opacity: .7; }
+.creditos a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.creditos a:hover { color: var(--ink); }
+.creditos a:focus-visible { outline: 2px solid var(--ins); outline-offset: 2px; border-radius: 2px; }
 
 /* ══════════ Compartir ══════════ */
 
