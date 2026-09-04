@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import ThemeSwitch from './ThemeSwitch';
 import GoogleLoginButton from './GoogleLoginButton';
 import IconoCompartir from './IconoCompartir';
-import CompartirTodoDialog from './CompartirTodoDialog';
+import { useCompartirTodo } from './CompartirTodoDialog';
 import { useAuth } from '../context/AuthContext';
 import { useAngosto } from '../lib/media';
 
@@ -13,9 +13,9 @@ export default function Masthead() {
   const angosto = useAngosto();
   const [errorLogin, setErrorLogin] = useState('');
   // Compartir TODOS los eventos (código + suscripciones) es aparte de
-  // compartir uno solo: se abre desde acá, al lado de la cuenta, no desde
-  // ningún evento puntual (ver CompartirTodoDialog.jsx).
-  const [compartirTodo, setCompartirTodo] = useState(false);
+  // compartir uno solo: el modal es una única instancia compartida con
+  // EventosPersonales.jsx (ver CompartirTodoDialog.jsx), acá sólo se abre.
+  const abrirCompartirTodo = useCompartirTodo();
   const enOficial = pathname.startsWith('/oficial');
   const enUsuarios = pathname.startsWith('/usuarios');
   const enMetricas = pathname.startsWith('/metricas');
@@ -49,7 +49,7 @@ export default function Masthead() {
                   className="share"
                   title="Compartir tus eventos"
                   aria-label="Compartir todos tus eventos"
-                  onClick={() => setCompartirTodo(true)}
+                  onClick={abrirCompartirTodo}
                 >
                   <IconoCompartir />
                 </button>
@@ -104,8 +104,6 @@ export default function Masthead() {
           </nav>
         )}
       </div>
-
-      <CompartirTodoDialog open={compartirTodo} onClose={() => setCompartirTodo(false)} />
     </header>
   );
 }

@@ -6,6 +6,7 @@ import Upcoming from '../components/Upcoming';
 import PickerDialog from '../components/PickerDialog';
 import AdderDialog from '../components/AdderDialog';
 import EventoMenu from '../components/EventoMenu';
+import EventosPersonales from '../components/EventosPersonales';
 import EditEventDialog from '../components/EditEventDialog';
 import { useAuth } from '../context/AuthContext';
 import { useEventos } from '../context/EventosContext';
@@ -119,39 +120,41 @@ export default function Calendario() {
         {loading && <p className="empty-note">Cargando el calendario…</p>}
 
         {!loading && (
-          <>
-            {/* Un solo nivel en esta vista: la referencia de todos los niveles
-                no suma nada acá. */}
-            {!soloPersonales && <Legend eventos={todos} visible={visible} />}
+          soloPersonales ? (
+            <EventosPersonales eventos={todos} visible={visible} onEditar={setEventoEditar} />
+          ) : (
+            <>
+              <Legend eventos={todos} visible={visible} />
 
-            <section className="upcoming">
-              <div className="sec-head">
-                <h2>Próximas fechas</h2>
-                <span className="rule" />
-                <span className="meta">
-                  hoy es {DIAS[isoDow(today)]} {today.getDate()} de {MESES[today.getMonth()]}
-                </span>
+              <section className="upcoming">
+                <div className="sec-head">
+                  <h2>Próximas fechas</h2>
+                  <span className="rule" />
+                  <span className="meta">
+                    hoy es {DIAS[isoDow(today)]} {today.getDate()} de {MESES[today.getMonth()]}
+                  </span>
+                </div>
+                <Upcoming eventos={todos} visible={visible} today={today} onEventoClick={setEventoMenu} />
+              </section>
+
+              <div>
+                {MONTHS.map(([year, mon], i) => (
+                  <Month
+                    key={`${year}-${mon}`}
+                    year={year}
+                    mon={mon}
+                    byDay={byDay}
+                    visible={visible}
+                    todayKey={todayKey}
+                    esPrimero={i === 0}
+                    onDayClick={onDayClick}
+                    onEventoClick={setEventoMenu}
+                    flash={flash}
+                  />
+                ))}
               </div>
-              <Upcoming eventos={todos} visible={visible} today={today} onEventoClick={setEventoMenu} />
-            </section>
-
-            <div>
-              {MONTHS.map(([year, mon], i) => (
-                <Month
-                  key={`${year}-${mon}`}
-                  year={year}
-                  mon={mon}
-                  byDay={byDay}
-                  visible={visible}
-                  todayKey={todayKey}
-                  esPrimero={i === 0}
-                  onDayClick={onDayClick}
-                  onEventoClick={setEventoMenu}
-                  flash={flash}
-                />
-              ))}
-            </div>
-          </>
+            </>
+          )
         )}
       </div>
 

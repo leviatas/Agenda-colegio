@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import Dialog from './Dialog';
 import { useAuth } from '../context/AuthContext';
 import { useEventos } from '../context/EventosContext';
@@ -7,9 +7,35 @@ import { api } from '../api';
 
 // Compartir TODOS los eventos propios, en vivo, por código: quien lo canjea
 // ve mezclados en su calendario los que ya tenías y los que cargues después,
-// hasta que uno de los dos lo corte. Se abre desde el ícono de compartir al
-// lado de la cuenta (Masthead.jsx) — nada que ver con un evento puntual, que
+// hasta que uno de los dos lo corte. Nada que ver con un evento puntual, que
 // es EditEventDialog.jsx.
+//
+// Provider + hook (mismo patrón que ConfirmDialog.jsx) y no un simple
+// open/onClose por prop: se abre desde dos lugares que no son parientes en el
+// árbol —el ícono al lado de la cuenta en Masthead.jsx y el botón al pie de
+// la lista de EventosPersonales.jsx—, así que hace falta una única instancia
+// del modal en vez de una por cada lugar que lo abre (dos `<dialog>` con el
+// mismo id sería HTML inválido, y en cualquier momento sólo puede haber uno
+// abierto).
+const CompartirTodoContext = createContext(null);
+
+export function CompartirTodoProvider({ children }) {
+  const [abierto, setAbierto] = useState(false);
+
+  return (
+    <CompartirTodoContext.Provider value={() => setAbierto(true)}>
+      {children}
+      <Dialog open={abierto} onClose={() => setAbierto(false)} id="compartir-todo" labelledBy="compartir-todo-title">
+        <Cuerpo onClose={() => setAbierto(false)} />
+      </Dialog>
+    </CompartirTodoContext.Provider>
+  );
+}
+
+export function useCompartirTodo() {
+  return useContext(CompartirTodoContext);
+}
+
 function Cuerpo({ onClose }) {
   const { token } = useAuth();
   const { cargar } = useEventos();
@@ -199,13 +225,5 @@ function Cuerpo({ onClose }) {
         <button className="mbtn" type="button" onClick={onClose}>Cerrar</button>
       </div>
     </>
-  );
-}
-
-export default function CompartirTodoDialog({ open, onClose }) {
-  return (
-    <Dialog open={open} onClose={onClose} id="compartir-todo" labelledBy="compartir-todo-title">
-      <Cuerpo onClose={onClose} />
-    </Dialog>
   );
 }
