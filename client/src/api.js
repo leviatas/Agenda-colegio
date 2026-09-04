@@ -73,6 +73,10 @@ export const api = {
   // requireAdmin). No trae nada de los eventos personales de nadie.
   usuarios: (token) => request('/usuarios', { token }),
 
+  // Cuántas cuentas distintas se logearon y accesos agrupados por IP, sólo
+  // para el admin (el server la cierra con requireAdmin).
+  metricas: (token) => request('/metricas', { token }),
+
   oficial: {
     list: (token) => request('/oficial', { token }),
     create: (token, data) => request('/oficial', { method: 'POST', body: data, token }),

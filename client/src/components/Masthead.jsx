@@ -18,6 +18,7 @@ export default function Masthead() {
   const [compartirTodo, setCompartirTodo] = useState(false);
   const enOficial = pathname.startsWith('/oficial');
   const enUsuarios = pathname.startsWith('/usuarios');
+  const enMetricas = pathname.startsWith('/metricas');
   const enPersonales = pathname.startsWith('/personales');
   const enCompartir = pathname.startsWith('/compartir');
 
@@ -75,6 +76,7 @@ export default function Masthead() {
         <h1>
           {enOficial ? 'Calendario oficial'
             : enUsuarios ? 'Cuentas'
+            : enMetricas ? 'Métricas'
             : enCompartir ? 'Evento compartido'
             : enPersonales ? 'Eventos personales'
             : 'Agenda escolar'}
@@ -90,12 +92,13 @@ export default function Masthead() {
             usar. */}
         {!enCompartir && (
           <nav className="nav">
-            <Link to="/" className={enOficial || enUsuarios || enPersonales ? '' : 'on'}>Ver la agenda</Link>
+            <Link to="/" className={enOficial || enUsuarios || enMetricas || enPersonales ? '' : 'on'}>Ver la agenda</Link>
             <Link to="/personales" className={enPersonales ? 'on' : ''}>Eventos Personales</Link>
             {user && user.isAdmin && (
               <>
                 <Link to="/oficial" className={enOficial ? 'on' : ''}>Editar el calendario</Link>
                 <Link to="/usuarios" className={enUsuarios ? 'on' : ''}>Cuentas</Link>
+                <Link to="/metricas" className={enMetricas ? 'on' : ''}>Métricas</Link>
               </>
             )}
           </nav>

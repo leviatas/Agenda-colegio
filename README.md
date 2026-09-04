@@ -10,7 +10,8 @@ Calendario escolar del Colegio San Gabriel, ciclo lectivo 2026.
   que la propia cuenta decida compartir un evento por link o todos por código
   (ver "Compartir eventos personales" en [`CLAUDE.md`](CLAUDE.md)).
 - **Los emails de `ADMIN_EMAILS`** editan el calendario oficial desde
-  `/oficial`. Nadie más.
+  `/oficial` y ven en `/usuarios` y `/metricas` quién entra y cuánta gente
+  distinta se loguea. Nadie más.
 
 Node + Express + Prisma/SQLite del lado del server, React + Vite del lado del
 cliente, todo en Docker Compose detrás de nginx. El stack está documentado en
@@ -131,9 +132,14 @@ y hay que crear a mano la primera vez).
 
 Cuánta gente entra a la agenda se lee **en los logs del server**: cada carga de
 la página deja una línea JSON con el prefijo `[telemetria]`. No hay base de
-datos de visitas ni servicio externo, y **no se guarda ni el mail, ni la IP, ni
-el user-agent**: cada navegador manda un id random propio, que sirve para no
-contar diez veces a quien entra diez veces y no identifica a nadie.
+datos de visitas ni servicio externo, y **en este log no se guarda ni el mail,
+ni la IP, ni el user-agent**: cada navegador manda un id random propio, que
+sirve para no contar diez veces a quien entra diez veces y no identifica a
+nadie.
+
+El mismo ping también guarda un registro con la IP, pero eso no sale por acá:
+sólo lo ve el admin, dentro de la app en `/metricas` (cuántas cuentas
+distintas se loguearon y, agrupado por IP, si esa IP corresponde a alguna).
 
 ```bash
 # Todo lo que registró la telemetría
