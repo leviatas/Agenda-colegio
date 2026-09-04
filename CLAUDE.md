@@ -359,41 +359,44 @@ del lado de quien mira). Si no fuera así, regenerar el código para compartírs
 a alguien nuevo le cortaría el acceso a todos los que ya lo tenían, que no es
 lo que nadie espera de "generar un código nuevo".
 
-En el cliente esto vive repartido en tres modales, cada uno con un solo
+En el cliente esto vive repartido en cuatro modales, cada uno con un solo
 trabajo, no uno solo que hace de todo:
 
 - **`AdderDialog.jsx`** — sólo carga un evento nuevo. Guardar cierra el
   modal; no sabe nada de editar, borrar ni compartir.
-- **`EditEventDialog.jsx`** — editar, borrar o compartir UN evento
-  puntual. No hay ninguna lista de "mis eventos" en ningún lado: se abre
-  clickeando el evento directo en el calendario o en "Próximas fechas", con
-  el ícono de compartir al lado del título y el tacho de basura en rojo
-  (mismo tono que la confirmación de borrado) en el pie. Guardar o borrar
-  cierra el modal, igual que `AdderDialog`. Lo que decide si un evento es
-  clickeable es `level === 'per' && !de`
-  (`Month.jsx`, `Upcoming.jsx`) — un compartido también es `'per'` pero
-  trae `de`, así que queda como un `<div>` sin más, de sólo lectura como
-  corresponde. Ese renglón clickeable es un `<button>` real, no un `<div
-  onClick>`: todo lo interactivo de la app ya lo es (las celdas del
-  calendario, por ejemplo), para que funcione con teclado y lector de
-  pantalla sin nada extra.
+- **`EventoMenu.jsx`** — el menú rápido de UN evento puntual: Editar,
+  Compartir, Eliminar. Es lo primero que se abre al clickear el evento
+  directo en el calendario o en "Próximas fechas" (no hay ninguna lista de
+  "mis eventos" en ningún lado). "Editar" cierra este menú y recién ahí abre
+  `EditEventDialog`; Compartir y Eliminar actúan directo desde acá, sin pasar
+  por el formulario — son la misma lógica de `navigator.share`/link copiado y
+  de `useConfirm` que antes vivía adentro de `EditEventDialog`. Lo que decide
+  si un evento es clickeable (y por lo tanto tiene este menú) es
+  `level === 'per' && !de` (`Month.jsx`, `Upcoming.jsx`) — un compartido
+  también es `'per'` pero trae `de`, así que queda como un `<div>` sin más,
+  de sólo lectura como corresponde. Ese renglón clickeable es un `<button>`
+  real, no un `<div onClick>`: todo lo interactivo de la app ya lo es (las
+  celdas del calendario, por ejemplo), para que funcione con teclado y
+  lector de pantalla sin nada extra.
+- **`EditEventDialog.jsx`** — sólo edita los campos de UN evento puntual
+  (título, fechas, horas). Guardar cierra el modal, igual que `AdderDialog`;
+  no sabe nada de compartir ni de borrar, eso quedó en `EventoMenu`.
 - **`CompartirTodoDialog.jsx`** — código propio, lista de quién te
   suscribió y a quién suscribiste vos. Se abre desde el ícono de compartir
   al lado de la cuenta en `Masthead.jsx` (junto al avatar, no en el
   calendario): compartir TODOS tus eventos no es una acción sobre un
   evento puntual, así que no vive ahí.
 
-El ícono de compartir —una flecha saliendo de una bandeja, no un botón de
-texto— es el mismo componente (`IconoCompartir.jsx`) en los dos lugares
-donde aparece (`EditEventDialog` y `Masthead`), con distinto color de fondo
-según si está sobre una tarjeta clara o el header verde oscuro. Tocarlo
-abre el panel nativo del sistema (`navigator.share`) cuando el navegador lo
-tiene —así la persona elige WhatsApp, Mail, lo que tenga— y si no existe
-(la mayoría de los navegadores de escritorio) cae al link copiado solo en
-un input, que sigue ahí para pegarlo a mano. Cancelar el panel nativo tira
-`AbortError`, que no se trata como error. La página del link
-(`/compartir/evento/:token`, `CompartirEvento.jsx`) es una ruta aparte
-porque la abre alguien que capaz nunca usó la agenda.
+El ícono de compartir —tres puntos unidos por dos palos, el de
+Android/Material, no un botón de texto— es el mismo componente
+(`IconoCompartir.jsx`) en los dos lugares donde aparece (`EventoMenu` y
+Masthead). Tocarlo abre el panel nativo del sistema (`navigator.share`)
+cuando el navegador lo tiene —así la persona elige WhatsApp, Mail, lo que
+tenga— y si no existe (la mayoría de los navegadores de escritorio) cae al
+link copiado solo en un input, que sigue ahí para pegarlo a mano. Cancelar
+el panel nativo tira `AbortError`, que no se trata como error. La página
+del link (`/compartir/evento/:token`, `CompartirEvento.jsx`) es una ruta
+aparte porque la abre alguien que capaz nunca usó la agenda.
 
 ### Resolución de la URL del server
 
@@ -477,8 +480,8 @@ borrado podía salir sin que nadie viera la pregunta. El foco arranca en
 Va en un `<dialog>` con `showModal()`, **no** en un div con `z-index`: un
 `<dialog>` modal se dibuja en el *top layer* del browser, que está arriba de
 todo `z-index` por alto que sea. Como la confirmación se dispara casi siempre
-desde adentro de otro modal (borrar un evento propio, en el de agregar
-evento), un div quedaba **tapado** por el modal desde el que se lo llamó.
+desde adentro de otro modal (borrar un evento propio, desde `EventoMenu`), un
+div quedaba **tapado** por el modal desde el que se lo llamó.
 Entre dos `<dialog>` modales manda el orden de apertura. Su regla de CSS lleva
 `height: max-content` porque el UA le pone `inset: 0`: con alto automático la
 caja se estira de arriba abajo y el texto queda flotando en un vacío.
@@ -508,8 +511,9 @@ en un ancho donde el CSS ya no le da lugar. Los modales van a pantalla completa
 (`height` y `max-height: 100dvh` — `dvh` y no `vh` porque la barra de
 direcciones se esconde al scrollear; con un alto *exacto* y no un `min-height`
 suelto, porque el `<dialog>` es fijo al viewport y lo que se pase del borde de
-abajo queda fuera de alcance), con la excepción del diálogo de confirmación,
-que queda centrado y del tamaño de su texto. Ojo: en
+abajo queda fuera de alcance), con la excepción del diálogo de confirmación y
+de `EventoMenu`, que quedan centrados y del tamaño de su contenido — ninguno
+de los dos es un formulario. Ojo: en
 celular el fondo deja de estar a la vista, así que **todo modal nuevo tiene que
 tener su propio botón de Cancelar/Cerrar** — tocar afuera ya no es una salida
 posible.

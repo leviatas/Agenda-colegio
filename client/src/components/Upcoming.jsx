@@ -46,7 +46,7 @@ export default function Upcoming({ eventos, visible, today, onEventoClick }) {
         // color, que solo no alcanza para quien no lo distingue.
         const esFeriado = ev.level === 'fer';
         // Mismo criterio que en Month.jsx: sólo lo propio se puede tocar para
-        // editar o compartir. Oficiales y compartidos quedan como antes.
+        // editar, compartir o borrar. Oficiales y compartidos quedan como antes.
         const esPropio = ev.level === 'per' && !ev.de;
         const Tag = esPropio ? 'button' : 'div';
 
@@ -57,7 +57,7 @@ export default function Upcoming({ eventos, visible, today, onEventoClick }) {
             className={`up-card${esFeriado ? ' feriado' : ''}${esPropio ? ' clickable' : ''}`}
             style={{ '--c': `var(--${ev.level})` }}
             onClick={esPropio ? () => onEventoClick(ev) : undefined}
-            aria-label={esPropio ? `Editar o compartir "${ev.title}"` : undefined}
+            aria-label={esPropio ? `Opciones de "${ev.title}"` : undefined}
           >
             <span className="dt">{cuando}</span>
             <span className="cd">{DIAS[isoDow(s)]} · {cd}</span>

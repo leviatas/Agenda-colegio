@@ -5,6 +5,7 @@ import Month from '../components/Month';
 import Upcoming from '../components/Upcoming';
 import PickerDialog from '../components/PickerDialog';
 import AdderDialog from '../components/AdderDialog';
+import EventoMenu from '../components/EventoMenu';
 import EditEventDialog from '../components/EditEventDialog';
 import { useAuth } from '../context/AuthContext';
 import { useEventos } from '../context/EventosContext';
@@ -25,8 +26,10 @@ export default function Calendario() {
   // "Agregar evento +" abre AdderDialog, que sólo carga eventos nuevos.
   const [adder, setAdder] = useState(false);
   // El evento propio sobre el que se hizo click en el calendario o en
-  // "Próximas fechas": abre EditEventDialog, para editarlo/compartirlo/
-  // borrarlo. Los dos modales son independientes, no comparten estado.
+  // "Próximas fechas": primero abre EventoMenu (Editar/Compartir/Eliminar);
+  // "Editar" ahí adentro cierra ese menú y recién abre EditEventDialog sobre
+  // el mismo evento. Los tres modales son independientes entre sí.
+  const [eventoMenu, setEventoMenu] = useState(null);
   const [eventoEditar, setEventoEditar] = useState(null);
   const [flash, setFlash] = useState(null);
   const flashTimer = useRef(null);
@@ -63,9 +66,14 @@ export default function Calendario() {
   }, [setPicks]);
 
   // Click en un evento propio (calendario o "Próximas fechas"): abre
-  // EditEventDialog sobre ESE evento. Cerrarlo limpia el estado, así la
-  // próxima apertura no arranca con datos viejos.
+  // EventoMenu sobre ESE evento. Cerrarlo limpia el estado, así la próxima
+  // apertura no arranca con datos viejos.
+  const cerrarMenu = useCallback(() => setEventoMenu(null), []);
   const cerrarEditar = useCallback(() => setEventoEditar(null), []);
+  const editarDesdeMenu = useCallback((ev) => {
+    setEventoMenu(null);
+    setEventoEditar(ev);
+  }, []);
 
   return (
     <>
@@ -124,7 +132,7 @@ export default function Calendario() {
                   hoy es {DIAS[isoDow(today)]} {today.getDate()} de {MESES[today.getMonth()]}
                 </span>
               </div>
-              <Upcoming eventos={todos} visible={visible} today={today} onEventoClick={setEventoEditar} />
+              <Upcoming eventos={todos} visible={visible} today={today} onEventoClick={setEventoMenu} />
             </section>
 
             <div>
@@ -138,7 +146,7 @@ export default function Calendario() {
                   todayKey={todayKey}
                   esPrimero={i === 0}
                   onDayClick={onDayClick}
-                  onEventoClick={setEventoEditar}
+                  onEventoClick={setEventoMenu}
                   flash={flash}
                 />
               ))}
@@ -149,6 +157,7 @@ export default function Calendario() {
 
       <PickerDialog open={picker} picks={picks} onClose={() => setPicker(false)} onSave={guardarPicks} />
       <AdderDialog open={adder} onClose={() => setAdder(false)} />
+      <EventoMenu evento={eventoMenu} onClose={cerrarMenu} onEditar={editarDesdeMenu} />
       <EditEventDialog evento={eventoEditar} onClose={cerrarEditar} />
     </>
   );
