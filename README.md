@@ -12,6 +12,11 @@ Calendario escolar del Colegio San Gabriel, ciclo lectivo 2026.
 - **Los emails de `ADMIN_EMAILS`** editan el calendario oficial desde
   `/oficial` y ven en `/usuarios` y `/metricas` quién entra y cuánta gente
   distinta se loguea. Nadie más.
+- **Cada evento se pasa a Google Calendar con un toque.** El botón al lado de
+  cada fecha —oficiales, propias y compartidas— abre Google con el evento ya
+  cargado, para confirmarlo en la cuenta de quien lo toca. No pide permisos ni
+  guarda nada: es un link (ver "Agregar a Google Calendar" en
+  [`CLAUDE.md`](CLAUDE.md)).
 - **Notificaciones push opcionales**, con la app cerrada: un aviso a las 17 si
   al día siguiente hay algo en la agenda (ver "Notificaciones push" en
   [`CLAUDE.md`](CLAUDE.md)). Necesitan `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY`

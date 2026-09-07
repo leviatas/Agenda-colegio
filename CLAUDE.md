@@ -347,6 +347,50 @@ prueba: corre el trabajo del día completo ahora mismo, con matcher de picks
 y todo, así que si mañana no tenés nada que te corresponda no llega ninguna
 notificación — igual que a las 17.
 
+### Agregar a Google Calendar
+
+Al lado de **cada** evento —oficial, propio o compartido— hay un botón que lo
+pasa al Google Calendar de quien lo toca (`client/src/components/
+BotonGoogleCalendar.jsx`, con la URL armada en `client/src/lib/googleCalendar.js`).
+
+**No hay integración con la API de Google, y es a propósito**: es la URL
+pública del formulario de Google (`calendar/render?action=TEMPLATE`), que abre
+el evento precargado para que la persona confirme en su propia cuenta. Así no
+hace falta pedir scopes de Calendar en el login (hoy sólo se pide la identidad),
+ni guardar tokens, ni tener nada que sincronizar después: **la agenda no toca
+el calendario de Google, sólo le pasa los datos una vez**. La copia que queda
+allá es independiente — si el colegio cambia la fecha de un acto, ese evento ya
+no se entera.
+
+Cuatro cosas de la URL que no son obvias:
+
+- **`ctz=America/Argentina/Buenos_Aires` va siempre.** Sin eso Google
+  interpreta las horas en el huso del dispositivo, y un acto de las 8.15 se
+  corre para quien tenga el celular en otro país. Mismo criterio que el
+  `-03:00` fijo de `lib/telemetria.js`.
+- **Sin hora, el evento es de día completo y ahí el fin es EXCLUSIVO**: uno de
+  un solo día va `20260908/20260909`. Con un día menos, Google lo muestra vacío.
+- **`time` es texto libre** (ver "Modelo de datos"), así que hay tres casos:
+  `'8.15'` o `'20'` (hora sola, y como no hay hora de fin se le da una duración
+  de `DURACION_MIN`), `'8 a 15'` (el rango que trae el calendario del colegio,
+  metido en el mismo campo) y cualquier otra cosa, que **no se descarta**: el
+  evento se agrega de día completo y el texto original va en la descripción.
+- **Un rango que no cierra se ignora** (misma fecha terminando antes de
+  empezar): Google descarta un `dates=` inválido sin decir nada, así que en ese
+  caso también se cae a la duración por default.
+
+**En el cliente el botón es un `<a target="_blank">`, y va de HERMANO del
+evento, nunca adentro.** Un evento propio ya es un `<button>` entero (abre
+`EventoMenu`), y un botón adentro de otro no es HTML válido — el click del de
+adentro ni llega. Por eso `Month.jsx` envuelve el renglón en `.ev-row` y
+`Upcoming.jsx` la tarjeta en `.up-cell`, con el botón posicionado sobre la
+esquina porque ahí no hay ancho para una columna al lado. En
+`EventosPersonales.jsx` va en `.per-acciones` y **también en los eventos de
+otra cuenta**, que son de sólo lectura: pasarlo al calendario propio no es
+tocar el evento de nadie. En `CompartirEvento.jsx` es la variante con texto
+(prop `etiqueta`), y va **antes** del login: no necesita cuenta, así que le
+sirve igual a quien no piensa entrar.
+
 ### Auth y permisos
 
 El cliente saca el ID token con Google Identity Services →

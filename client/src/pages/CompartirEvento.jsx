@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useEventos } from '../context/EventosContext';
 import { api } from '../api';
 import GoogleLoginButton from '../components/GoogleLoginButton';
+import BotonGoogleCalendar from '../components/BotonGoogleCalendar';
 import { DIAS, MES_AB, isoDow, parse, textoHora } from '../lib/agenda';
 
 // Página del link de UN evento (ver AdderDialog: "Compartir" arriba de la
@@ -114,6 +115,11 @@ export default function CompartirEvento() {
           {cuando}
           {evento.time && <> · {textoHora(evento)}hs</>}
         </p>
+
+        {/* Pasarlo al Google Calendar propio no necesita cuenta ni tocar nada
+            de la agenda: es un link armado con los datos del evento, así que
+            va antes del login y le sirve igual a quien no piensa entrar. */}
+        <BotonGoogleCalendar evento={evento} etiqueta="Agregar a Google Calendar" />
 
         {user ? (
           <button type="button" className="mbtn primary" onClick={aceptar} disabled={aceptando}>

@@ -540,7 +540,8 @@ dialog::backdrop { background: rgba(12,18,15,.55); }
   scroll-snap-type: x proximity;
 }
 .up-card {
-  scroll-snap-align: start;
+  /* El scroll-snap lo lleva .up-cell, que es el hijo directo de .up-row (ver
+     Upcoming.jsx: la tarjeta va adentro, con el botón de Google al lado). */
   background: var(--card-2);
   border: 1px solid var(--line);
   border-left: 3px solid var(--c);
@@ -797,6 +798,60 @@ button.ev {
 .ev.span.sec .t::after { background: var(--sec-bg); color: var(--sec); }
 .ev.span.ins .t::after { background: var(--ins-bg); color: var(--ins); }
 .ev.span.fer .t::after { background: var(--fer-bg); color: var(--fer); }
+
+/* ══════════ Agregar a Google Calendar ══════════ */
+
+/* El botón que va al lado de CADA evento (la grilla de meses, "Próximas
+   fechas", la lista de personales y la página de un evento compartido). Es un
+   <a> (ver BotonGoogleCalendar.jsx), así que hay que sacarle el subrayado y el
+   color de link a mano. En gris tenue a propósito: aparece en todas las filas
+   y no puede competir con el título del evento. */
+.gcal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink-faint);
+  text-decoration: none;
+  cursor: pointer;
+}
+.gcal svg { width: .95rem; height: .95rem; }
+.gcal:hover { background: var(--ins-bg); color: var(--ins); }
+.gcal:focus-visible { outline: 2px solid var(--ins); outline-offset: 1px; }
+
+/* La versión con texto, para una pantalla que muestra UN evento y tiene lugar
+   de sobra (CompartirEvento). Lo demás lo pone .mbtn. */
+.gcal-txt {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  text-decoration: none;
+}
+.gcal-txt svg { width: 1rem; height: 1rem; }
+
+/* El renglón de un evento en la agenda del mes: el evento a la izquierda
+   —que cuando es propio es un <button> entero— y el botón de Google al lado.
+   `min-width: 0` es lo que deja que un título largo se parta en vez de estirar
+   la fila y sacar de cuadro a la página (ver CLAUDE.md, "Nada puede desbordar
+   el ancho del viewport"). */
+.ev-row { display: flex; align-items: center; gap: .3rem; }
+.ev-row > .ev { flex: 1; min-width: 0; }
+
+/* En "Próximas fechas" no hay lugar para una columna al lado: el botón va
+   sobre la esquina de la tarjeta. La única línea que le queda al lado es la
+   de la fecha —el resto ya arranca por debajo del botón—, así que es la única
+   que necesita el margen. */
+.up-cell { position: relative; display: flex; scroll-snap-align: start; }
+.up-cell > .up-card { flex: 1; }
+.up-cell > .gcal { position: absolute; top: .45rem; right: .45rem; }
+.up-card .dt { padding-right: 1.7rem; }
+/* El feriado es una tarjeta roja llena: el gris tenue de arriba no se lee. */
+.up-cell.feriado > .gcal { color: var(--fer-cell-ink); }
+.up-cell.feriado > .gcal:hover { background: rgba(0,0,0,.14); color: var(--fer-cell-ink); }
 
 .empty-note {
   font-size: .88rem;
@@ -1520,3 +1575,6 @@ footer .version { font-variant-numeric: tabular-nums; opacity: .7; }
 .compartir-card .cuando { font-size: .9rem; color: var(--ink-soft); margin: 0 0 1.1rem; }
 .compartir-card .lede.muted { max-width: none; }
 .compartir-card .mbtn { margin-top: .3rem; }
+/* Los dos botones de la tarjeta ("Agregar a Google Calendar" y "Agregar a mi
+   agenda") pueden quedar en la misma línea: sin esto se tocan. */
+.compartir-card .gcal-txt { margin-right: .5rem; }

@@ -1,4 +1,5 @@
 import { DIAS, MES_AB, isoDow, parse, textoHora } from '../lib/agenda';
+import BotonGoogleCalendar from './BotonGoogleCalendar';
 
 // Las próximas ocho fechas que quedan por delante con los filtros activos.
 export default function Upcoming({ eventos, visible, today, onEventoClick }) {
@@ -50,24 +51,32 @@ export default function Upcoming({ eventos, visible, today, onEventoClick }) {
         const esPropio = ev.level === 'per' && !ev.de;
         const Tag = esPropio ? 'button' : 'div';
 
+        // El botón de Google Calendar es hermano de la tarjeta y no un hijo:
+        // la tarjeta propia ya es un <button>, y un botón adentro de otro no
+        // es HTML válido. Va posicionado sobre la esquina desde el CSS.
         return (
-          <Tag
+          <div
             key={`${ev.level}-${ev.id}`}
-            type={esPropio ? 'button' : undefined}
-            className={`up-card${esFeriado ? ' feriado' : ''}${esPropio ? ' clickable' : ''}`}
+            className={`up-cell${esFeriado ? ' feriado' : ''}`}
             style={{ '--c': `var(--${ev.level})` }}
-            onClick={esPropio ? () => onEventoClick(ev) : undefined}
-            aria-label={esPropio ? `Opciones de "${ev.title}"` : undefined}
           >
-            <span className="dt">{cuando}</span>
-            <span className="cd">{DIAS[isoDow(s)]} · {cd}</span>
-            {esFeriado && <span className="marca">Feriado</span>}
-            <span className="tt">
-              {ev.time && <><b>{textoHora(ev)}hs</b>{' · '}</>}
-              {ev.title}
-              {ev.de && <span className="de"> · {ev.de}</span>}
-            </span>
-          </Tag>
+            <Tag
+              type={esPropio ? 'button' : undefined}
+              className={`up-card${esFeriado ? ' feriado' : ''}${esPropio ? ' clickable' : ''}`}
+              onClick={esPropio ? () => onEventoClick(ev) : undefined}
+              aria-label={esPropio ? `Opciones de "${ev.title}"` : undefined}
+            >
+              <span className="dt">{cuando}</span>
+              <span className="cd">{DIAS[isoDow(s)]} · {cd}</span>
+              {esFeriado && <span className="marca">Feriado</span>}
+              <span className="tt">
+                {ev.time && <><b>{textoHora(ev)}hs</b>{' · '}</>}
+                {ev.title}
+                {ev.de && <span className="de"> · {ev.de}</span>}
+              </span>
+            </Tag>
+            <BotonGoogleCalendar evento={ev} />
+          </div>
         );
       })}
     </div>
