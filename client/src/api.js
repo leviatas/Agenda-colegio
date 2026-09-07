@@ -88,6 +88,8 @@ export const api = {
     // Botón "Probar" de ConfiguracionDialog: manda un push ya mismo a ESA
     // suscripción, sin esperar al aviso diario.
     probar: (token, endpoint) => request('/push/probar', { method: 'POST', body: { endpoint }, token }),
+    // Botón "Prueba Eventos Hoy": simula el trabajo diario de las 8:00 AM.
+    probarHoy: (token) => request('/push/probar-hoy', { method: 'POST', token }),
   },
 
   oficial: {

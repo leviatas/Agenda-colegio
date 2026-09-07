@@ -5,7 +5,7 @@
 // schema.prisma.
 const express = require('express');
 const { optionalAuth } = require('../middleware/auth');
-const { registrarSuscripcion, eliminarSuscripcion, enviarPrueba } = require('../lib/push');
+const { registrarSuscripcion, eliminarSuscripcion, enviarPrueba, revisarYNotificarHoy } = require('../lib/push');
 
 const router = express.Router();
 
@@ -65,6 +65,23 @@ router.post('/probar', optionalAuth, async (req, res) => {
     error: 'No se pudo mandar la notificación de prueba.',
   };
   res.status(r.motivo === 'sin-suscripcion' ? 404 : 502).json({ error: mensajes[r.motivo] || mensajes.error });
+});
+
+// Botón "Prueba Eventos Hoy" de ConfiguracionDialog.jsx: ejecuta el mismo
+// trabajo que el scheduler diario de las 8:00 AM pero ahora mismo, a modo de
+// demostración. Sólo accesible con cuenta para no dejar el endpoint expuesto
+// sin ninguna restricción.
+router.post('/probar-hoy', optionalAuth, async (req, res) => {
+  if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+    return res.status(503).json({ error: 'Las notificaciones no están configuradas en este servidor.' });
+  }
+  try {
+    await revisarYNotificarHoy();
+    res.status(204).end();
+  } catch (err) {
+    console.error('Error en probar-hoy:', err);
+    res.status(500).json({ error: 'No se pudo ejecutar el aviso diario.' });
+  }
 });
 
 module.exports = router;

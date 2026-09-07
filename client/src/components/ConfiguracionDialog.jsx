@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import Dialog from './Dialog';
 import { useAuth } from '../context/AuthContext';
-import { activarNotificaciones, desactivarNotificaciones, estadoNotificaciones, probarNotificaciones } from '../lib/push';
+import { activarNotificaciones, desactivarNotificaciones, estadoNotificaciones, probarNotificaciones, probarEventosHoy } from '../lib/push';
 
 // Configuración de la cuenta/navegador. Por ahora sólo tiene notificaciones,
 // pero va en su propio modal (y no adentro de otro) porque es donde va a
@@ -14,6 +14,7 @@ function Cuerpo({ onClose }) {
   const [estado, setEstado] = useState(null);
   const [cambiando, setCambiando] = useState(false);
   const [probando, setProbando] = useState(false);
+  const [probandoHoy, setProbandoHoy] = useState(false);
   const [error, setError] = useState('');
   const [aviso, setAviso] = useState('');
 
@@ -38,6 +39,22 @@ function Cuerpo({ onClose }) {
       setError(err.message || 'No se pudo mandar la prueba.');
     } finally {
       setProbando(false);
+    }
+  }
+
+  async function probarHoy() {
+    setError('');
+    setAviso('');
+    setProbandoHoy(true);
+    try {
+      await probarEventosHoy(token);
+      setAviso(
+        'Listo: se corrió el aviso diario ahora mismo. Si hoy tenés eventos que matchean tus filtros, la notificación llega en unos segundos. Si no llega nada, es porque hoy no hay eventos que te correspondan (lo mismo que pasaría a las 8:00 AM).'
+      );
+    } catch (err) {
+      setError(err.message || 'No se pudo ejecutar el aviso diario.');
+    } finally {
+      setProbandoHoy(false);
     }
   }
 
@@ -94,9 +111,14 @@ function Cuerpo({ onClose }) {
                   "Probar" no haría más que repetir el mismo pedido de
                   permiso que ya hace "Activar". */}
               {estado.activo && (
-                <button type="button" className="mbtn" onClick={probar} disabled={probando || cambiando}>
-                  {probando ? 'Mandando…' : 'Probar'}
-                </button>
+                <>
+                  <button type="button" className="mbtn" onClick={probar} disabled={probando || probandoHoy || cambiando}>
+                    {probando ? 'Mandando…' : 'Probar'}
+                  </button>
+                  <button type="button" className="mbtn" onClick={probarHoy} disabled={probandoHoy || probando || cambiando}>
+                    {probandoHoy ? 'Simulando…' : 'Prueba Eventos Hoy'}
+                  </button>
+                </>
               )}
               <button
                 type="button"

@@ -116,6 +116,18 @@ export async function probarNotificaciones(token) {
   return { ok: true };
 }
 
+// Botón "Prueba Eventos Hoy": ejecuta el mismo trabajo que el scheduler
+// diario de las 8:00 AM pero ahora mismo. A diferencia de probarNotificaciones,
+// éste pasa por el matcher de picks y cuenta los eventos reales de hoy,
+// así que la notificación que llega muestra el texto real ("Hoy tenés N
+// eventos") en vez de un mensaje genérico de prueba. Si hoy no hay nada
+// en la agenda que matchee tus picks, no llega ninguna notificación
+// (igual que pasaría a las 8:00 AM).
+export async function probarEventosHoy(token) {
+  await api.push.probarHoy(token);
+  return { ok: true };
+}
+
 export async function desactivarNotificaciones(token) {
   if (!soportaPush()) return;
   const registro = await navigator.serviceWorker.getRegistration();
