@@ -113,12 +113,35 @@ async function revisarYNotificarHoy() {
     });
   }
 
+  // Eventos compartidos: cada usuario puede estar suscripto a los eventos
+  // personales de otra cuenta (EventSubscription). Se traen los ownerId de
+  // cada suscripción activa y sus PersonalEvent que caen hoy, para sumarlos
+  // al contador de quien los suscribió.
+  const compartidosPorUsuario = new Map();
+  if (userIds.length > 0) {
+    const subs = await prisma.eventSubscription.findMany({
+      where: { subscriberId: { in: userIds } },
+      select: { subscriberId: true, ownerId: true },
+    });
+    if (subs.length > 0) {
+      const ownerIds = [...new Set(subs.map((s) => s.ownerId))];
+      const compartidos = await prisma.personalEvent.findMany({ where: { userId: { in: ownerIds } } });
+      const compartidosHoy = compartidos.filter((ev) => caeHoy(ev, hoy));
+      // Para cada suscriptor, sumar los eventos de hoy de cada owner al que está suscripto.
+      subs.forEach(({ subscriberId, ownerId }) => {
+        const cnt = compartidosHoy.filter((ev) => ev.userId === ownerId).length;
+        if (cnt === 0) return;
+        compartidosPorUsuario.set(subscriberId, (compartidosPorUsuario.get(subscriberId) || 0) + cnt);
+      });
+    }
+  }
+
   await Promise.all(
-    suscripciones.map((sub) => enviarSiCorresponde(sub, oficialesHoy, personalesPorUsuario)),
+    suscripciones.map((sub) => enviarSiCorresponde(sub, oficialesHoy, personalesPorUsuario, compartidosPorUsuario)),
   );
 }
 
-async function enviarSiCorresponde(sub, oficialesHoy, personalesPorUsuario) {
+async function enviarSiCorresponde(sub, oficialesHoy, personalesPorUsuario, compartidosPorUsuario) {
   let picks = [];
   try {
     picks = JSON.parse((sub.user ? sub.user.picks : sub.picks) || '[]');
@@ -127,7 +150,10 @@ async function enviarSiCorresponde(sub, oficialesHoy, personalesPorUsuario) {
   }
 
   const visible = matcher(picks);
-  const cantidad = oficialesHoy.filter(visible).length + (personalesPorUsuario.get(sub.userId) || 0);
+  const cantidad =
+    oficialesHoy.filter(visible).length +
+    (personalesPorUsuario.get(sub.userId) || 0) +
+    (compartidosPorUsuario ? compartidosPorUsuario.get(sub.userId) || 0 : 0);
   if (cantidad === 0) return;
 
   const payload = JSON.stringify({
