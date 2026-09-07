@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import Masthead from './components/Masthead';
+import NotificacionesPrompt from './components/NotificacionesPrompt';
 import Calendario from './pages/Calendario';
 import Oficial from './pages/Oficial';
 import Usuarios from './pages/Usuarios';
@@ -30,6 +31,7 @@ export default function App() {
   return (
     <>
       <Masthead />
+      <NotificacionesPrompt />
       <Routes>
         <Route path="/" element={<Calendario />} />
         {/* Misma pantalla que "/": Calendario decide el filtro mirando la

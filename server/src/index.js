@@ -8,6 +8,8 @@ const oficialRoutes = require('./routes/oficial');
 const usuariosRoutes = require('./routes/usuarios');
 const telemetriaRoutes = require('./routes/telemetria');
 const metricasRoutes = require('./routes/metricas');
+const pushRoutes = require('./routes/push');
+const { iniciarScheduler } = require('./lib/push');
 
 // Fallar temprano y con un mensaje claro: sin estas dos variables la app
 // arranca igual y recién falla en el primer login, que es mucho peor de
@@ -43,6 +45,7 @@ app.use('/api/oficial', oficialRoutes);
 app.use('/api/usuarios', usuariosRoutes);
 app.use('/api/telemetria', telemetriaRoutes);
 app.use('/api/metricas', metricasRoutes);
+app.use('/api/push', pushRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err);
@@ -53,3 +56,8 @@ const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Server listening on http://localhost:${PORT}`);
 });
+
+// El aviso diario de "hoy tenés eventos" (ver lib/push.js). Va después de
+// app.listen y no antes: no depende del puerto, pero así el log de arranque
+// sale en orden si VAPID no está configurado y avisa por consola.
+iniciarScheduler();

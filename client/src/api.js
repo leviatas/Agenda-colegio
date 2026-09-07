@@ -77,6 +77,16 @@ export const api = {
   // para el admin (el server la cierra con requireAdmin).
   metricas: (token) => request('/metricas', { token }),
 
+  // Notificaciones push de "hoy tenés eventos" (ver lib/push.js). El token es
+  // opcional: cargar eventos propios no pide cuenta, así que suscribirse
+  // tampoco — sin cuenta sólo avisa por lo oficial (ver PushSubscription en
+  // schema.prisma).
+  push: {
+    clavePublica: () => request('/push/clave-publica'),
+    suscribir: (token, subscription, picks) => request('/push/suscribir', { method: 'POST', body: { subscription, picks }, token }),
+    desuscribir: (token, endpoint) => request('/push/suscribir', { method: 'DELETE', body: { endpoint }, token }),
+  },
+
   oficial: {
     list: (token) => request('/oficial', { token }),
     create: (token, data) => request('/oficial', { method: 'POST', body: data, token }),

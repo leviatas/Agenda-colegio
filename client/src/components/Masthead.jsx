@@ -1,11 +1,18 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import ThemeSwitch from './ThemeSwitch';
 import GoogleLoginButton from './GoogleLoginButton';
 import IconoCompartir from './IconoCompartir';
+import IconoConfig from './IconoConfig';
+import ConfiguracionDialog from './ConfiguracionDialog';
 import { useCompartirTodo } from './CompartirTodoDialog';
 import { useAuth } from '../context/AuthContext';
 import { useAngosto } from '../lib/media';
+
+function inicial(nombre) {
+  const limpio = (nombre || '').trim();
+  return limpio ? limpio.charAt(0).toUpperCase() : '?';
+}
 
 export default function Masthead() {
   const { user, loginWithCredential, logout } = useAuth();
@@ -16,6 +23,34 @@ export default function Masthead() {
   // compartir uno solo: el modal es una única instancia compartida con
   // EventosPersonales.jsx (ver CompartirTodoDialog.jsx), acá sólo se abre.
   const abrirCompartirTodo = useCompartirTodo();
+
+  // Menú del avatar: por ahora una sola opción (Config), pero es un menú de
+  // verdad y no un atajo directo a ConfiguracionDialog porque acá es donde
+  // va a ir lo próximo que se agregue sobre la cuenta.
+  const [menuAbierto, setMenuAbierto] = useState(false);
+  const [configAbierta, setConfiguracionAbierta] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    if (!menuAbierto) return undefined;
+    // Cierra al tocar afuera o con Escape. mousedown y no click: así el click
+    // que abrió el menú (en el propio botón) no llega a este listener antes
+    // de que exista, y tocar afuera cierra antes de que ese click dispare
+    // cualquier otra cosa debajo.
+    function alTocarAfuera(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuAbierto(false);
+    }
+    function alEscape(e) {
+      if (e.key === 'Escape') setMenuAbierto(false);
+    }
+    document.addEventListener('mousedown', alTocarAfuera);
+    document.addEventListener('keydown', alEscape);
+    return () => {
+      document.removeEventListener('mousedown', alTocarAfuera);
+      document.removeEventListener('keydown', alEscape);
+    };
+  }, [menuAbierto]);
+
   const enOficial = pathname.startsWith('/oficial');
   const enUsuarios = pathname.startsWith('/usuarios');
   const enMetricas = pathname.startsWith('/metricas');
@@ -41,9 +76,37 @@ export default function Masthead() {
           <div className="top-actions">
             {user ? (
               <div className="cuenta">
-                {user.avatarUrl && <img src={user.avatarUrl} alt="" width="24" height="24" />}
-                {/* Al lado del ícono de usuario, no de "Salir": es una acción
-                    sobre la cuenta, como el avatar y el nombre. */}
+                <div className="avatar-wrap" ref={menuRef}>
+                  <button
+                    type="button"
+                    className="avatar-btn"
+                    aria-haspopup="menu"
+                    aria-expanded={menuAbierto}
+                    aria-label={`Menú de ${user.name}`}
+                    onClick={() => setMenuAbierto((v) => !v)}
+                  >
+                    {user.avatarUrl
+                      ? <img src={user.avatarUrl} alt="" width="24" height="24" />
+                      : <span className="avatar-inicial" aria-hidden="true">{inicial(user.name)}</span>}
+                  </button>
+                  {menuAbierto && (
+                    <div className="avatar-menu" role="menu">
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          setMenuAbierto(false);
+                          setConfiguracionAbierta(true);
+                        }}
+                      >
+                        <IconoConfig />
+                        Config
+                      </button>
+                    </div>
+                  )}
+                </div>
+                {/* Al lado del avatar, no de "Salir": es una acción sobre la
+                    cuenta, como el avatar y el nombre. */}
                 <button
                   type="button"
                   className="share"
@@ -104,6 +167,8 @@ export default function Masthead() {
           </nav>
         )}
       </div>
+
+      {user && <ConfiguracionDialog open={configAbierta} onClose={() => setConfiguracionAbierta(false)} />}
     </header>
   );
 }
