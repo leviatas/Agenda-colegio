@@ -1,4 +1,4 @@
-// Notificaciones push de "hoy tenés eventos". Todo lo que toca el navegador
+// Notificaciones push de "mañana tenés eventos". Todo lo que toca el navegador
 // (Service Worker, permiso, PushManager) vive acá; los componentes sólo
 // llaman a estas funciones y muestran el resultado.
 import { api } from '../api';
@@ -116,15 +116,15 @@ export async function probarNotificaciones(token) {
   return { ok: true };
 }
 
-// Botón "Prueba Eventos Hoy": ejecuta el mismo trabajo que el scheduler
-// diario de las 8:00 AM pero ahora mismo. A diferencia de probarNotificaciones,
-// éste pasa por el matcher de picks y cuenta los eventos reales de hoy,
-// así que la notificación que llega muestra el texto real ("Hoy tenés N
-// eventos") en vez de un mensaje genérico de prueba. Si hoy no hay nada
-// en la agenda que matchee tus picks, no llega ninguna notificación
-// (igual que pasaría a las 8:00 AM).
-export async function probarEventosHoy(token) {
-  await api.push.probarHoy(token);
+// Botón "Prueba Eventos Mañana": ejecuta el mismo trabajo que el scheduler
+// de las 17:00 pero ahora mismo. A diferencia de probarNotificaciones, éste
+// pasa por el matcher de picks y cuenta los eventos reales de MAÑANA, así que
+// la notificación que llega muestra el texto real ("Mañana tenés N eventos")
+// en vez de un mensaje genérico de prueba. Si mañana no hay nada en la agenda
+// que matchee tus picks, no llega ninguna notificación (igual que pasaría a
+// las 17:00).
+export async function probarEventosDiaSiguiente(token) {
+  await api.push.probarDiaSiguiente(token);
   return { ok: true };
 }
 

@@ -50,10 +50,11 @@ export default function NotificacionesPrompt() {
       >
         <div className="ev-menu">
           <p className="ev-menu-title" id="notif-prompt-title">
-            ¿Querés que te avisemos si hoy tenés eventos?
+            ¿Querés que te avisemos si mañana tenés eventos?
           </p>
           <p className="lede muted notif-prompt-lede">
-            Un aviso en el celular o la compu, sólo los días que hay algo en tu agenda.
+            Un aviso en el celular o la compu a las 17, sólo la tarde anterior a un día
+            con algo en tu agenda.
           </p>
           <div className="modal-actions notif-prompt-acciones">
             <button type="button" className="mbtn" onClick={() => responder(false)}>No</button>

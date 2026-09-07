@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import Dialog from './Dialog';
 import { useAuth } from '../context/AuthContext';
-import { activarNotificaciones, desactivarNotificaciones, estadoNotificaciones, probarNotificaciones, probarEventosHoy } from '../lib/push';
+import { activarNotificaciones, desactivarNotificaciones, estadoNotificaciones, probarNotificaciones, probarEventosDiaSiguiente } from '../lib/push';
 
 // Configuración de la cuenta/navegador. Por ahora sólo tiene notificaciones,
 // pero va en su propio modal (y no adentro de otro) porque es donde va a
@@ -14,7 +14,7 @@ function Cuerpo({ onClose }) {
   const [estado, setEstado] = useState(null);
   const [cambiando, setCambiando] = useState(false);
   const [probando, setProbando] = useState(false);
-  const [probandoHoy, setProbandoHoy] = useState(false);
+  const [probandoManana, setProbandoManana] = useState(false);
   const [error, setError] = useState('');
   const [aviso, setAviso] = useState('');
 
@@ -42,19 +42,19 @@ function Cuerpo({ onClose }) {
     }
   }
 
-  async function probarHoy() {
+  async function probarManana() {
     setError('');
     setAviso('');
-    setProbandoHoy(true);
+    setProbandoManana(true);
     try {
-      await probarEventosHoy(token);
+      await probarEventosDiaSiguiente(token);
       setAviso(
-        'Listo: se corrió el aviso diario ahora mismo. Si hoy tenés eventos que matchean tus filtros, la notificación llega en unos segundos. Si no llega nada, es porque hoy no hay eventos que te correspondan (lo mismo que pasaría a las 8:00 AM).'
+        'Listo: se corrió el aviso diario ahora mismo. Si mañana tenés eventos que matchean tus filtros, la notificación llega en unos segundos. Si no llega nada, es porque mañana no hay eventos que te correspondan (lo mismo que pasaría a las 17:00).'
       );
     } catch (err) {
       setError(err.message || 'No se pudo ejecutar el aviso diario.');
     } finally {
-      setProbandoHoy(false);
+      setProbandoManana(false);
     }
   }
 
@@ -96,8 +96,8 @@ function Cuerpo({ onClose }) {
           <div className="config-info">
             <strong>Notificaciones</strong>
             <p className="lede muted">
-              Un aviso en el celular o la compu si hoy tenés algo en la agenda: un evento oficial de
-              tu sala o grado, o uno propio.
+              Un aviso a las 17 en el celular o la compu si al día siguiente tenés algo en la
+              agenda: un evento oficial de tu sala o grado, o uno propio.
             </p>
           </div>
 
@@ -112,11 +112,11 @@ function Cuerpo({ onClose }) {
                   permiso que ya hace "Activar". */}
               {estado.activo && (
                 <>
-                  <button type="button" className="mbtn" onClick={probar} disabled={probando || probandoHoy || cambiando}>
+                  <button type="button" className="mbtn" onClick={probar} disabled={probando || probandoManana || cambiando}>
                     {probando ? 'Mandando…' : 'Probar'}
                   </button>
-                  <button type="button" className="mbtn" onClick={probarHoy} disabled={probandoHoy || probando || cambiando}>
-                    {probandoHoy ? 'Simulando…' : 'Prueba Eventos Hoy'}
+                  <button type="button" className="mbtn" onClick={probarManana} disabled={probandoManana || probando || cambiando}>
+                    {probandoManana ? 'Simulando…' : 'Prueba Eventos Mañana'}
                   </button>
                 </>
               )}

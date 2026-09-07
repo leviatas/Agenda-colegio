@@ -260,12 +260,15 @@ historial.
 
 ### Notificaciones push
 
-Un aviso de "hoy tenés eventos" (oficiales que le tocan según los picks, o
+Un aviso de "mañana tenés eventos" (oficiales que le tocan según los picks, o
 propios) una vez por día, con Web Push — funciona con la app cerrada, no sólo
-con una pestaña abierta. No hay tabla de "avisos ya mandados": todo se
-recalcula de cero cada vez que corre el trabajo del día
-(`server/src/lib/push.js`, `revisarYNotificarHoy`), así que un cambio de
-picks o un evento cargado a último momento ya sale bien al otro día sin tocar
+con una pestaña abierta. **Sale la tarde ANTERIOR**, a las 17 de Argentina:
+si hay tres eventos el 8, el aviso llega el 7 a las 17. La idea es que haya
+tiempo de preparar lo del día siguiente, algo que un aviso de la mañana misma
+no da. No hay tabla de "avisos ya mandados": todo se recalcula de cero cada
+vez que corre el trabajo del día (`server/src/lib/push.js`,
+`revisarYNotificarDiaSiguiente`), así que un cambio de picks o un evento
+cargado a último momento ya sale bien en el aviso de esa tarde sin tocar
 nada.
 
 **Cómo se activan, del lado del navegador** (`client/src/lib/push.js`):
@@ -292,14 +295,16 @@ siempre al día. Si cambian los filtros después con las notificaciones ya
 activas, `AuthContext.setPicks` se lo vuelve a mandar al server sin cuenta
 (`sincronizarPicksSiActivo`) — con cuenta no hace falta, ya lee lo último.
 
-**El trabajo del día** (`revisarYNotificarHoy`, disparado por
+**El trabajo del día** (`revisarYNotificarDiaSiguiente`, disparado por
 `iniciarScheduler` en `index.js`) no usa `node-cron` ni ninguna librería de
 scheduling: se fija cada 5 minutos si ya es la hora configurada
-(`HORA_AVISO`, 8am Argentina) y si todavía no se mandó hoy, mismo espíritu
+(`HORA_AVISO`, 17 de Argentina) y si todavía no se mandó hoy, mismo espíritu
 que el corte de día de `lib/telemetria.js` (mismo `OFFSET_MIN` fijo de
--180). Recorre TODAS las suscripciones —no son muchas para una agenda de un
-colegio— y les manda el push a las que tengan algo hoy, calculado con
-`lib/matcherPicks.js`. Una respuesta 404/410 del servicio de push (el
+-180). El día que se avisa es el SIGUIENTE (`mananaISO()`), pero el flag
+`ultimoEnviado` que evita repetir guarda el día en que se mandó — son dos
+fechas distintas a propósito, no las confundas al tocar esto. Recorre TODAS
+las suscripciones —no son muchas para una agenda de un colegio— y les manda
+el push a las que tengan algo mañana, calculado con `lib/matcherPicks.js`. Una respuesta 404/410 del servicio de push (el
 navegador dio de baja la suscripción del otro lado: desinstalación, borrado
 de datos del sitio) borra la fila; cualquier otro error sólo se loguea, la
 suscripción no se toca por las dudas de que sea transitorio.
@@ -336,7 +341,11 @@ ya mismo a la suscripción de ESE navegador (`POST /api/push/probar` →
 `enviarPrueba` en `lib/push.js`), sin esperar al trabajo del día ni pasar
 por `matcherPicks` — si tocaste el botón ya sabés que la querés recibir. Es
 la forma de confirmar que quedó bien configurado (VAPID, Service Worker,
-permiso) sin tener que esperar hasta la mañana siguiente.
+permiso) sin tener que esperar hasta las 17. Al lado está **"Prueba Eventos
+Mañana"** (`POST /api/push/probar-dia-siguiente`), que es la otra mitad de la
+prueba: corre el trabajo del día completo ahora mismo, con matcher de picks
+y todo, así que si mañana no tenés nada que te corresponda no llega ninguna
+notificación — igual que a las 17.
 
 ### Auth y permisos
 

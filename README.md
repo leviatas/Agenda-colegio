@@ -12,8 +12,8 @@ Calendario escolar del Colegio San Gabriel, ciclo lectivo 2026.
 - **Los emails de `ADMIN_EMAILS`** editan el calendario oficial desde
   `/oficial` y ven en `/usuarios` y `/metricas` quién entra y cuánta gente
   distinta se loguea. Nadie más.
-- **Notificaciones push opcionales**, con la app cerrada: un aviso por día si
-  hay algo en la agenda (ver "Notificaciones push" en
+- **Notificaciones push opcionales**, con la app cerrada: un aviso a las 17 si
+  al día siguiente hay algo en la agenda (ver "Notificaciones push" en
   [`CLAUDE.md`](CLAUDE.md)). Necesitan `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY`
   en el `.env` — sin eso, la app funciona igual pero no las manda.
 

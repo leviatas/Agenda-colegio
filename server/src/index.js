@@ -57,7 +57,7 @@ app.listen(PORT, () => {
   console.log(`Server listening on http://localhost:${PORT}`);
 });
 
-// El aviso diario de "hoy tenés eventos" (ver lib/push.js). Va después de
+// El aviso diario de "mañana tenés eventos" (ver lib/push.js). Va después de
 // app.listen y no antes: no depende del puerto, pero así el log de arranque
 // sale en orden si VAPID no está configurado y avisa por consola.
 iniciarScheduler();

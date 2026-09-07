@@ -1,16 +1,19 @@
-// Notificaciones push de "hoy tenés eventos": un aviso por día, sólo si hay
-// algo. No hay tabla de "eventos ya avisados" ni nada parecido — se recalcula
-// de cero cada vez, así que un cambio de picks o un evento que se agrega a
-// último momento ya sale bien en el aviso del día siguiente sin tocar nada.
+// Notificaciones push de "mañana tenés eventos": un aviso por día, la tarde
+// ANTERIOR y sólo si al día siguiente hay algo. No hay tabla de "eventos ya
+// avisados" ni nada parecido — se recalcula de cero cada vez, así que un
+// cambio de picks o un evento que se agrega a último momento ya sale bien en
+// el aviso de esa misma tarde sin tocar nada.
 const webpush = require('web-push');
 const prisma = require('./prisma');
 const { matcher } = require('./matcherPicks');
 
 // Mismo offset fijo que lib/telemetria.js: Argentina no tiene horario de
 // verano desde 2009, así que no hace falta una librería de zonas horarias
-// para esto. HORA_AVISO es la hora LOCAL (Argentina) a la que sale el aviso.
+// para esto. HORA_AVISO es la hora LOCAL (Argentina) a la que sale el aviso,
+// y lo que se avisa son los eventos del DÍA SIGUIENTE: a las 17 del 7 sale el
+// aviso de lo que hay el 8.
 const OFFSET_MIN = -180;
-const HORA_AVISO = 8;
+const HORA_AVISO = 17;
 
 if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
   webpush.setVapidDetails(
@@ -24,8 +27,19 @@ function ahoraArgentina() {
   return new Date(Date.now() + OFFSET_MIN * 60000);
 }
 
+// La fecha de calendario argentina de hoy, o la de dentro de `dias` días.
+// Sumar 86.400.000 ms alcanza porque acá no hay horario de verano: todos los
+// días duran lo mismo.
+function diaISO(dias = 0) {
+  return new Date(ahoraArgentina().getTime() + dias * 86400000).toISOString().slice(0, 10);
+}
+
 function hoyISO() {
-  return ahoraArgentina().toISOString().slice(0, 10);
+  return diaISO(0);
+}
+
+function mananaISO() {
+  return diaISO(1);
 }
 
 async function registrarSuscripcion({ endpoint, keys, userId, picks }) {
@@ -79,18 +93,19 @@ async function enviarPrueba(endpoint) {
   }
 }
 
-// Un evento cae hoy si `hoy` está entre `date` y `endDate` (inclusive), o es
-// exactamente `date` cuando no hay tramo. Comparan bien como string porque
-// las dos son siempre 'YYYY-MM-DD'.
-function caeHoy(ev, hoy) {
-  return ev.date <= hoy && hoy <= (ev.endDate || ev.date);
+// Un evento cae en `dia` si `dia` está entre `date` y `endDate` (inclusive),
+// o es exactamente `date` cuando no hay tramo. Comparan bien como string
+// porque las dos son siempre 'YYYY-MM-DD'.
+function caeEn(ev, dia) {
+  return ev.date <= dia && dia <= (ev.endDate || ev.date);
 }
 
 // El trabajo del día: recorre TODAS las suscripciones (no son muchas para una
 // agenda de un colegio, así que no vale la pena optimizar la consulta) y le
-// manda el push a la que tenga algo hoy.
-async function revisarYNotificarHoy() {
-  const hoy = hoyISO();
+// manda el push a la que tenga algo MAÑANA — el aviso sale la tarde anterior
+// (HORA_AVISO), no el mismo día.
+async function revisarYNotificarDiaSiguiente() {
+  const dia = mananaISO();
 
   const suscripciones = await prisma.pushSubscription.findMany({
     include: { user: { select: { picks: true } } },
@@ -98,7 +113,7 @@ async function revisarYNotificarHoy() {
   if (suscripciones.length === 0) return;
 
   const oficiales = await prisma.event.findMany();
-  const oficialesHoy = oficiales.filter((ev) => caeHoy(ev, hoy));
+  const oficialesDelDia = oficiales.filter((ev) => caeEn(ev, dia));
 
   // Los personales sólo existen para cuentas (ver el comentario de arriba):
   // se traen una sola vez por cuenta, no por suscripción — la misma persona
@@ -107,7 +122,7 @@ async function revisarYNotificarHoy() {
   const personalesPorUsuario = new Map();
   if (userIds.length > 0) {
     const personales = await prisma.personalEvent.findMany({ where: { userId: { in: userIds } } });
-    personales.filter((ev) => caeHoy(ev, hoy)).forEach((ev) => {
+    personales.filter((ev) => caeEn(ev, dia)).forEach((ev) => {
       if (!personalesPorUsuario.has(ev.userId)) personalesPorUsuario.set(ev.userId, 0);
       personalesPorUsuario.set(ev.userId, personalesPorUsuario.get(ev.userId) + 1);
     });
@@ -115,8 +130,8 @@ async function revisarYNotificarHoy() {
 
   // Eventos compartidos: cada usuario puede estar suscripto a los eventos
   // personales de otra cuenta (EventSubscription). Se traen los ownerId de
-  // cada suscripción activa y sus PersonalEvent que caen hoy, para sumarlos
-  // al contador de quien los suscribió.
+  // cada suscripción activa y sus PersonalEvent que caen mañana, para
+  // sumarlos al contador de quien los suscribió.
   const compartidosPorUsuario = new Map();
   if (userIds.length > 0) {
     const subs = await prisma.eventSubscription.findMany({
@@ -126,10 +141,10 @@ async function revisarYNotificarHoy() {
     if (subs.length > 0) {
       const ownerIds = [...new Set(subs.map((s) => s.ownerId))];
       const compartidos = await prisma.personalEvent.findMany({ where: { userId: { in: ownerIds } } });
-      const compartidosHoy = compartidos.filter((ev) => caeHoy(ev, hoy));
-      // Para cada suscriptor, sumar los eventos de hoy de cada owner al que está suscripto.
+      const compartidosDelDia = compartidos.filter((ev) => caeEn(ev, dia));
+      // Para cada suscriptor, sumar los eventos de mañana de cada owner al que está suscripto.
       subs.forEach(({ subscriberId, ownerId }) => {
-        const cnt = compartidosHoy.filter((ev) => ev.userId === ownerId).length;
+        const cnt = compartidosDelDia.filter((ev) => ev.userId === ownerId).length;
         if (cnt === 0) return;
         compartidosPorUsuario.set(subscriberId, (compartidosPorUsuario.get(subscriberId) || 0) + cnt);
       });
@@ -137,11 +152,11 @@ async function revisarYNotificarHoy() {
   }
 
   await Promise.all(
-    suscripciones.map((sub) => enviarSiCorresponde(sub, oficialesHoy, personalesPorUsuario, compartidosPorUsuario)),
+    suscripciones.map((sub) => enviarSiCorresponde(sub, oficialesDelDia, personalesPorUsuario, compartidosPorUsuario)),
   );
 }
 
-async function enviarSiCorresponde(sub, oficialesHoy, personalesPorUsuario, compartidosPorUsuario) {
+async function enviarSiCorresponde(sub, oficialesDelDia, personalesPorUsuario, compartidosPorUsuario) {
   let picks = [];
   try {
     picks = JSON.parse((sub.user ? sub.user.picks : sub.picks) || '[]');
@@ -151,14 +166,14 @@ async function enviarSiCorresponde(sub, oficialesHoy, personalesPorUsuario, comp
 
   const visible = matcher(picks);
   const cantidad =
-    oficialesHoy.filter(visible).length +
+    oficialesDelDia.filter(visible).length +
     (personalesPorUsuario.get(sub.userId) || 0) +
     (compartidosPorUsuario ? compartidosPorUsuario.get(sub.userId) || 0 : 0);
   if (cantidad === 0) return;
 
   const payload = JSON.stringify({
     title: 'Agenda escolar',
-    body: cantidad === 1 ? 'Hoy tenés 1 evento en la agenda.' : `Hoy tenés ${cantidad} eventos en la agenda.`,
+    body: cantidad === 1 ? 'Mañana tenés 1 evento en la agenda.' : `Mañana tenés ${cantidad} eventos en la agenda.`,
     url: '/',
   });
 
@@ -178,7 +193,8 @@ async function enviarSiCorresponde(sub, oficialesHoy, personalesPorUsuario, comp
 
 // Nada de node-cron: alcanza con fijarse cada 5 minutos si ya es la hora del
 // aviso y todavía no se mandó hoy (mismo espíritu que el corte de día de
-// lib/telemetria.js). `ultimoEnviado` vive en memoria del proceso, así que un
+// lib/telemetria.js). `ultimoEnviado` guarda el día ARGENTINO en que salió el
+// aviso —no el día avisado— y vive en memoria del proceso, así que un
 // reinicio justo en la ventana de HORA_AVISO puede repetir el aviso una vez
 // — aceptable para esto, al revés de perderlo silenciosamente.
 let ultimoEnviado = null;
@@ -193,9 +209,15 @@ function iniciarScheduler() {
     const hoy = hoyISO();
     if (ahora.getUTCHours() === HORA_AVISO && ultimoEnviado !== hoy) {
       ultimoEnviado = hoy;
-      revisarYNotificarHoy().catch((err) => console.error('Falló el aviso diario de push', err));
+      revisarYNotificarDiaSiguiente().catch((err) => console.error('Falló el aviso diario de push', err));
     }
   }, 5 * 60 * 1000);
 }
 
-module.exports = { registrarSuscripcion, eliminarSuscripcion, enviarPrueba, revisarYNotificarHoy, iniciarScheduler };
+module.exports = {
+  registrarSuscripcion,
+  eliminarSuscripcion,
+  enviarPrueba,
+  revisarYNotificarDiaSiguiente,
+  iniciarScheduler,
+};
