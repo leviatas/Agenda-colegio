@@ -1006,12 +1006,14 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 
 .config-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: .6rem 1rem;
 }
 .config-info p { margin: .2rem 0 0; }
 .config-row .mbtn { flex: none; }
+.config-row-acciones { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; justify-content: flex-end; }
 
 /* El prompt de notificaciones reusa .ev-menu (ver NotificacionesPrompt.jsx),
    pero con dos botones en fila en vez de la fila de íconos de EventoMenu. */

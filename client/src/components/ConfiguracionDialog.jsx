@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import Dialog from './Dialog';
 import { useAuth } from '../context/AuthContext';
-import { activarNotificaciones, desactivarNotificaciones, estadoNotificaciones } from '../lib/push';
+import { activarNotificaciones, desactivarNotificaciones, estadoNotificaciones, probarNotificaciones } from '../lib/push';
 
 // Configuración de la cuenta/navegador. Por ahora sólo tiene notificaciones,
 // pero va en su propio modal (y no adentro de otro) porque es donde va a
@@ -13,7 +13,9 @@ function Cuerpo({ onClose }) {
   // este modal (ver estadoNotificaciones en lib/push.js).
   const [estado, setEstado] = useState(null);
   const [cambiando, setCambiando] = useState(false);
+  const [probando, setProbando] = useState(false);
   const [error, setError] = useState('');
+  const [aviso, setAviso] = useState('');
 
   useEffect(() => {
     let vivo = true;
@@ -25,8 +27,23 @@ function Cuerpo({ onClose }) {
     };
   }, []);
 
+  async function probar() {
+    setError('');
+    setAviso('');
+    setProbando(true);
+    try {
+      await probarNotificaciones(token);
+      setAviso('Se mandó. Debería llegarte en unos segundos.');
+    } catch (err) {
+      setError(err.message || 'No se pudo mandar la prueba.');
+    } finally {
+      setProbando(false);
+    }
+  }
+
   async function alternar() {
     setError('');
+    setAviso('');
     setCambiando(true);
     try {
       if (estado.activo) {
@@ -72,18 +89,29 @@ function Cuerpo({ onClose }) {
           ) : !estado.soportado ? (
             <span className="empty-note">No disponible en este navegador.</span>
           ) : (
-            <button
-              type="button"
-              className={`mbtn${estado.activo ? '' : ' primary'}`}
-              onClick={alternar}
-              disabled={cambiando}
-            >
-              {cambiando ? 'Un momento…' : estado.activo ? 'Desactivar' : 'Activar'}
-            </button>
+            <div className="config-row-acciones">
+              {/* Sólo tiene sentido probar algo que ya está activo: si no,
+                  "Probar" no haría más que repetir el mismo pedido de
+                  permiso que ya hace "Activar". */}
+              {estado.activo && (
+                <button type="button" className="mbtn" onClick={probar} disabled={probando || cambiando}>
+                  {probando ? 'Mandando…' : 'Probar'}
+                </button>
+              )}
+              <button
+                type="button"
+                className={`mbtn${estado.activo ? '' : ' primary'}`}
+                onClick={alternar}
+                disabled={cambiando || probando}
+              >
+                {cambiando ? 'Un momento…' : estado.activo ? 'Desactivar' : 'Activar'}
+              </button>
+            </div>
           )}
         </div>
 
         {error && <p className="err">{error}</p>}
+        {aviso && <p className="lede muted">{aviso}</p>}
       </div>
 
       <div className="modal-foot">

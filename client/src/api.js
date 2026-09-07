@@ -85,6 +85,9 @@ export const api = {
     clavePublica: () => request('/push/clave-publica'),
     suscribir: (token, subscription, picks) => request('/push/suscribir', { method: 'POST', body: { subscription, picks }, token }),
     desuscribir: (token, endpoint) => request('/push/suscribir', { method: 'DELETE', body: { endpoint }, token }),
+    // Botón "Probar" de ConfiguracionDialog: manda un push ya mismo a ESA
+    // suscripción, sin esperar al aviso diario.
+    probar: (token, endpoint) => request('/push/probar', { method: 'POST', body: { endpoint }, token }),
   },
 
   oficial: {

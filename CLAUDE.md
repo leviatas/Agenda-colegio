@@ -331,6 +331,13 @@ entere. `NotificacionesPrompt.jsx` es el prompt de la primera visita
 `ConfirmDialog` a propósito, que es específicamente para confirmar acciones
 destructivas y su botón de confirmar es rojo, algo que no aplica acá.
 
+**"Probar"** (sólo visible con las notificaciones ya activas) manda un push
+ya mismo a la suscripción de ESE navegador (`POST /api/push/probar` →
+`enviarPrueba` en `lib/push.js`), sin esperar al trabajo del día ni pasar
+por `matcherPicks` — si tocaste el botón ya sabés que la querés recibir. Es
+la forma de confirmar que quedó bien configurado (VAPID, Service Worker,
+permiso) sin tener que esperar hasta la mañana siguiente.
+
 ### Auth y permisos
 
 El cliente saca el ID token con Google Identity Services →

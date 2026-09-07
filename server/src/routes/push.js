@@ -5,7 +5,7 @@
 // schema.prisma.
 const express = require('express');
 const { optionalAuth } = require('../middleware/auth');
-const { registrarSuscripcion, eliminarSuscripcion } = require('../lib/push');
+const { registrarSuscripcion, eliminarSuscripcion, enviarPrueba } = require('../lib/push');
 
 const router = express.Router();
 
@@ -43,6 +43,28 @@ router.delete('/suscribir', optionalAuth, async (req, res) => {
   if (typeof endpoint !== 'string') return res.status(400).json({ error: 'Falta el endpoint.' });
   await eliminarSuscripcion(endpoint);
   res.status(204).end();
+});
+
+// El botón "Probar" de ConfiguracionDialog.jsx: manda un push ya mismo a
+// ESA suscripción, sin esperar al trabajo diario ni pasar por el matcher de
+// picks. No hace falta requireAuth porque el endpoint no es adivinable y ya
+// es lo mismo que exige DELETE /suscribir; en el peor caso, alguien con el
+// endpoint de otra persona le dispara una notificación de prueba, no un dato
+// suyo.
+router.post('/probar', optionalAuth, async (req, res) => {
+  const { endpoint } = req.body || {};
+  if (typeof endpoint !== 'string') return res.status(400).json({ error: 'Falta el endpoint.' });
+
+  const r = await enviarPrueba(endpoint);
+  if (r.ok) return res.status(204).end();
+
+  const mensajes = {
+    'no-configurado': 'Las notificaciones no están configuradas en este servidor.',
+    'sin-suscripcion': 'No hay ninguna suscripción activa para probar.',
+    vencida: 'Esa suscripción ya no es válida; volvé a activar las notificaciones.',
+    error: 'No se pudo mandar la notificación de prueba.',
+  };
+  res.status(r.motivo === 'sin-suscripcion' ? 404 : 502).json({ error: mensajes[r.motivo] || mensajes.error });
 });
 
 module.exports = router;

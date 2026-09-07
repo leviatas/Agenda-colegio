@@ -48,6 +48,37 @@ async function eliminarSuscripcion(endpoint) {
   await prisma.pushSubscription.deleteMany({ where: { endpoint } });
 }
 
+// Push de prueba, para el botón "Probar" de ConfiguracionDialog.jsx: manda
+// uno ya mismo a ESA suscripción puntual (no a todos los dispositivos de la
+// cuenta), sin pasar por el matcher de picks — si tocaste el botón es porque
+// ya sabés que la querés recibir. Devuelve el mismo motivo de error que usa
+// el resto del módulo para que la ruta lo pueda traducir a un mensaje.
+async function enviarPrueba(endpoint) {
+  if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+    return { ok: false, motivo: 'no-configurado' };
+  }
+  const sub = await prisma.pushSubscription.findUnique({ where: { endpoint } });
+  if (!sub) return { ok: false, motivo: 'sin-suscripcion' };
+
+  const payload = JSON.stringify({
+    title: 'Agenda escolar',
+    body: 'Esto es una prueba: si te llegó, las notificaciones están andando.',
+    url: '/',
+  });
+
+  try {
+    await webpush.sendNotification({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } }, payload);
+    return { ok: true };
+  } catch (err) {
+    if (err.statusCode === 404 || err.statusCode === 410) {
+      await eliminarSuscripcion(sub.endpoint);
+      return { ok: false, motivo: 'vencida' };
+    }
+    console.error('No se pudo mandar el push de prueba a', sub.endpoint, err.message);
+    return { ok: false, motivo: 'error' };
+  }
+}
+
 // Un evento cae hoy si `hoy` está entre `date` y `endDate` (inclusive), o es
 // exactamente `date` cuando no hay tramo. Comparan bien como string porque
 // las dos son siempre 'YYYY-MM-DD'.
@@ -141,4 +172,4 @@ function iniciarScheduler() {
   }, 5 * 60 * 1000);
 }
 
-module.exports = { registrarSuscripcion, eliminarSuscripcion, revisarYNotificarHoy, iniciarScheduler };
+module.exports = { registrarSuscripcion, eliminarSuscripcion, enviarPrueba, revisarYNotificarHoy, iniciarScheduler };

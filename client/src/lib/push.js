@@ -102,6 +102,20 @@ export async function sincronizarPicksSiActivo(picks, token) {
   await activarNotificaciones({ picks, token });
 }
 
+// Botón "Probar" de ConfiguracionDialog: manda un push ya mismo a la
+// suscripción de ESTE navegador, token propio para no tener que esperar al
+// aviso diario. `token` opcional, igual que el resto de este archivo.
+export async function probarNotificaciones(token) {
+  if (!soportaPush()) return { ok: false, motivo: 'no-soportado' };
+
+  const registro = await navigator.serviceWorker.getRegistration();
+  const sub = registro && (await registro.pushManager.getSubscription());
+  if (!sub) return { ok: false, motivo: 'no-activo' };
+
+  await api.push.probar(token, sub.endpoint);
+  return { ok: true };
+}
+
 export async function desactivarNotificaciones(token) {
   if (!soportaPush()) return;
   const registro = await navigator.serviceWorker.getRegistration();
