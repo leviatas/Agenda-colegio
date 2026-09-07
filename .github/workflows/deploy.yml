@@ -19,7 +19,7 @@ jobs:
       # Sin checkout a propósito: se trabaja sobre el clon que ya vive en
       # DEPLOY_DIR, que es el que tiene el .env con los secretos (ese .env no
       # está en el repo y hay que crearlo a mano la primera vez).
-      - name: Deploy con deploy.sh
+      - name: Deploy con deploy.sh (hasta 3 intentos)
         run: |
           DEPLOY_DIR="${{ vars.DEPLOY_DIR }}"
           DEPLOY_DIR="${DEPLOY_DIR:-$HOME/proyectos/sanga/Agenda-colegio}"
@@ -29,4 +29,15 @@ jobs:
           fi
           cd "$DEPLOY_DIR"
           chmod +x ./deploy.sh
-          ./deploy.sh
+
+          max_intentos=3
+          intento=1
+          until ./deploy.sh; do
+            if [ "$intento" -ge "$max_intentos" ]; then
+              echo "::error::deploy.sh falló $max_intentos veces seguidas. Abortando."
+              exit 1
+            fi
+            echo "::warning::Intento $intento falló. Reintentando en 10 segundos… (quedan $((max_intentos - intento)) reintentos)"
+            intento=$((intento + 1))
+            sleep 10
+          done
