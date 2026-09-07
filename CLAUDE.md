@@ -258,6 +258,79 @@ dónde, y borrar una cuenta no borra sus accesos (`onDelete: SetNull` en
 `Visita.userId`) — quedan como accesos sin cuenta, no desaparecen del
 historial.
 
+### Notificaciones push
+
+Un aviso de "hoy tenés eventos" (oficiales que le tocan según los picks, o
+propios) una vez por día, con Web Push — funciona con la app cerrada, no sólo
+con una pestaña abierta. No hay tabla de "avisos ya mandados": todo se
+recalcula de cero cada vez que corre el trabajo del día
+(`server/src/lib/push.js`, `revisarYNotificarHoy`), así que un cambio de
+picks o un evento cargado a último momento ya sale bien al otro día sin tocar
+nada.
+
+**Cómo se activan, del lado del navegador** (`client/src/lib/push.js`):
+1. Se pide permiso (`Notification.requestPermission()`) y, si lo dan, se
+   registra `client/public/sw.js` (Service Worker mínimo: sólo escucha
+   `push` y `notificationclick`, no cachea nada de la app — no es un SW de
+   "app offline").
+2. Se pide la clave pública VAPID al server (`GET /api/push/clave-publica`,
+   pública a propósito: no es secreta, es la mitad que necesita el navegador
+   para pedir la suscripción) y se suscribe con `pushManager.subscribe()`.
+3. Esa suscripción (`endpoint` + claves de cifrado) se manda a
+   `POST /api/push/suscribir`, `optionalAuth` como el resto de lo que no pide
+   cuenta.
+
+**Con cuenta o sin cuenta, igual que el resto de la app** (ver "Eventos
+personales: navegador o cuenta"), pero con una diferencia real: sin cuenta,
+el server no tiene forma de saber los eventos personales de ese navegador
+—viven sólo en su `localStorage`—, así que **una suscripción anónima sólo
+avisa por los oficiales que le tocan según sus picks**, nunca por
+personales. Por eso `PushSubscription` (`schema.prisma`) guarda `picks` como
+snapshot: sólo se usa cuando `userId` es nulo, porque no hay otro lugar
+donde guardárselos; con cuenta se usa siempre `User.picks`, que está
+siempre al día. Si cambian los filtros después con las notificaciones ya
+activas, `AuthContext.setPicks` se lo vuelve a mandar al server sin cuenta
+(`sincronizarPicksSiActivo`) — con cuenta no hace falta, ya lee lo último.
+
+**El trabajo del día** (`revisarYNotificarHoy`, disparado por
+`iniciarScheduler` en `index.js`) no usa `node-cron` ni ninguna librería de
+scheduling: se fija cada 5 minutos si ya es la hora configurada
+(`HORA_AVISO`, 8am Argentina) y si todavía no se mandó hoy, mismo espíritu
+que el corte de día de `lib/telemetria.js` (mismo `OFFSET_MIN` fijo de
+-180). Recorre TODAS las suscripciones —no son muchas para una agenda de un
+colegio— y les manda el push a las que tengan algo hoy, calculado con
+`lib/matcherPicks.js`. Una respuesta 404/410 del servicio de push (el
+navegador dio de baja la suscripción del otro lado: desinstalación, borrado
+de datos del sitio) borra la fila; cualquier otro error sólo se loguea, la
+suscripción no se toca por las dudas de que sea transitorio.
+
+`lib/matcherPicks.js` es un mirror de la función `matcher()` de
+`client/src/lib/agenda.js` —sólo la parte de picks, 'per' no entra porque
+los personales se resuelven aparte—, con el mismo motivo de duplicación que
+`lib/catalogo.js`: el build de Docker del cliente no entra en la imagen del
+server. **Si agregás una sala, tocá los TRES archivos** (`agenda.js`,
+`catalogo.js` y `matcherPicks.js`): éste es el único que además necesita el
+`imp` de cada sala (qué grupo de edad y ciclo arrastra), que en
+`catalogo.js` no está.
+
+**Sin `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` en el `.env`, el feature se
+apaga solo**: el server arranca igual, `iniciarScheduler` avisa por consola
+y no hace nada, y `GET /api/push/clave-publica` devuelve 503. Generar el par
+una sola vez con `node -e "console.log(require('web-push').generateVAPIDKeys())"`
+y **no cambiarlo después**: cambiar la clave pública invalida TODAS las
+suscripciones existentes de golpe.
+
+**En el cliente**, el ícono del avatar (`Masthead.jsx`) abre un menú propio
+—un popover con `position: absolute`, no un `<dialog>`: no es modal, no
+bloquea el resto de la página— con la única opción de por ahora,
+`ConfiguracionDialog.jsx`, que muestra el estado real preguntándole al
+navegador cada vez que se abre (`estadoNotificaciones()`), nunca un flag
+guardado: el permiso se puede revocar desde afuera de la app sin que se
+entere. `NotificacionesPrompt.jsx` es el prompt de la primera visita
+(Sí/No, gateado por `localStorage` para no repetirlo) — aparte de
+`ConfirmDialog` a propósito, que es específicamente para confirmar acciones
+destructivas y su botón de confirmar es rojo, algo que no aplica acá.
+
 ### Auth y permisos
 
 El cliente saca el ID token con Google Identity Services →

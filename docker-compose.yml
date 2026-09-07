@@ -12,6 +12,12 @@ services:
       # pared para clientes en husos distintos, esto no alcanza: es una sola
       # para toda la instancia. Ahí hay que guardar un offset por empresa.
       TZ: ${TZ:-America/Argentina/Buenos_Aires}
+      # Notificaciones push ("hoy tenés eventos"): opcionales, con :- y no :?
+      # — sin ellas el server arranca igual y sólo avisa por consola que no
+      # va a mandar notificaciones (ver lib/push.js).
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:soporte@example.com}
     volumes:
       # Todo lo que tenga que sobrevivir a un rebuild va acá adentro: la base
       # y los uploads. Lo que quede fuera de /app/data se pierde.

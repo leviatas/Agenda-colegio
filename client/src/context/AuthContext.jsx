@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { api } from '../api';
 import { CAT, ordenarPicks } from '../lib/agenda';
+import { sincronizarPicksSiActivo } from '../lib/push';
 
 const AuthContext = createContext(null);
 
@@ -137,6 +138,14 @@ export function AuthProvider({ children }) {
       if (token) {
         api.savePicks(token, limpios).catch(() => {
           /* queda guardado local; se reintenta con el próximo cambio */
+        });
+      } else {
+        // Con cuenta el server ya lee siempre User.picks; sin cuenta, si las
+        // notificaciones están activas, la suscripción quedaría avisando con
+        // el filtro viejo si no se le manda el nuevo (ver lib/push.js).
+        sincronizarPicksSiActivo(limpios, token).catch(() => {
+          /* no hay nada que reintentar acá: el próximo cambio de filtros
+             vuelve a intentarlo */
         });
       }
     },

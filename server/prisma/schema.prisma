@@ -39,10 +39,11 @@ model User {
 
   createdAt DateTime @default(now())
 
-  events         PersonalEvent[]
-  suscriptoresDe EventSubscription[] @relation("Owner")
-  suscripciones  EventSubscription[] @relation("Subscriber")
-  accesos        Visita[]
+  events            PersonalEvent[]
+  suscriptoresDe    EventSubscription[] @relation("Owner")
+  suscripciones     EventSubscription[] @relation("Subscriber")
+  accesos           Visita[]
+  suscripcionesPush PushSubscription[]
 }
 
 // Calendario oficial del colegio. Lo edita SOLO un admin (routes/oficial.js);
@@ -136,4 +137,31 @@ model Visita {
 
   @@index([ip])
   @@index([creadoEn])
+}
+
+// Un dispositivo suscripto a las notificaciones push de "hoy tenés eventos"
+// (ver server/src/lib/push.js). `endpoint` identifica el navegador/dispositivo
+// ante el servicio de push de Google/Apple/Mozilla, así que es la clave real
+// — no hay dos filas para el mismo endpoint (volver a suscribirse actualiza
+// la fila existente en vez de duplicarla).
+//
+// `userId` es nulo sin cuenta: cargar eventos propios no pide login (ver
+// CLAUDE.md), así que las notificaciones tampoco. Pero sin cuenta el server
+// no tiene forma de saber los eventos personales de ese navegador —viven
+// sólo en su localStorage—, así que a un anónimo sólo se le avisa por los
+// oficiales que le tocan según `picks`. Con cuenta se usa siempre
+// `User.picks` (la fuente de verdad), no esta columna: `picks` acá es sólo
+// el snapshot con el que se suscribió alguien sin cuenta, porque no hay
+// otro lugar donde guardárselo.
+model PushSubscription {
+  id       Int    @id @default(autoincrement())
+  endpoint String @unique
+  p256dh   String
+  auth     String
+
+  userId Int?
+  user   User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  picks  String @default("[]")
+
+  createdAt DateTime @default(now())
 }
