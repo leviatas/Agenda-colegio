@@ -1,4 +1,4 @@
-// Service worker mínimo, sólo para el aviso push de "hoy tenés eventos" (ver
+// Service worker mínimo, sólo para el aviso push de "mañana tenés eventos" (ver
 // server/src/lib/push.js y client/src/lib/push.js). No cachea nada de la app
 // —no es un service worker de "app offline"—: sin push activo, este archivo
 // no hace nada.
@@ -15,7 +15,7 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('push', (event) => {
-  let datos = { title: 'Agenda escolar', body: 'Hoy tenés eventos en la agenda.', url: '/' };
+  let datos = { title: 'Agenda escolar', body: 'Mañana tenés eventos en la agenda.', url: '/' };
   if (event.data) {
     try {
       datos = { ...datos, ...event.data.json() };

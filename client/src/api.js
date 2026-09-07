@@ -77,7 +77,7 @@ export const api = {
   // para el admin (el server la cierra con requireAdmin).
   metricas: (token) => request('/metricas', { token }),
 
-  // Notificaciones push de "hoy tenés eventos" (ver lib/push.js). El token es
+  // Notificaciones push de "mañana tenés eventos" (ver lib/push.js). El token es
   // opcional: cargar eventos propios no pide cuenta, así que suscribirse
   // tampoco — sin cuenta sólo avisa por lo oficial (ver PushSubscription en
   // schema.prisma).
@@ -88,8 +88,8 @@ export const api = {
     // Botón "Probar" de ConfiguracionDialog: manda un push ya mismo a ESA
     // suscripción, sin esperar al aviso diario.
     probar: (token, endpoint) => request('/push/probar', { method: 'POST', body: { endpoint }, token }),
-    // Botón "Prueba Eventos Hoy": simula el trabajo diario de las 8:00 AM.
-    probarHoy: (token) => request('/push/probar-hoy', { method: 'POST', token }),
+    // Botón "Prueba Eventos Mañana": simula el trabajo diario de las 17:00.
+    probarDiaSiguiente: (token) => request('/push/probar-dia-siguiente', { method: 'POST', token }),
   },
 
   oficial: {
