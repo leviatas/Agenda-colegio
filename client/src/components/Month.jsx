@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { MESES, MES_AB, DIAS_AB, addDays, isoDow, key, parse, textoHora } from '../lib/agenda';
+import BotonGoogleCalendar from './BotonGoogleCalendar';
 
 // Un mes: la grilla de celdas a la izquierda y la agenda de días con eventos a
 // la derecha. `esPrimero` hace que el mes de arranque absorba los días de la
@@ -139,22 +140,28 @@ function Evento({ occ, onEventoClick }) {
   // de pantalla de una. Lo que no es propio sigue siendo un div sin más.
   const Tag = esPropio ? 'button' : 'div';
 
+  // El botón de Google Calendar va de hermano del renglón y no adentro: cuando
+  // el evento es propio el renglón ya es un <button>, y un botón adentro de
+  // otro no es HTML válido (el click del de adentro ni llega).
   return (
-    <Tag
-      type={esPropio ? 'button' : undefined}
-      className={`ev ${ev.level}${occ.span ? ' span' : ''}${esPropio ? ' clickable' : ''}`}
-      onClick={esPropio ? () => onEventoClick(ev) : undefined}
-      aria-label={esPropio ? `Opciones de "${ev.title}"` : undefined}
-    >
-      <span className="dot" />
-      <span className="h">{ev.time ? `${textoHora(ev)}hs` : ''}</span>
-      <span className="t" data-range={range || undefined}>
-        {ev.title}
-        {/* Sólo los eventos que llegan por una suscripción traen `de`: son los
-            únicos que se mezclan con el nivel 'per' de otra cuenta, así que
-            hace falta decir de quién son. Los propios no llevan nada acá. */}
-        {ev.de && <span className="de"> · {ev.de}</span>}
-      </span>
-    </Tag>
+    <div className="ev-row">
+      <Tag
+        type={esPropio ? 'button' : undefined}
+        className={`ev ${ev.level}${occ.span ? ' span' : ''}${esPropio ? ' clickable' : ''}`}
+        onClick={esPropio ? () => onEventoClick(ev) : undefined}
+        aria-label={esPropio ? `Opciones de "${ev.title}"` : undefined}
+      >
+        <span className="dot" />
+        <span className="h">{ev.time ? `${textoHora(ev)}hs` : ''}</span>
+        <span className="t" data-range={range || undefined}>
+          {ev.title}
+          {/* Sólo los eventos que llegan por una suscripción traen `de`: son los
+              únicos que se mezclan con el nivel 'per' de otra cuenta, así que
+              hace falta decir de quién son. Los propios no llevan nada acá. */}
+          {ev.de && <span className="de"> · {ev.de}</span>}
+        </span>
+      </Tag>
+      <BotonGoogleCalendar evento={ev} />
+    </div>
   );
 }

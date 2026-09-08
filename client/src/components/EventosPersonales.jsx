@@ -8,6 +8,7 @@ import { esLocal } from '../lib/personales';
 import IconoEditar from './IconoEditar';
 import IconoCompartir from './IconoCompartir';
 import IconoBorrar from './IconoBorrar';
+import BotonGoogleCalendar from './BotonGoogleCalendar';
 import { MES_AB, parse, textoHora } from '../lib/agenda';
 
 // La lista de "Eventos Personales" (Calendario.jsx en /personales): a
@@ -97,22 +98,29 @@ export default function EventosPersonales({ eventos, visible, onEditar }) {
                 {ev.title}
                 {ev.de && <span className="de"> · {ev.de}</span>}
               </span>
-              {esPropio && (
-                <span className="per-acciones">
-                  <button type="button" className="ic" title="Editar" aria-label={`Editar ${ev.title}`} onClick={() => onEditar(ev)}>
-                    <IconoEditar />
-                  </button>
-                  {/* Uno local (sin cuenta todavía) no tiene nada que compartir. */}
-                  {!esLocal(ev.id) && (
-                    <button type="button" className="ic" title="Compartir" aria-label={`Compartir ${ev.title}`} onClick={() => compartir(ev)}>
-                      <IconoCompartir />
+              <span className="per-acciones">
+                {/* Agregarlo al Google Calendar propio no es tocar el evento:
+                    va también en los que son de otra cuenta, que acá son de
+                    sólo lectura. Primero de la fila para que quede siempre en
+                    el mismo lugar, con o sin el resto de las acciones. */}
+                <BotonGoogleCalendar evento={ev} className="ic" />
+                {esPropio && (
+                  <>
+                    <button type="button" className="ic" title="Editar" aria-label={`Editar ${ev.title}`} onClick={() => onEditar(ev)}>
+                      <IconoEditar />
                     </button>
-                  )}
-                  <button type="button" className="ic danger" title="Eliminar" aria-label={`Eliminar ${ev.title}`} onClick={() => eliminar(ev)}>
-                    <IconoBorrar />
-                  </button>
-                </span>
-              )}
+                    {/* Uno local (sin cuenta todavía) no tiene nada que compartir. */}
+                    {!esLocal(ev.id) && (
+                      <button type="button" className="ic" title="Compartir" aria-label={`Compartir ${ev.title}`} onClick={() => compartir(ev)}>
+                        <IconoCompartir />
+                      </button>
+                    )}
+                    <button type="button" className="ic danger" title="Eliminar" aria-label={`Eliminar ${ev.title}`} onClick={() => eliminar(ev)}>
+                      <IconoBorrar />
+                    </button>
+                  </>
+                )}
+              </span>
             </li>
           );
         })}
