@@ -6,13 +6,11 @@
 const webpush = require('web-push');
 const prisma = require('./prisma');
 const { matcher } = require('./matcherPicks');
+const { ahoraArgentina, hoyISO, mananaISO } = require('./fechas');
 
-// Mismo offset fijo que lib/telemetria.js: Argentina no tiene horario de
-// verano desde 2009, así que no hace falta una librería de zonas horarias
-// para esto. HORA_AVISO es la hora LOCAL (Argentina) a la que sale el aviso,
-// y lo que se avisa son los eventos del DÍA SIGUIENTE: a las 17 del 7 sale el
-// aviso de lo que hay el 8.
-const OFFSET_MIN = -180;
+// HORA_AVISO es la hora LOCAL (Argentina, ver lib/fechas.js) a la que sale el
+// aviso, y lo que se avisa son los eventos del DÍA SIGUIENTE: a las 17 del 7
+// sale el aviso de lo que hay el 8.
 const HORA_AVISO = 17;
 
 if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
@@ -21,25 +19,6 @@ if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
     process.env.VAPID_PUBLIC_KEY,
     process.env.VAPID_PRIVATE_KEY,
   );
-}
-
-function ahoraArgentina() {
-  return new Date(Date.now() + OFFSET_MIN * 60000);
-}
-
-// La fecha de calendario argentina de hoy, o la de dentro de `dias` días.
-// Sumar 86.400.000 ms alcanza porque acá no hay horario de verano: todos los
-// días duran lo mismo.
-function diaISO(dias = 0) {
-  return new Date(ahoraArgentina().getTime() + dias * 86400000).toISOString().slice(0, 10);
-}
-
-function hoyISO() {
-  return diaISO(0);
-}
-
-function mananaISO() {
-  return diaISO(1);
 }
 
 async function registrarSuscripcion({ endpoint, keys, userId, picks }) {

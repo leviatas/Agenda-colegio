@@ -9,6 +9,8 @@ const usuariosRoutes = require('./routes/usuarios');
 const telemetriaRoutes = require('./routes/telemetria');
 const metricasRoutes = require('./routes/metricas');
 const pushRoutes = require('./routes/push');
+const novedadesRoutes = require('./routes/novedades');
+const novedadesAdminRoutes = require('./routes/novedadesAdmin');
 const { iniciarScheduler } = require('./lib/push');
 
 // Fallar temprano y con un mensaje claro: sin estas dos variables la app
@@ -46,6 +48,10 @@ app.use('/api/usuarios', usuariosRoutes);
 app.use('/api/telemetria', telemetriaRoutes);
 app.use('/api/metricas', metricasRoutes);
 app.use('/api/push', pushRoutes);
+// El admin va montado ANTES que el público para que /api/novedades/admin no
+// tenga que esquivar el /:id/cerrar del otro router.
+app.use('/api/novedades/admin', novedadesAdminRoutes);
+app.use('/api/novedades', novedadesRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err);

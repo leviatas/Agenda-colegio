@@ -4,9 +4,12 @@ import ThemeSwitch from './ThemeSwitch';
 import GoogleLoginButton from './GoogleLoginButton';
 import IconoCompartir from './IconoCompartir';
 import IconoConfig from './IconoConfig';
+import IconoInfo from './IconoInfo';
 import ConfiguracionDialog from './ConfiguracionDialog';
+import NovedadesDialog from './NovedadesDialog';
 import { useCompartirTodo } from './CompartirTodoDialog';
 import { useAuth } from '../context/AuthContext';
+import { useNovedades } from '../context/NovedadesContext';
 import { useAngosto } from '../lib/media';
 
 function inicial(nombre) {
@@ -31,6 +34,12 @@ export default function Masthead() {
   const [configAbierta, setConfiguracionAbierta] = useState(false);
   const menuRef = useRef(null);
 
+  // La "i" de novedades: la ve cualquiera, con cuenta o sin ella, porque los
+  // avisos son para todo el mundo. Sólo aparece si hay alguna vigente — un
+  // botón que abre una lista vacía es ruido, y acá arriba el lugar es poco.
+  const { novedades } = useNovedades();
+  const [novedadesAbiertas, setNovedadesAbiertas] = useState(false);
+
   useEffect(() => {
     if (!menuAbierto) return undefined;
     // Cierra al tocar afuera o con Escape. mousedown y no click: así el click
@@ -54,6 +63,7 @@ export default function Masthead() {
   const enOficial = pathname.startsWith('/oficial');
   const enUsuarios = pathname.startsWith('/usuarios');
   const enMetricas = pathname.startsWith('/metricas');
+  const enNovedades = pathname.startsWith('/novedades');
   const enPersonales = pathname.startsWith('/personales');
   const enCompartir = pathname.startsWith('/compartir');
 
@@ -74,6 +84,17 @@ export default function Masthead() {
         <div className="top-row">
           <div className="kicker">Colegio San Gabriel · Ciclo lectivo 2026</div>
           <div className="top-actions">
+            {novedades.length > 0 && (
+              <button
+                type="button"
+                className="novedades-btn"
+                title="Ver las novedades"
+                aria-label={`Ver las novedades (${novedades.length})`}
+                onClick={() => setNovedadesAbiertas(true)}
+              >
+                <IconoInfo />
+              </button>
+            )}
             {user ? (
               <div className="cuenta">
                 <div className="avatar-wrap" ref={menuRef}>
@@ -140,6 +161,7 @@ export default function Masthead() {
           {enOficial ? 'Calendario oficial'
             : enUsuarios ? 'Cuentas'
             : enMetricas ? 'Métricas'
+            : enNovedades ? 'Novedades'
             : enCompartir ? 'Evento compartido'
             : enPersonales ? 'Eventos personales'
             : 'Agenda escolar'}
@@ -155,13 +177,14 @@ export default function Masthead() {
             usar. */}
         {!enCompartir && (
           <nav className="nav">
-            <Link to="/" className={enOficial || enUsuarios || enMetricas || enPersonales ? '' : 'on'}>Ver la agenda</Link>
+            <Link to="/" className={enOficial || enUsuarios || enMetricas || enNovedades || enPersonales ? '' : 'on'}>Ver la agenda</Link>
             <Link to="/personales" className={enPersonales ? 'on' : ''}>Eventos Personales</Link>
             {user && user.isAdmin && (
               <>
                 <Link to="/oficial" className={enOficial ? 'on' : ''}>Editar el calendario</Link>
                 <Link to="/usuarios" className={enUsuarios ? 'on' : ''}>Cuentas</Link>
                 <Link to="/metricas" className={enMetricas ? 'on' : ''}>Métricas</Link>
+                <Link to="/novedades" className={enNovedades ? 'on' : ''}>Novedades</Link>
               </>
             )}
           </nav>
@@ -169,6 +192,7 @@ export default function Masthead() {
       </div>
 
       {user && <ConfiguracionDialog open={configAbierta} onClose={() => setConfiguracionAbierta(false)} />}
+      <NovedadesDialog open={novedadesAbiertas} onClose={() => setNovedadesAbiertas(false)} />
     </header>
   );
 }
