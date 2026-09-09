@@ -260,16 +260,46 @@ historial.
 
 ### Notificaciones push
 
-Un aviso de "mañana tenés eventos" (oficiales que le tocan según los picks, o
+Un aviso de "tenés eventos" (oficiales que le tocan según los picks, o
 propios) una vez por día, con Web Push — funciona con la app cerrada, no sólo
-con una pestaña abierta. **Sale la tarde ANTERIOR**, a las 17 de Argentina:
-si hay tres eventos el 8, el aviso llega el 7 a las 17. La idea es que haya
-tiempo de preparar lo del día siguiente, algo que un aviso de la mañana misma
-no da. No hay tabla de "avisos ya mandados": todo se recalcula de cero cada
-vez que corre el trabajo del día (`server/src/lib/push.js`,
-`revisarYNotificarDiaSiguiente`), así que un cambio de picks o un evento
-cargado a último momento ya sale bien en el aviso de esa tarde sin tocar
-nada.
+con una pestaña abierta. **De fábrica sale la tarde ANTERIOR**, a las 17 de
+Argentina: si hay tres eventos el 8, el aviso llega el 7 a las 17. La idea es
+que haya tiempo de preparar lo del día siguiente, algo que un aviso de la
+mañana misma no da. No hay tabla de "avisos ya mandados" en el sentido de
+qué eventos se avisaron: el contenido se recalcula de cero cada vez que corre
+el trabajo (`server/src/lib/push.js`, `revisarYNotificar`), así que un cambio
+de picks o un evento cargado a último momento ya sale bien en el aviso de esa
+tarde sin tocar nada.
+
+**Qué se puede configurar, y por qué vive en la suscripción y no en la
+cuenta**: `PushSubscription` (`schema.prisma`) guarda `hora` (0-23,
+argentina), `dia` (`'siguiente'` | `'hoy'`) y `detalle` (`'cantidad'` |
+`'titulos'`). Van ahí y no en `User` por dos razones: son de cada
+**dispositivo** —el celular puede querer el aviso a las 20 con el detalle y la
+compu a las 8 con el número— y porque sin cuenta no hay otro lado donde
+guardarlas, igual que `picks`. Los tres `@default` del schema son
+exactamente el comportamiento anterior (17, día siguiente, sólo la
+cantidad), así que las suscripciones que ya existían no cambian de conducta
+con la migración. Se validan en la aplicación
+(`normalizarPreferencias` en `lib/push.js`, con `PREFERENCIAS_DEFECTO`
+espejado en `client/src/lib/push.js`), y **un valor raro no es un 400**: se
+ignora y queda el anterior — son preferencias de visualización, no datos del
+calendario.
+
+Con `detalle: 'titulos'` el resumen va en el **título** de la notificación
+("Mañana tenés 3 eventos") y la lista en el cuerpo, porque en la bandeja del
+celular el cuerpo puede venir recortado a un renglón. La lista se corta en
+`MAX_TITULOS` (5) con un "y N más": el payload de un push tiene un límite de
+~4 KB y una notificación de quince renglones no la lee nadie.
+
+`POST /api/push/preferencias` (guardar) y `POST /api/push/preferencias/leer`
+(leer) llevan el endpoint **en el body**, las dos por POST: el endpoint es la
+credencial con la que se le manda un push a ese navegador, y en la query
+string de un GET terminaría en el log de accesos de nginx. `POST
+/api/push/suscribir` acepta `preferencias` pero **no las pisa cuando no
+vienen** — volver a suscribirse pasa también al sincronizar los picks de
+alguien sin cuenta (`sincronizarPicksSiActivo`), y ahí resetear la hora
+elegida sería una sorpresa fea.
 
 **Cómo se activan, del lado del navegador** (`client/src/lib/push.js`):
 1. Se pide permiso (`Notification.requestPermission()`) y, si lo dan, se
@@ -295,19 +325,27 @@ siempre al día. Si cambian los filtros después con las notificaciones ya
 activas, `AuthContext.setPicks` se lo vuelve a mandar al server sin cuenta
 (`sincronizarPicksSiActivo`) — con cuenta no hace falta, ya lee lo último.
 
-**El trabajo del día** (`revisarYNotificarDiaSiguiente`, disparado por
-`iniciarScheduler` en `index.js`) no usa `node-cron` ni ninguna librería de
-scheduling: se fija cada 5 minutos si ya es la hora configurada
-(`HORA_AVISO`, 17 de Argentina) y si todavía no se mandó hoy, mismo espíritu
-que el corte de día de `lib/telemetria.js` (mismo `OFFSET_MIN` fijo de
--180). El día que se avisa es el SIGUIENTE (`mananaISO()`), pero el flag
-`ultimoEnviado` que evita repetir guarda el día en que se mandó — son dos
-fechas distintas a propósito, no las confundas al tocar esto. Recorre TODAS
-las suscripciones —no son muchas para una agenda de un colegio— y les manda
-el push a las que tengan algo mañana, calculado con `lib/matcherPicks.js`. Una respuesta 404/410 del servicio de push (el
-navegador dio de baja la suscripción del otro lado: desinstalación, borrado
-de datos del sitio) borra la fila; cualquier otro error sólo se loguea, la
-suscripción no se toca por las dudas de que sea transitorio.
+**El trabajo del día** (`revisarYNotificar`, disparado por `iniciarScheduler`
+en `index.js`) no usa `node-cron` ni ninguna librería de scheduling: se fija
+cada 5 minutos qué hora argentina es y le avisa a las suscripciones que
+eligieron ESA hora, mismo espíritu que el corte de día de `lib/telemetria.js`
+(mismo `OFFSET_MIN` fijo de -180). El día que se avisa sale de la preferencia
+de cada una (`DIAS`: `hoy` es +0 y `siguiente` es +1 sobre hoy), y el
+marcador que evita repetir —`PushSubscription.ultimoAviso`— guarda el día en
+que se **mandó**: son dos fechas distintas a propósito, no las confundas al
+tocar esto. Ese marcador está **en la base y no en memoria del proceso**
+—antes era un flag global, que alcanzaba mientras la hora fuera una sola para
+todos—: ahora hay que saber una por una cuál ya se avisó hoy, y de paso un
+reinicio en la ventana del aviso tampoco lo repite. Se marcan todas las de la
+corrida, tengan o no algo que avisar: lo que evita el marcador es volver a
+mirarlas cada 5 minutos durante esa hora, no sólo repetir un push. Los
+eventos se traen una sola vez y el filtro por día se hace por suscripción,
+porque cada una puede estar mirando un día distinto; qué eventos oficiales le
+tocan a cada una lo calcula `lib/matcherPicks.js`. Una respuesta 404/410 del
+servicio de push (el navegador dio de baja la suscripción del otro lado:
+desinstalación, borrado de datos del sitio) borra la fila; cualquier otro
+error sólo se loguea, la suscripción no se toca por las dudas de que sea
+transitorio.
 
 `lib/matcherPicks.js` es un mirror de la función `matcher()` de
 `client/src/lib/agenda.js` —sólo la parte de picks, 'per' no entra porque
@@ -331,7 +369,13 @@ bloquea el resto de la página— con la única opción de por ahora,
 `ConfiguracionDialog.jsx`, que muestra el estado real preguntándole al
 navegador cada vez que se abre (`estadoNotificaciones()`), nunca un flag
 guardado: el permiso se puede revocar desde afuera de la app sin que se
-entere. `NotificacionesPrompt.jsx` es el prompt de la primera visita
+entere. Los tres selects de la hora / el día / el detalle aparecen sólo con
+las notificaciones ya activas (sin suscripción no hay fila donde guardarlas)
+y **guardan solos al cambiarlos**, de forma optimista y volviendo atrás si el
+server rechaza: este modal no tiene botón de Guardar, así que un cambio que
+no se persistiera al toque se perdería sin que nadie se entere. Lo que
+muestran se lee del server al abrir (`leerPreferencias`), nunca de un default
+local — el mismo criterio que el estado del permiso. `NotificacionesPrompt.jsx` es el prompt de la primera visita
 (Sí/No, gateado por `localStorage` para no repetirlo) — aparte de
 `ConfirmDialog` a propósito, que es específicamente para confirmar acciones
 destructivas y su botón de confirmar es rojo, algo que no aplica acá.
@@ -341,11 +385,17 @@ ya mismo a la suscripción de ESE navegador (`POST /api/push/probar` →
 `enviarPrueba` en `lib/push.js`), sin esperar al trabajo del día ni pasar
 por `matcherPicks` — si tocaste el botón ya sabés que la querés recibir. Es
 la forma de confirmar que quedó bien configurado (VAPID, Service Worker,
-permiso) sin tener que esperar hasta las 17. Al lado está **"Prueba Eventos
-Mañana"** (`POST /api/push/probar-dia-siguiente`), que es la otra mitad de la
-prueba: corre el trabajo del día completo ahora mismo, con matcher de picks
-y todo, así que si mañana no tenés nada que te corresponda no llega ninguna
-notificación — igual que a las 17.
+permiso) sin tener que esperar a la hora del aviso. Al lado está **"Probar
+aviso"** (`POST /api/push/probar-aviso`), que es la otra mitad de la prueba:
+corre el trabajo real ahora mismo, con matcher de picks y con las
+preferencias guardadas, así que el texto que llega es exactamente el del
+aviso de verdad y si ese día no tenés nada que te corresponda no llega
+ninguna notificación. Dos cosas de esa ruta: corre **sólo para ese
+endpoint** (antes disparaba el trabajo para TODAS las suscripciones, o sea
+que probar desde un navegador le mandaba el aviso a todo el mundo) y **no
+toca `ultimoAviso`** — probar a las 16 no puede dejar sin aviso al de las
+17. Devuelve `{ enviados }`, y `enviados: 0` no es un error: es que ese día
+no había nada.
 
 ### Agregar a Google Calendar
 

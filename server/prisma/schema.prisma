@@ -163,5 +163,29 @@ model PushSubscription {
   user   User? @relation(fields: [userId], references: [id], onDelete: Cascade)
   picks  String @default("[]")
 
+  // Preferencias del aviso. Son POR DISPOSITIVO y no por cuenta a propósito:
+  // el celular puede querer el aviso a las 20 con el detalle de cada evento y
+  // la compu a las 8 sólo con el número. Además, sin cuenta no hay otro lugar
+  // donde guardarlas (mismo motivo que `picks`).
+  //
+  // `hora` es la hora ARGENTINA (0-23) a la que sale el aviso y `dia` de qué
+  // día son los eventos que se avisan: 'siguiente' (el default histórico: a
+  // las 17 se avisa lo de mañana) u 'hoy'. `detalle` es qué dice el cuerpo:
+  // 'cantidad' ("Mañana tenés 3 eventos") o 'titulos' (el texto de cada uno).
+  // Los tres se validan en la aplicación (lib/push.js), como el resto de los
+  // strings sin enum de este schema.
+  hora    Int    @default(17)
+  dia     String @default("siguiente")
+  detalle String @default("cantidad")
+
+  // Día argentino ('YYYY-MM-DD') en que salió el último aviso de ESTA
+  // suscripción. Antes alcanzaba con un flag global en memoria del proceso
+  // porque el aviso salía a la misma hora para todos; ahora que cada
+  // dispositivo elige su hora, hace falta saber una por una cuál ya se avisó
+  // hoy — y en la base y no en memoria, así un reinicio en la ventana del
+  // aviso no lo repite. NO es una tabla de "eventos ya avisados": el
+  // contenido se sigue recalculando de cero en cada corrida.
+  ultimoAviso String?
+
   createdAt DateTime @default(now())
 }

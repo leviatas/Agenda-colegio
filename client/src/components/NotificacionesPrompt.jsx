@@ -54,7 +54,8 @@ export default function NotificacionesPrompt() {
           </p>
           <p className="lede muted notif-prompt-lede">
             Un aviso en el celular o la compu a las 17, sólo la tarde anterior a un día
-            con algo en tu agenda.
+            con algo en tu agenda. Después podés cambiar la hora y qué dice el aviso
+            desde Configuración.
           </p>
           <div className="modal-actions notif-prompt-acciones">
             <button type="button" className="mbtn" onClick={() => responder(false)}>No</button>
