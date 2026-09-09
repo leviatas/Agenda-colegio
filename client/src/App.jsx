@@ -6,6 +6,7 @@ import Calendario from './pages/Calendario';
 import Oficial from './pages/Oficial';
 import Usuarios from './pages/Usuarios';
 import Metricas from './pages/Metricas';
+import Novedades from './pages/Novedades';
 import CompartirEvento from './pages/CompartirEvento';
 import { useAuth } from './context/AuthContext';
 import { registrarVisita } from './lib/telemetria';
@@ -13,7 +14,7 @@ import { registrarVisita } from './lib/telemetria';
 // No hay gate de login en el routing: el calendario es público a propósito, el
 // link se le pasa a las familias y tiene que abrir sin cuenta. Lo único que
 // pide sesión es agregar eventos propios (dentro del modal); /oficial,
-// /usuarios y /metricas son del admin, y se chequean en la propia pantalla y,
+// /usuarios, /metricas y /novedades son del admin, y se chequean en la propia pantalla y,
 // sobre todo, en el server.
 export default function App() {
   const { token, loading } = useAuth();
@@ -40,6 +41,7 @@ export default function App() {
         <Route path="/oficial" element={<Oficial />} />
         <Route path="/usuarios" element={<Usuarios />} />
         <Route path="/metricas" element={<Metricas />} />
+        <Route path="/novedades" element={<Novedades />} />
         <Route path="/compartir/evento/:token" element={<CompartirEvento />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

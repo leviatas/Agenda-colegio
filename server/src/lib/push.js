@@ -7,17 +7,15 @@
 const webpush = require('web-push');
 const prisma = require('./prisma');
 const { matcher } = require('./matcherPicks');
-
-// Mismo offset fijo que lib/telemetria.js: Argentina no tiene horario de
-// verano desde 2009, así que no hace falta una librería de zonas horarias
-// para esto. La hora del aviso es siempre LOCAL (Argentina), venga del
-// default o de lo que eligió cada dispositivo.
-const OFFSET_MIN = -180;
+const { ahoraArgentina, diaISO, hoyISO } = require('./fechas');
 
 // Los valores de fábrica de PushSubscription.hora/dia/detalle: son los
 // mismos que el @default del schema, y describen el comportamiento que tenía
 // el aviso antes de que se pudiera configurar (17 hs, eventos de mañana,
 // sólo el número). Si cambia uno, cambiarlo en los dos lados.
+//
+// La hora es siempre LOCAL (Argentina): el corrimiento fijo de -03:00 lo pone
+// lib/fechas.js, que es de donde salen ahoraArgentina/diaISO/hoyISO.
 const PREFERENCIAS_DEFECTO = { hora: 17, dia: 'siguiente', detalle: 'cantidad' };
 
 // De qué día son los eventos que se avisan, como offset en días sobre hoy.
@@ -36,21 +34,6 @@ if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
     process.env.VAPID_PUBLIC_KEY,
     process.env.VAPID_PRIVATE_KEY,
   );
-}
-
-function ahoraArgentina() {
-  return new Date(Date.now() + OFFSET_MIN * 60000);
-}
-
-// La fecha de calendario argentina de hoy, o la de dentro de `dias` días.
-// Sumar 86.400.000 ms alcanza porque acá no hay horario de verano: todos los
-// días duran lo mismo.
-function diaISO(dias = 0) {
-  return new Date(ahoraArgentina().getTime() + dias * 86400000).toISOString().slice(0, 10);
-}
-
-function hoyISO() {
-  return diaISO(0);
 }
 
 // Valida lo que viene del cliente contra `base` (las preferencias que ya

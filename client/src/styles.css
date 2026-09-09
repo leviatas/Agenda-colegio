@@ -838,6 +838,54 @@ button.ev {
 .aviso-cerrar:hover { background: var(--ins-bg); color: var(--ins); }
 .aviso-cerrar:focus-visible { outline: 2px solid var(--ins); outline-offset: 1px; }
 
+/* La "i" del encabezado (Masthead.jsx), que abre la lista de novedades
+   vigentes. Mismo botón redondo de ícono solo que .share, y con el mismo
+   tratamiento de color: el header es verde oscuro, así que los colores
+   pensados para el fondo claro del modal no se leerían acá. */
+.novedades-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 1.7rem; height: 1.7rem;
+  padding: 0;
+  border: 0; border-radius: 50%;
+  background: transparent;
+  color: var(--forest-ink);
+  opacity: .75;
+  cursor: pointer;
+}
+.novedades-btn svg { width: 1.15rem; height: 1.15rem; }
+.novedades-btn:hover { opacity: 1; background: rgba(242, 239, 228, .14); }
+.novedades-btn:focus-visible { outline: 2px solid var(--ins); outline-offset: 2px; }
+
+/* La lista adentro del modal de la "i" (NovedadesDialog.jsx). Cada novedad es
+   un bloque separado por una línea, no una tarjeta: acá adentro ya no hay
+   nada más con qué confundirlas. */
+.nov-list { list-style: none; margin: 0; padding: 0; }
+.nov-list li {
+  padding: .8rem 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.nov-list li:first-child { padding-top: 0; }
+.nov-list li:last-child { border-bottom: 0; padding-bottom: 0; }
+.nov-list strong { display: block; font-size: .95rem; }
+.nov-list p { margin: .25rem 0 0; font-size: .88rem; line-height: 1.45; color: var(--ink); overflow-wrap: anywhere; }
+.nov-meta { display: block; margin-top: .3rem; font-size: .76rem; color: var(--ink-faint); }
+
+/* Administrar novedades (/novedades). Reusa .of-list del calendario oficial:
+   lo único propio es el punto de una novedad que hoy no se ve —vencida o
+   todavía no empezada—, que no tiene color de nivel al que agarrarse. */
+.of-dot.vencida { background: var(--ink-faint); opacity: .5; }
+/* El contador de caracteres del texto, debajo del campo. */
+.field .hint.contador {
+  display: block;
+  margin-top: .3rem;
+  font-size: .74rem;
+  color: var(--ink-faint);
+  text-align: right;
+}
+
 /* ══════════ Agregar a Google Calendar ══════════ */
 
 /* El botón que va al lado de CADA evento (la grilla de meses, "Próximas

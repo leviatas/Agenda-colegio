@@ -10,8 +10,14 @@ Calendario escolar del Colegio San Gabriel, ciclo lectivo 2026.
   que la propia cuenta decida compartir un evento por link o todos por código
   (ver "Compartir eventos personales" en [`CLAUDE.md`](CLAUDE.md)).
 - **Los emails de `ADMIN_EMAILS`** editan el calendario oficial desde
-  `/oficial` y ven en `/usuarios` y `/metricas` quién entra y cuánta gente
-  distinta se loguea. Nadie más.
+  `/oficial`, ven en `/usuarios` y `/metricas` quién entra y cuánta gente
+  distinta se loguea, y cargan en `/novedades` los avisos de arriba del
+  calendario. Nadie más.
+- **Avisos con fecha de vencimiento.** El cartelito de arriba del calendario lo
+  carga el admin, con la ventana de días en la que se muestra; cada familia lo
+  puede cerrar con la X y no le vuelve a aparecer (en su cuenta si entró, y si
+  no en ese navegador). La "i" del encabezado muestra las vigentes, incluidas
+  las ya cerradas (ver "Novedades" en [`CLAUDE.md`](CLAUDE.md)).
 - **Cada evento se pasa a Google Calendar con un toque.** El botón al lado de
   cada fecha —oficiales, propias y compartidas— abre Google con el evento ya
   cargado, para confirmarlo en la cuenta de quien lo toca. No pide permisos ni

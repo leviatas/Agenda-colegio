@@ -44,6 +44,7 @@ model User {
   suscripciones     EventSubscription[] @relation("Subscriber")
   accesos           Visita[]
   suscripcionesPush PushSubscription[]
+  novedadesCerradas NovedadCierre[]
 }
 
 // Calendario oficial del colegio. Lo edita SOLO un admin (routes/oficial.js);
@@ -188,4 +189,54 @@ model PushSubscription {
   ultimoAviso String?
 
   createdAt DateTime @default(now())
+}
+
+// Los avisos que aparecen arriba del calendario ("Novedad: ahora podés…"). Los
+// escribe SOLO un admin (routes/novedadesAdmin.js) y se leen sin cuenta, igual
+// que el calendario oficial: son para todo el mundo, no para una sala ni un
+// grado — por eso no tienen `level` ni `groups`.
+//
+// `desde` y `hasta` son la ventana en la que la novedad se muestra, y son
+// String 'YYYY-MM-DD' por la misma razón que Event.date: son fechas de
+// calendario sin hora, y un DateTime en SQLite se guarda en UTC y corre el día
+// según el huso de quien lo lea. Fuera de esa ventana la novedad no aparece
+// para nadie, la haya cerrado o no — es el corte que no depende del usuario.
+model Novedad {
+  id     Int    @id @default(autoincrement())
+  titulo String
+  texto  String
+  desde  String
+  hasta  String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cierres NovedadCierre[]
+
+  // La consulta de siempre es "las vigentes de hoy": desde <= hoy <= hasta.
+  @@index([desde, hasta])
+}
+
+// Quién cerró qué novedad, para no volver a mostrársela nunca más. Existe sólo
+// para las cuentas: sin sesión la marca vive en el localStorage de ese
+// navegador (client/src/lib/novedades.js), que es el mismo criterio que los
+// eventos personales — sin cuenta no hay dónde guardar nada del lado del
+// server.
+//
+// Es una tabla de marcas, no de contenido: el admin no ve quién cerró qué (no
+// hay ninguna pantalla que lo lea), sólo sirve para decidir qué mostrarle a
+// cada quien.
+model NovedadCierre {
+  id        Int     @id @default(autoincrement())
+  novedadId Int
+  novedad   Novedad @relation(fields: [novedadId], references: [id], onDelete: Cascade)
+  userId    Int
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  creadoEn DateTime @default(now())
+
+  // Cerrar dos veces la misma novedad es la misma marca: el upsert de
+  // routes/novedades.js se apoya en este unique.
+  @@unique([novedadId, userId])
+  @@index([userId])
 }

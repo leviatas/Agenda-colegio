@@ -101,6 +101,21 @@ export const api = {
     probarAviso: (token, endpoint) => request('/push/probar-aviso', { method: 'POST', body: { endpoint }, token }),
   },
 
+  // Los avisos de arriba del calendario. La lista es pública (sin cuenta
+  // devuelve las vigentes y `cerradas` vacío); "cerrar" sólo existe con
+  // cuenta — sin sesión la marca queda en el localStorage de ese navegador
+  // (lib/novedades.js). El admin las edita por el sub-router /admin.
+  novedades: {
+    list: (token) => request('/novedades', { token }),
+    cerrar: (token, id) => request(`/novedades/${id}/cerrar`, { method: 'POST', token }),
+    admin: {
+      list: (token) => request('/novedades/admin', { token }),
+      create: (token, data) => request('/novedades/admin', { method: 'POST', body: data, token }),
+      update: (token, id, data) => request(`/novedades/admin/${id}`, { method: 'PUT', body: data, token }),
+      remove: (token, id) => request(`/novedades/admin/${id}`, { method: 'DELETE', token }),
+    },
+  },
+
   oficial: {
     list: (token) => request('/oficial', { token }),
     create: (token, data) => request('/oficial', { method: 'POST', body: data, token }),

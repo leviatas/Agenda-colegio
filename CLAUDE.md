@@ -21,9 +21,10 @@ navegador. Entrar con Google sirve para dos cosas:
   cuentas que entraron con Google (nombre, mail, si es admin y desde cuándo) y
   en `/metricas` cuánta gente distinta se logueó y los accesos agrupados por
   IP, con la cuenta al lado cuando esa IP corresponde a alguien logueado (ver
-  "Telemetría de visitas"). Ninguna de esas pantallas muestra los eventos
-  personales de nadie, ni cuántos tiene cada uno: son privados también para
-  el admin.
+  "Telemetría de visitas"), y en `/novedades` cargar los avisos que se ven
+  arriba del calendario (ver "Novedades"). Ninguna de esas pantallas muestra
+  los eventos personales de nadie, ni cuántos tiene cada uno: son privados
+  también para el admin.
 
 No hay aprobación ni alta manual: la primera vez que alguien entra con Google
 queda habilitado. `isAdmin` sale siempre de `ADMIN_EMAILS` y se recalcula en
@@ -123,10 +124,14 @@ Cloudflare Tunnel; sólo arranca con `docker compose --profile cloudflare up` o
 
 ### Modelo de datos (`server/prisma/schema.prisma`)
 
-Cuatro modelos: `User`, `Event` (el calendario oficial), `PersonalEvent` (los
-eventos de cada familia) y `EventSubscription` (quién suscribió el código de
-quién, ver "Compartir eventos personales" — el link de un solo evento no
-tiene modelo propio, es un JWT que apunta a un `PersonalEvent` existente).
+Cuatro modelos alrededor del calendario: `User`, `Event` (el calendario
+oficial), `PersonalEvent` (los eventos de cada familia) y `EventSubscription`
+(quién suscribió el código de quién, ver "Compartir eventos personales" — el
+link de un solo evento no tiene modelo propio, es un JWT que apunta a un
+`PersonalEvent` existente). Aparte están los que no son eventos y tienen su
+propia sección acá abajo: `Visita` (métricas), `PushSubscription`
+(notificaciones) y `Novedad` + `NovedadCierre` (los avisos de arriba del
+calendario).
 
 **Las fechas son `String 'YYYY-MM-DD'`, no `DateTime`.** Son fechas de
 calendario sin hora, y un `DateTime` en SQLite se guarda en UTC: un
@@ -441,14 +446,58 @@ tocar el evento de nadie. En `CompartirEvento.jsx` es la variante con texto
 (prop `etiqueta`), y va **antes** del login: no necesita cuenta, así que le
 sirve igual a quien no piensa entrar.
 
-**El aviso de la novedad** (`AvisoNovedad.jsx`, arriba del calendario en `/`
-y en `/personales`) cuenta que el botón existe, porque un ícono nuevo en cada
-renglón no se explica solo. **Se queda hasta que lo cierren**: no se va con el
-tiempo ni al recargar, no tiene "después", y la X lo saca para siempre en ese
-navegador (marca `sg-aviso-gcal-v1` en `localStorage`, mismo mecanismo que el
-`sg-notif-preguntado-v1` del prompt de notificaciones). Si `localStorage` no
-está disponible se muestra igual y se puede cerrar, sólo que vuelve en la
-próxima carga: mejor un aviso de más que una pantalla rota.
+El botón se anunció con un aviso arriba del calendario, que era texto fijo en
+el código; ahora ese cartelito es una **novedad** cargada por el admin (ver
+"Novedades" más abajo), así que anunciar lo próximo no pide tocar el código.
+
+### Novedades
+
+Los cartelitos que aparecen arriba del calendario ("Novedad: ahora podés…").
+**Los carga el admin en `/novedades`** (`client/src/pages/Novedades.jsx`,
+cerrada por `requireAdmin` como `/oficial`), no son texto fijo en el código:
+anunciar algo nuevo no pide un deploy.
+
+Cada novedad tiene un título corto que se lee como prefijo ("Novedad", "Aviso"),
+un texto y **dos fechas, `desde` y `hasta`**, `String 'YYYY-MM-DD'` por la misma
+razón que las del calendario. Fuera de esa ventana no se ve, y ahí no hay nada
+que el usuario pueda hacer al respecto: **el vencimiento es el corte que no
+depende de nadie**. La X de cada aviso es la otra mitad y es al revés: saca la
+novedad **sólo para quien la tocó**, y para siempre.
+
+**Quién cerró qué se guarda en los dos lados** (`client/src/lib/novedades.js` +
+modelo `NovedadCierre`), y lo que se muestra es la **unión** de las dos listas:
+
+- sin cuenta la marca vive en `localStorage` (`sg-novedades-cerradas-v1`), que
+  es el único lugar que hay —mismo criterio que los eventos personales;
+- con cuenta va además a la base, que es lo que hace que cerrarlo en el celular
+  lo cierre también en la compu. Se escribe igual en `localStorage`: así la X se
+  siente instantánea y el aviso no reaparece si el POST no llegó.
+
+Al cargar con sesión, lo que se había cerrado sin cuenta se sube
+(`NovedadesContext`), mismo espíritu que el `migrar()` de los eventos
+personales: corre en cada carga con token, no sólo después del login.
+
+**El corte por fecha lo hace el server**, con la fecha de Argentina
+(`server/src/lib/fechas.js`, el mismo `-03:00` fijo que `lib/telemetria.js` y
+que el scheduler de push, que ahora lo importa de ahí): `GET /api/novedades`
+devuelve sólo las vigentes de hoy, así un celular con el reloj corrido no ve
+otra cosa que el resto. Esa ruta es **pública** (`optionalAuth`), igual que el
+calendario oficial; cerrar (`POST /api/novedades/:id/cerrar`) sí pide cuenta,
+porque sin ella no hay dónde guardar la marca.
+
+**La "i" del encabezado** (`Masthead.jsx` → `NovedadesDialog.jsx`) muestra
+**todas** las vigentes, incluidas las ya cerradas, para poder volver a leer algo
+que se cerró de más; por eso la respuesta trae la lista entera más los ids
+cerrados, y no una lista ya filtrada. El botón aparece sólo si hay alguna
+vigente: uno que abre una lista vacía es ruido, y arriba el lugar es poco.
+
+Dos cosas más a tener presentes:
+
+- **Editar una novedad no reabre nada**: los cierres quedan. Que reaparezca un
+  aviso porque se corrigió una coma sería peor que la coma; para que la vuelva
+  a ver todo el mundo, se crea una novedad nueva.
+- **Nada de esto lo toca el seed**, a diferencia del calendario oficial: una
+  novedad borrada no vuelve en el próximo arranque del contenedor.
 
 ### Auth y permisos
 
@@ -488,11 +537,14 @@ hooks**, si no React se rompe cuando cambia la cantidad de hooks entre renders.
 
 ### Estado del cliente
 
-Cuatro providers, en este orden (`main.jsx`): `AuthProvider` → `EventosProvider`
-→ `ConfirmProvider` → `CompartirTodoProvider`. `EventosProvider` va adentro de
-`AuthProvider` porque la carga del calendario necesita saber si hay sesión, y
-espera a que la sesión resuelva antes de pedir: si no, la primera carga saldría
-sin token y volvería sin los eventos personales. `ConfirmProvider` y
+Cinco providers, en este orden (`main.jsx`): `AuthProvider` → `EventosProvider`
+→ `NovedadesProvider` → `ConfirmProvider` → `CompartirTodoProvider`.
+`EventosProvider` va adentro de `AuthProvider` porque la carga del calendario
+necesita saber si hay sesión, y espera a que la sesión resuelva antes de pedir:
+si no, la primera carga saldría sin token y volvería sin los eventos
+personales. `NovedadesProvider` está ahí adentro por lo mismo (la lista trae,
+si hay sesión, cuáles ya cerró esa cuenta) y por encima de todo lo que la lee:
+el aviso de arriba del calendario y la "i" del encabezado. `ConfirmProvider` y
 `CompartirTodoProvider` van más afuera por la misma razón: exponen un modal
 que se abre desde varios lugares del árbol que no son parientes entre sí (ver
 "Compartir eventos personales"), así que necesitan una única instancia por
