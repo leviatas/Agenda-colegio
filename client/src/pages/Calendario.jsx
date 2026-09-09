@@ -8,6 +8,7 @@ import AdderDialog from '../components/AdderDialog';
 import EventoMenu from '../components/EventoMenu';
 import EventosPersonales from '../components/EventosPersonales';
 import EditEventDialog from '../components/EditEventDialog';
+import AvisoNovedad from '../components/AvisoNovedad';
 import { useCompartirTodo } from '../components/CompartirTodoDialog';
 import { useAuth } from '../context/AuthContext';
 import { useEventos } from '../context/EventosContext';
@@ -127,6 +128,10 @@ export default function Calendario() {
       </div>
 
       <div className="wrap">
+        {/* Arriba de todo y en las dos vistas (`/` y `/personales`): el botón
+            que anuncia está en las dos. Se queda hasta que lo cierren. */}
+        <AvisoNovedad />
+
         {error && <p className="err banner">{error}</p>}
         {loading && <p className="empty-note">Cargando el calendario…</p>}
 

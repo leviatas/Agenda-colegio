@@ -799,6 +799,45 @@ button.ev {
 .ev.span.ins .t::after { background: var(--ins-bg); color: var(--ins); }
 .ev.span.fer .t::after { background: var(--fer-bg); color: var(--fer); }
 
+/* ══════════ Aviso de novedad ══════════ */
+
+/* El cartelito de arriba del calendario (AvisoNovedad.jsx). Misma tarjeta que
+   .up-card —fondo, borde y borde izquierdo de color— para que se lea como
+   parte de la agenda y no como un banner pegado encima. */
+.aviso {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  margin-bottom: 1.6rem;
+  padding: .75rem .85rem;
+  background: var(--card-2);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--ins);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+}
+.aviso-ico { display: inline-flex; flex: none; color: var(--ins); }
+.aviso-ico svg { width: 1.15rem; height: 1.15rem; }
+.aviso-txt { margin: 0; font-size: .88rem; line-height: 1.45; color: var(--ink); }
+/* Mismo botón redondo de ícono solo que .gcal, pegado al borde derecho. */
+.aviso-cerrar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  margin-left: auto;
+  width: 1.9rem;
+  height: 1.9rem;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink-faint);
+  cursor: pointer;
+}
+.aviso-cerrar svg { width: .95rem; height: .95rem; }
+.aviso-cerrar:hover { background: var(--ins-bg); color: var(--ins); }
+.aviso-cerrar:focus-visible { outline: 2px solid var(--ins); outline-offset: 1px; }
+
 /* ══════════ Agregar a Google Calendar ══════════ */
 
 /* El botón que va al lado de CADA evento (la grilla de meses, "Próximas

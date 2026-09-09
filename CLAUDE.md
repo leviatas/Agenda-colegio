@@ -391,6 +391,15 @@ tocar el evento de nadie. En `CompartirEvento.jsx` es la variante con texto
 (prop `etiqueta`), y va **antes** del login: no necesita cuenta, así que le
 sirve igual a quien no piensa entrar.
 
+**El aviso de la novedad** (`AvisoNovedad.jsx`, arriba del calendario en `/`
+y en `/personales`) cuenta que el botón existe, porque un ícono nuevo en cada
+renglón no se explica solo. **Se queda hasta que lo cierren**: no se va con el
+tiempo ni al recargar, no tiene "después", y la X lo saca para siempre en ese
+navegador (marca `sg-aviso-gcal-v1` en `localStorage`, mismo mecanismo que el
+`sg-notif-preguntado-v1` del prompt de notificaciones). Si `localStorage` no
+está disponible se muestra igual y se puede cerrar, sólo que vuelve en la
+próxima carga: mejor un aviso de más que una pantalla rota.
+
 ### Auth y permisos
 
 El cliente saca el ID token con Google Identity Services →
