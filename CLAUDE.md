@@ -485,6 +485,14 @@ otra cosa que el resto. Esa ruta es **pública** (`optionalAuth`), igual que el
 calendario oficial; cerrar (`POST /api/novedades/:id/cerrar`) sí pide cuenta,
 porque sin ella no hay dónde guardar la marca.
 
+**La pantalla abre con la lista, no con el formulario**: cargar una novedad es
+lo que menos se hace ahí adentro —se entra sobre todo a ver qué hay publicado—,
+así que el formulario vive en un modal (`NovedadDialog.jsx`) que abren "Agregar
+novedad +" o el "Editar" de una fila. Es el mismo componente para el alta y la
+edición: sin novedad adentro es un alta, con una es la edición de esa. Como
+`Dialog.jsx` desmonta el contenido al cerrar, cada apertura arranca con los
+campos que corresponden sin ningún efecto de sincronización.
+
 **La "i" del encabezado** (`Masthead.jsx` → `NovedadesDialog.jsx`) muestra
 **todas** las vigentes, incluidas las ya cerradas, para poder volver a leer algo
 que se cerró de más; por eso la respuesta trae la lista entera más los ids
