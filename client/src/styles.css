@@ -877,6 +877,20 @@ button.ev {
    lo único propio es el punto de una novedad que hoy no se ve —vencida o
    todavía no empezada—, que no tiene color de nivel al que agarrarse. */
 .of-dot.vencida { background: var(--ink-faint); opacity: .5; }
+/* La barra de arriba de la lista en /novedades: el botón que abre el modal
+   del formulario (NovedadDialog.jsx) y, al lado, la aclaración de que las
+   vencidas se quedan en la lista. */
+.nov-barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .8rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.1rem;
+}
+/* La aclaración de al lado se lee como la de un .sec-head, pero .meta está
+   estilada ahí adentro: acá va con los mismos valores. */
+.nov-barra .meta { font-size: .78rem; color: var(--ink-faint); letter-spacing: .04em; }
 /* El contador de caracteres del texto, debajo del campo. */
 .field .hint.contador {
   display: block;
@@ -1696,3 +1710,5 @@ footer .version { font-variant-numeric: tabular-nums; opacity: .7; }
 /* Los dos botones de la tarjeta ("Agregar a Google Calendar" y "Agregar a mi
    agenda") pueden quedar en la misma línea: sin esto se tocan. */
 .compartir-card .gcal-txt { margin-right: .5rem; }
+
+
