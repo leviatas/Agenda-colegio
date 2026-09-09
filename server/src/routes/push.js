@@ -1,15 +1,18 @@
-// Suscripción a las notificaciones push de "mañana tenés eventos" (el trabajo
-// real vive en lib/push.js). `optionalAuth` porque cargar eventos propios no
+// Suscripción y preferencias de las notificaciones push de "tenés eventos"
+// (el trabajo real vive en lib/push.js). `optionalAuth` porque cargar eventos propios no
 // pide cuenta (ver CLAUDE.md): las notificaciones tampoco, aunque sin cuenta
 // sólo avisan por los oficiales — ver el comentario de `PushSubscription` en
 // schema.prisma.
 const express = require('express');
 const { optionalAuth } = require('../middleware/auth');
 const {
+  PREFERENCIAS_DEFECTO,
   registrarSuscripcion,
   eliminarSuscripcion,
+  leerPreferencias,
+  guardarPreferencias,
   enviarPrueba,
-  revisarYNotificarDiaSiguiente,
+  revisarYNotificar,
 } = require('../lib/push');
 
 const router = express.Router();
@@ -25,7 +28,7 @@ router.get('/clave-publica', (req, res) => {
 });
 
 router.post('/suscribir', optionalAuth, async (req, res) => {
-  const { subscription, picks } = req.body || {};
+  const { subscription, picks, preferencias } = req.body || {};
   if (!subscription || typeof subscription.endpoint !== 'string' || !subscription.keys) {
     return res.status(400).json({ error: 'Falta la suscripción.' });
   }
@@ -39,8 +42,39 @@ router.post('/suscribir', optionalAuth, async (req, res) => {
     keys,
     userId: req.user ? req.user.id : null,
     picks: Array.isArray(picks) ? picks.filter((p) => typeof p === 'string') : [],
+    // Opcional: sin esto la suscripción conserva las preferencias que ya
+    // tenía (ver registrarSuscripcion en lib/push.js).
+    preferencias,
   });
   res.status(204).end();
+});
+
+// Las preferencias del aviso (hora, de qué día y con cuánto detalle) son de
+// la SUSCRIPCIÓN, no de la cuenta: cada dispositivo elige la suya (ver
+// PushSubscription en schema.prisma). Por eso las dos rutas van por POST con
+// el endpoint en el body y no por GET con el endpoint en la URL: el endpoint
+// es la credencial con la que se le manda un push a ese navegador, y en la
+// query string terminaría en el log de accesos de nginx.
+router.post('/preferencias/leer', optionalAuth, async (req, res) => {
+  const { endpoint } = req.body || {};
+  if (typeof endpoint !== 'string') return res.status(400).json({ error: 'Falta el endpoint.' });
+
+  const preferencias = await leerPreferencias(endpoint);
+  // Sin fila todavía (recién se está por activar, o el server la borró por un
+  // 410) el cliente igual tiene que poder pintar los selects: se le devuelven
+  // los defaults, que es lo que va a quedar guardado al suscribirse.
+  res.json({ preferencias: preferencias || PREFERENCIAS_DEFECTO, suscripto: Boolean(preferencias) });
+});
+
+router.post('/preferencias', optionalAuth, async (req, res) => {
+  const { endpoint, preferencias } = req.body || {};
+  if (typeof endpoint !== 'string') return res.status(400).json({ error: 'Falta el endpoint.' });
+
+  const guardadas = await guardarPreferencias(endpoint, preferencias);
+  if (!guardadas) {
+    return res.status(404).json({ error: 'No hay ninguna suscripción activa para este navegador.' });
+  }
+  res.json({ preferencias: guardadas });
 });
 
 router.delete('/suscribir', optionalAuth, async (req, res) => {
@@ -72,19 +106,27 @@ router.post('/probar', optionalAuth, async (req, res) => {
   res.status(r.motivo === 'sin-suscripcion' ? 404 : 502).json({ error: mensajes[r.motivo] || mensajes.error });
 });
 
-// Botón "Prueba Eventos Mañana" de ConfiguracionDialog.jsx: ejecuta el mismo
-// trabajo que el scheduler de las 17:00 pero ahora mismo, a modo de
-// demostración — avisa por los eventos de MAÑANA, igual que el aviso real.
-router.post('/probar-dia-siguiente', optionalAuth, async (req, res) => {
+// Botón "Probar aviso del día" de ConfiguracionDialog.jsx: ejecuta el mismo
+// trabajo que el scheduler pero ahora mismo y SÓLO para este navegador, a
+// modo de demostración — con el matcher de picks y las preferencias
+// guardadas, así el texto que llega es exactamente el del aviso real. No
+// marca el aviso del día como mandado: probar a las 16 no puede dejar sin
+// aviso al de las 17 (ver revisarYNotificar en lib/push.js).
+router.post('/probar-aviso', optionalAuth, async (req, res) => {
   if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
     return res.status(503).json({ error: 'Las notificaciones no están configuradas en este servidor.' });
   }
+  const { endpoint } = req.body || {};
+  if (typeof endpoint !== 'string') return res.status(400).json({ error: 'Falta el endpoint.' });
+
   try {
-    await revisarYNotificarDiaSiguiente();
-    res.status(204).end();
+    const enviados = await revisarYNotificar({ soloEndpoint: endpoint });
+    // `enviados` en 0 no es un error: es que ese día no hay nada que
+    // corresponda, lo mismo que pasaría a la hora del aviso.
+    res.json({ enviados });
   } catch (err) {
-    console.error('Error en probar-dia-siguiente:', err);
-    res.status(500).json({ error: 'No se pudo ejecutar el aviso diario.' });
+    console.error('Error en probar-aviso:', err);
+    res.status(500).json({ error: 'No se pudo ejecutar el aviso.' });
   }
 });
 

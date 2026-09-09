@@ -1157,6 +1157,29 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .config-row .mbtn { flex: none; }
 .config-row-acciones { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; justify-content: flex-end; }
 
+/* Las preferencias del aviso (ConfiguracionDialog.jsx). Van debajo de
+   .config-row y no al lado del botón: son tres campos con etiqueta, y en
+   celular una fila de label+select por renglón es lo único que entra sin
+   desbordar el ancho. Los select no llevan borde ni fondo acá: ya se los da
+   la regla base de "Campos". */
+.config-prefs {
+  display: grid;
+  gap: .5rem;
+  margin-top: .9rem;
+  padding-top: .9rem;
+  border-top: 1px solid var(--line);
+}
+.config-pref {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .4rem .8rem;
+}
+.config-pref > span { font-weight: 600; }
+.config-pref select { max-width: 100%; }
+.config-pref-nota { margin: .3rem 0 0; }
+
 /* El prompt de notificaciones reusa .ev-menu (ver NotificacionesPrompt.jsx),
    pero con dos botones en fila en vez de la fila de íconos de EventoMenu. */
 .notif-prompt-lede { margin-top: 0; }

@@ -1,7 +1,33 @@
 import { useEffect, useState } from 'react';
 import Dialog from './Dialog';
 import { useAuth } from '../context/AuthContext';
-import { activarNotificaciones, desactivarNotificaciones, estadoNotificaciones, probarNotificaciones, probarEventosDiaSiguiente } from '../lib/push';
+import {
+  activarNotificaciones,
+  desactivarNotificaciones,
+  estadoNotificaciones,
+  guardarPreferencias,
+  leerPreferencias,
+  probarNotificaciones,
+  probarAviso,
+  PREFERENCIAS_DEFECTO,
+} from '../lib/push';
+
+// Las 24 horas del día como opciones del select. La hora es la de Argentina
+// (el server la resuelve con un offset fijo, ver server/src/lib/push.js), así
+// que no depende del huso del dispositivo.
+const HORAS = Array.from({ length: 24 }, (_, h) => h);
+
+function hhmm(h) {
+  return `${String(h).padStart(2, '0')}:00`;
+}
+
+// Cómo se lee la preferencia en una frase, para que el texto de arriba diga
+// lo que está realmente configurado y no un ejemplo fijo.
+function resumen(p) {
+  const cuando = p.dia === 'hoy' ? 'ese mismo día' : 'al día siguiente';
+  const que = p.detalle === 'titulos' ? 'con el título de cada uno' : 'con cuántos son';
+  return `Ahora te llega a las ${hhmm(p.hora)}, si ${cuando} tenés algo, ${que}.`;
+}
 
 // Configuración de la cuenta/navegador. Por ahora sólo tiene notificaciones,
 // pero va en su propio modal (y no adentro de otro) porque es donde va a
@@ -12,21 +38,60 @@ function Cuerpo({ onClose }) {
   // suscripción activa) nunca se asume, se pregunta cada vez que se abre
   // este modal (ver estadoNotificaciones en lib/push.js).
   const [estado, setEstado] = useState(null);
+  // Las preferencias del aviso son de la SUSCRIPCIÓN (este navegador), no de
+  // la cuenta: se leen del server al abrir, no de un default local.
+  const [prefs, setPrefs] = useState(PREFERENCIAS_DEFECTO);
   const [cambiando, setCambiando] = useState(false);
+  const [guardando, setGuardando] = useState(false);
   const [probando, setProbando] = useState(false);
-  const [probandoManana, setProbandoManana] = useState(false);
+  const [probandoAviso, setProbandoAviso] = useState(false);
   const [error, setError] = useState('');
   const [aviso, setAviso] = useState('');
 
   useEffect(() => {
     let vivo = true;
-    estadoNotificaciones().then((e) => {
-      if (vivo) setEstado(e);
+    estadoNotificaciones().then(async (e) => {
+      if (!vivo) return;
+      setEstado(e);
+      if (!e.activo) return;
+      try {
+        const p = await leerPreferencias(token);
+        if (vivo) setPrefs(p);
+      } catch (err) {
+        /* si no se pudieron leer, quedan los defaults a la vista: el server
+           sigue teniendo las suyas y no se pisan hasta que se toque un select */
+      }
     });
     return () => {
       vivo = false;
     };
-  }, []);
+  }, [token]);
+
+  // Los selects guardan solos: este modal no tiene botón de Guardar (sólo
+  // "Cerrar"), así que un cambio que no se persistiera al toque se perdería
+  // sin que nadie se entere. Optimista, con vuelta atrás si el server rechaza.
+  async function cambiarPref(campo, valor) {
+    const previas = prefs;
+    const nuevas = { ...prefs, [campo]: valor };
+    setPrefs(nuevas);
+    setError('');
+    setAviso('');
+    setGuardando(true);
+    try {
+      const r = await guardarPreferencias(token, nuevas);
+      if (!r.ok) {
+        setPrefs(previas);
+        setError('Las notificaciones no están activas en este navegador.');
+      } else {
+        setPrefs(r.preferencias);
+      }
+    } catch (err) {
+      setPrefs(previas);
+      setError(err.message || 'No se pudo guardar la configuración.');
+    } finally {
+      setGuardando(false);
+    }
+  }
 
   async function probar() {
     setError('');
@@ -42,19 +107,22 @@ function Cuerpo({ onClose }) {
     }
   }
 
-  async function probarManana() {
+  async function probarElAviso() {
     setError('');
     setAviso('');
-    setProbandoManana(true);
+    setProbandoAviso(true);
     try {
-      await probarEventosDiaSiguiente(token);
+      const r = await probarAviso(token);
+      const cuando = prefs.dia === 'hoy' ? 'hoy' : 'mañana';
       setAviso(
-        'Listo: se corrió el aviso diario ahora mismo. Si mañana tenés eventos que matchean tus filtros, la notificación llega en unos segundos. Si no llega nada, es porque mañana no hay eventos que te correspondan (lo mismo que pasaría a las 17:00).'
+        r.enviados > 0
+          ? `Listo: se corrió el aviso real ahora mismo, con el texto que te va a llegar a las ${hhmm(prefs.hora)}.`
+          : `Se corrió el aviso real ahora mismo y no salió ninguna notificación: ${cuando} no hay eventos que te correspondan según tus filtros. Es lo mismo que pasaría a las ${hhmm(prefs.hora)}.`
       );
     } catch (err) {
-      setError(err.message || 'No se pudo ejecutar el aviso diario.');
+      setError(err.message || 'No se pudo ejecutar el aviso.');
     } finally {
-      setProbandoManana(false);
+      setProbandoAviso(false);
     }
   }
 
@@ -67,7 +135,10 @@ function Cuerpo({ onClose }) {
         await desactivarNotificaciones(token);
         setEstado((e) => ({ ...e, activo: false }));
       } else {
-        const r = await activarNotificaciones({ picks, token });
+        // Se manda lo que muestran los selects: si es la primera vez son los
+        // defaults, y si ya estuvo activa antes son las que quedaron a la
+        // vista, así reactivar no sorprende con otra hora.
+        const r = await activarNotificaciones({ picks, token, preferencias: prefs });
         if (!r.ok) {
           setError(
             r.motivo === 'denegado'
@@ -76,6 +147,11 @@ function Cuerpo({ onClose }) {
           );
         } else {
           setEstado((e) => ({ ...e, activo: true }));
+          try {
+            setPrefs(await leerPreferencias(token));
+          } catch (err) {
+            /* quedan las que se acaban de mandar */
+          }
         }
       }
     } catch (err) {
@@ -84,6 +160,8 @@ function Cuerpo({ onClose }) {
       setCambiando(false);
     }
   }
+
+  const ocupado = cambiando || probando || probandoAviso;
 
   return (
     <>
@@ -96,8 +174,11 @@ function Cuerpo({ onClose }) {
           <div className="config-info">
             <strong>Notificaciones</strong>
             <p className="lede muted">
-              Un aviso a las 17 en el celular o la compu si al día siguiente tenés algo en la
-              agenda: un evento oficial de tu sala o grado, o uno propio.
+              Un aviso en el celular o la compu cuando tenés algo en la agenda: un evento oficial
+              de tu sala o grado, o uno propio.{' '}
+              {estado && estado.activo
+                ? resumen(prefs)
+                : 'Elegís a qué hora te llega, si es sobre los eventos de ese mismo día o los del siguiente, y si te dice sólo cuántos son o el título de cada uno.'}
             </p>
           </div>
 
@@ -112,11 +193,11 @@ function Cuerpo({ onClose }) {
                   permiso que ya hace "Activar". */}
               {estado.activo && (
                 <>
-                  <button type="button" className="mbtn" onClick={probar} disabled={probando || probandoManana || cambiando}>
+                  <button type="button" className="mbtn" onClick={probar} disabled={ocupado}>
                     {probando ? 'Mandando…' : 'Probar'}
                   </button>
-                  <button type="button" className="mbtn" onClick={probarManana} disabled={probandoManana || probando || cambiando}>
-                    {probandoManana ? 'Simulando…' : 'Prueba Eventos Mañana'}
+                  <button type="button" className="mbtn" onClick={probarElAviso} disabled={ocupado}>
+                    {probandoAviso ? 'Simulando…' : 'Probar aviso'}
                   </button>
                 </>
               )}
@@ -124,13 +205,63 @@ function Cuerpo({ onClose }) {
                 type="button"
                 className={`mbtn${estado.activo ? '' : ' primary'}`}
                 onClick={alternar}
-                disabled={cambiando || probando}
+                disabled={ocupado}
               >
                 {cambiando ? 'Un momento…' : estado.activo ? 'Desactivar' : 'Activar'}
               </button>
             </div>
           )}
         </div>
+
+        {/* Las preferencias son de ESTE navegador (ver PushSubscription en
+            schema.prisma), así que sólo tienen sentido con la suscripción ya
+            creada: sin eso no hay fila donde guardarlas. */}
+        {estado && estado.soportado && estado.activo && (
+          <div className="config-prefs">
+            <label className="config-pref">
+              <span>Avisarme a las</span>
+              <select
+                value={prefs.hora}
+                onChange={(e) => cambiarPref('hora', Number(e.target.value))}
+                disabled={guardando || ocupado}
+              >
+                {HORAS.map((h) => (
+                  <option key={h} value={h}>{hhmm(h)}</option>
+                ))}
+              </select>
+            </label>
+
+            <label className="config-pref">
+              <span>Sobre los eventos</span>
+              <select
+                value={prefs.dia}
+                onChange={(e) => cambiarPref('dia', e.target.value)}
+                disabled={guardando || ocupado}
+              >
+                <option value="siguiente">Del día siguiente</option>
+                <option value="hoy">De ese mismo día</option>
+              </select>
+            </label>
+
+            <label className="config-pref">
+              <span>En el aviso</span>
+              <select
+                value={prefs.detalle}
+                onChange={(e) => cambiarPref('detalle', e.target.value)}
+                disabled={guardando || ocupado}
+              >
+                <option value="cantidad">Sólo cuántos son</option>
+                <option value="titulos">El título de cada evento</option>
+              </select>
+            </label>
+
+            <p className="lede muted config-pref-nota">
+              Es la configuración de este dispositivo: el celular y la compu pueden tener horas
+              distintas. La hora es la de Argentina.
+              {prefs.dia === 'hoy' && ' Ojo que con los eventos del mismo día, si elegís una hora tardía el aviso llega cuando ya pasaron.'}
+            </p>
+          </div>
+        )}
 
         {error && <p className="err">{error}</p>}
         {aviso && <p className="lede muted">{aviso}</p>}

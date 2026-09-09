@@ -83,13 +83,22 @@ export const api = {
   // schema.prisma).
   push: {
     clavePublica: () => request('/push/clave-publica'),
-    suscribir: (token, subscription, picks) => request('/push/suscribir', { method: 'POST', body: { subscription, picks }, token }),
+    // `preferencias` es opcional: sin él, volver a suscribirse no pisa la
+    // hora ni el detalle que ya había elegido este dispositivo.
+    suscribir: (token, subscription, picks, preferencias) =>
+      request('/push/suscribir', { method: 'POST', body: { subscription, picks, preferencias }, token }),
     desuscribir: (token, endpoint) => request('/push/suscribir', { method: 'DELETE', body: { endpoint }, token }),
+    // Las preferencias del aviso van por POST (las dos, también la lectura)
+    // porque llevan el endpoint en el body: en la URL terminaría en el log de
+    // nginx, y es la credencial de push de ese navegador.
+    leerPreferencias: (token, endpoint) => request('/push/preferencias/leer', { method: 'POST', body: { endpoint }, token }),
+    guardarPreferencias: (token, endpoint, preferencias) =>
+      request('/push/preferencias', { method: 'POST', body: { endpoint, preferencias }, token }),
     // Botón "Probar" de ConfiguracionDialog: manda un push ya mismo a ESA
     // suscripción, sin esperar al aviso diario.
     probar: (token, endpoint) => request('/push/probar', { method: 'POST', body: { endpoint }, token }),
-    // Botón "Prueba Eventos Mañana": simula el trabajo diario de las 17:00.
-    probarDiaSiguiente: (token) => request('/push/probar-dia-siguiente', { method: 'POST', token }),
+    // Botón "Probar aviso del día": corre el aviso real para este navegador.
+    probarAviso: (token, endpoint) => request('/push/probar-aviso', { method: 'POST', body: { endpoint }, token }),
   },
 
   // Los avisos de arriba del calendario. La lista es pública (sin cuenta

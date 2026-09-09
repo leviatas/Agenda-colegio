@@ -23,8 +23,11 @@ Calendario escolar del Colegio San Gabriel, ciclo lectivo 2026.
   cargado, para confirmarlo en la cuenta de quien lo toca. No pide permisos ni
   guarda nada: es un link (ver "Agregar a Google Calendar" en
   [`CLAUDE.md`](CLAUDE.md)).
-- **Notificaciones push opcionales**, con la app cerrada: un aviso a las 17 si
-  al día siguiente hay algo en la agenda (ver "Notificaciones push" en
+- **Notificaciones push opcionales**, con la app cerrada: un aviso una vez por
+  día si hay algo en la agenda. Cada dispositivo elige a qué hora le llega,
+  si es sobre los eventos del día siguiente (lo de fábrica: a las 17 se avisa
+  lo de mañana) o los de ese mismo día, y si el aviso dice sólo cuántos son o
+  el título de cada uno (ver "Notificaciones push" en
   [`CLAUDE.md`](CLAUDE.md)). Necesitan `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY`
   en el `.env` — sin eso, la app funciona igual pero no las manda.
 
