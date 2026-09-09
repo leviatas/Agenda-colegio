@@ -1321,6 +1321,14 @@ footer .version { font-variant-numeric: tabular-nums; opacity: .7; }
   font-size: 1.2rem;
   margin: 0 0 1.1rem;
 }
+/* El encabezado del menú de un evento: título y, abajo, cuándo es (ver
+   EventoMenu.jsx). Los márgenes van acá y no en .ev-menu-title porque esa
+   clase la reusan el prompt de notificaciones y el diálogo del link copiado,
+   que no llevan segunda línea. */
+.ev-menu-head { margin-bottom: 1.1rem; }
+.ev-menu-head .ev-menu-title { margin-bottom: .25rem; }
+.ev-menu-cuando { margin: 0; font-size: .88rem; color: var(--ink-soft); }
+
 .ev-menu-row { display: flex; justify-content: space-around; gap: .5rem; }
 .ev-menu-btn {
   display: flex;

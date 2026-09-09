@@ -5,6 +5,7 @@ import { useEventos } from '../context/EventosContext';
 import { useConfirm } from './ConfirmDialog';
 import { api } from '../api';
 import { esLocal } from '../lib/personales';
+import { DIAS, MESES, isoDow, parse, textoHora } from '../lib/agenda';
 import IconoEditar from './IconoEditar';
 import IconoCompartir from './IconoCompartir';
 import IconoBorrar from './IconoBorrar';
@@ -14,6 +15,24 @@ import IconoBorrar from './IconoBorrar';
 // actúan directo desde acá, sin pasar por el formulario. Mismo patrón que
 // antes vivía en EditEventDialog para compartir (navigator.share con
 // fallback a link copiado) y para borrar (useConfirm, nunca window.confirm).
+// La fecha completa, con día de la semana y mes en letras: este menú es lo
+// primero que se abre al tocar un evento, así que hace de vista del evento y
+// tiene que decir CUÁNDO es sin obligar a abrir "Editar". En un tramo de
+// varios días el día de la semana sobra —lo que importa es del cuándo al
+// cuándo—, y si los dos días caen en el mismo mes se nombra una sola vez.
+function cuando(ev) {
+  const s = parse(ev.date);
+  const dia = (d) => `${d.getDate()} de ${MESES[d.getMonth()]}`;
+
+  if (!ev.endDate || ev.endDate === ev.date) return `${DIAS[isoDow(s)]} ${dia(s)}`;
+
+  const e = parse(ev.endDate);
+  if (e.getMonth() === s.getMonth() && e.getFullYear() === s.getFullYear()) {
+    return `del ${s.getDate()} al ${dia(e)}`;
+  }
+  return `del ${dia(s)} al ${dia(e)}`;
+}
+
 function Cuerpo({ evento, onEditar, onClose }) {
   const { token } = useAuth();
   const { borrarMio } = useEventos();
@@ -67,7 +86,15 @@ function Cuerpo({ evento, onEditar, onClose }) {
 
   return (
     <div className="ev-menu">
-      <p className="ev-menu-title" id="evento-menu-title">{evento.title}</p>
+      <div className="ev-menu-head">
+        <p className="ev-menu-title" id="evento-menu-title">{evento.title}</p>
+        <p className="ev-menu-cuando">
+          {cuando(evento)}
+          {/* Sin hora no va nada: un "hs" pelado no dice nada, mismo criterio
+              que el resto de las pantallas. */}
+          {evento.time && <> · {textoHora(evento)}hs</>}
+        </p>
+      </div>
 
       {error && <p className="err">{error}</p>}
 
