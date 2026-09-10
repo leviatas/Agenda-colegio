@@ -241,6 +241,15 @@ corresponde a alguien logueado, quién es. Eso vive en el modelo `Visita`
 cliente) y la agrupa (`obtenerMetricas`, que arma una fila por IP con la
 cuenta o cuentas de esa IP y cuándo fue la última vez).
 
+**Los accesos sin cuenta se cuentan aparte, y por IP**: el calendario se ve
+sin entrar, así que una IP que alguna vez tuvo un login igual acumula visitas
+anónimas. `obtenerMetricas` devuelve `sinCuenta` en cada fila y los totales
+`accesos` / `accesosSinCuenta`; la pantalla muestra el desglose abajo del total
+de la fila sólo cuando hay cuenta Y visitas sin sesión —en una IP sin cuenta el
+total ya son todas anónimas y la columna de al lado lo dice. Un acceso de una
+cuenta borrada también cae en `sinCuenta`: `Visita.userId` es `onDelete:
+SetNull`, así que sus accesos quedan en el historial sin cuenta detrás.
+
 **Ese "cuánta gente distinta se logueó" es simplemente `User.count()`**: toda
 fila de `User` se creó en un login con Google (`routes/auth.js`), así que no
 hace falta ningún contador aparte.
