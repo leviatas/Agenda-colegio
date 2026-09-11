@@ -49,16 +49,31 @@ async function obtenerMetricas() {
     }),
   ]);
 
+  // Los accesos SIN cuenta se cuentan aparte, y por IP: una IP que alguna vez
+  // tuvo un login igual acumula visitas anónimas —el calendario se ve sin
+  // entrar—, y sin este desglose quedaban escondidas adentro del total con el
+  // nombre de la cuenta al lado, como si todas fueran de esa persona.
   const porIp = new Map();
+  let accesos = 0;
+  let accesosSinCuenta = 0;
+
   for (const v of visitas) {
     let fila = porIp.get(v.ip);
     if (!fila) {
-      fila = { ip: v.ip, visitas: 0, ultimoIngreso: v.creadoEn, usuarios: new Map() };
+      fila = { ip: v.ip, visitas: 0, sinCuenta: 0, ultimoIngreso: v.creadoEn, usuarios: new Map() };
       porIp.set(v.ip, fila);
     }
     fila.visitas += 1;
+    accesos += 1;
     if (v.creadoEn > fila.ultimoIngreso) fila.ultimoIngreso = v.creadoEn;
+    // Sin `user` es un acceso sin sesión. También cae acá el de una cuenta
+    // borrada: `Visita.userId` es onDelete SetNull, así que sus accesos quedan
+    // en el historial como accesos sin cuenta (ver CLAUDE.md).
     if (v.user) fila.usuarios.set(v.user.id, v.user);
+    else {
+      fila.sinCuenta += 1;
+      accesosSinCuenta += 1;
+    }
   }
 
   const ips = [...porIp.values()]
@@ -66,11 +81,12 @@ async function obtenerMetricas() {
     .map((f) => ({
       ip: f.ip,
       visitas: f.visitas,
+      sinCuenta: f.sinCuenta,
       ultimoIngreso: f.ultimoIngreso.toISOString(),
       usuarios: [...f.usuarios.values()],
     }));
 
-  return { cuentas, ips };
+  return { cuentas, accesos, accesosSinCuenta, ips };
 }
 
 module.exports = { registrarAcceso, obtenerMetricas };

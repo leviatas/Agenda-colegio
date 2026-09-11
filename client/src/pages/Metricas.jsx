@@ -59,6 +59,9 @@ export default function Metricas() {
   }
 
   const ips = datos ? datos.ips : [];
+  // Cuántas IP no tienen NINGUNA cuenta detrás: gente que sólo miró el
+  // calendario o cargó eventos propios sin entrar con Google.
+  const ipsSinCuenta = ips.filter((f) => f.usuarios.length === 0).length;
 
   return (
     <div className="wrap">
@@ -79,6 +82,19 @@ export default function Metricas() {
         desde el celular y la compu son dos filas distintas, y cambiar de red vuelve a contar como
         una IP nueva.
       </p>
+
+      {/* El desglose de lo que no tiene cuenta detrás: los accesos anónimos no
+          son sólo los de las filas "sin cuenta", porque una IP con cuenta
+          también acumula visitas sin sesión. */}
+      {!cargando && !error && datos && ips.length > 0 && (
+        <p className="mt-resumen">
+          <b>{datos.accesos}</b> {datos.accesos === 1 ? 'acceso' : 'accesos'} desde{' '}
+          <b>{ips.length}</b> {ips.length === 1 ? 'IP' : 'IP distintas'} ·{' '}
+          <b>{datos.accesosSinCuenta}</b> sin cuenta, {ipsSinCuenta === 1
+            ? '1 IP que nunca entró con Google'
+            : `${ipsSinCuenta} IP que nunca entraron con Google`}
+        </p>
+      )}
 
       {cargando && <p className="empty-note">Cargando…</p>}
       {error && <p className="err banner">{error}</p>}
@@ -105,7 +121,15 @@ export default function Metricas() {
                   f.usuarios.map((u) => `${u.name} (${u.email})`).join(', ')
                 )}
               </span>
-              <span className="mt-visitas">{f.visitas}</span>
+              <span className="mt-visitas">
+                {f.visitas}
+                {/* En una IP sin cuenta el total ya son todos accesos
+                    anónimos y la columna de al lado lo dice: el desglose sólo
+                    aporta cuando hay cuenta y además visitas sin sesión. */}
+                {f.sinCuenta > 0 && f.usuarios.length > 0 && (
+                  <em>{f.sinCuenta} sin cuenta</em>
+                )}
+              </span>
               <span className="mt-fecha">{fecha(f.ultimoIngreso)}</span>
             </li>
           ))}
