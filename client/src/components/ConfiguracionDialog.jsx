@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import Dialog from './Dialog';
+import CalendarioGoogleSeccion from './CalendarioGoogleSeccion';
 import { useAuth } from '../context/AuthContext';
 import {
   activarNotificaciones,
@@ -29,9 +30,10 @@ function resumen(p) {
   return `Ahora te llega a las ${hhmm(p.hora)}, si ${cuando} tenés algo, ${que}.`;
 }
 
-// Configuración de la cuenta/navegador. Por ahora sólo tiene notificaciones,
-// pero va en su propio modal (y no adentro de otro) porque es donde va a
-// crecer lo próximo que se agregue acá.
+// Configuración de la cuenta/navegador: notificaciones y, opcional, el
+// calendario "San Gabriel" en Google Calendar (CalendarioGoogleSeccion). Va en
+// su propio modal (y no adentro de otro) porque es donde crece lo próximo que
+// se agregue.
 function Cuerpo({ onClose }) {
   const { token, picks } = useAuth();
   // null mientras se consulta al navegador: el estado real (permiso +
@@ -170,101 +172,105 @@ function Cuerpo({ onClose }) {
       </div>
 
       <div className="modal-body">
-        <div className="config-row">
-          <div className="config-info">
-            <strong>Notificaciones</strong>
-            <p className="lede muted">
-              Un aviso en el celular o la compu cuando tenés algo en la agenda: un evento oficial
-              de tu sala o grado, o uno propio.{' '}
-              {estado && estado.activo
-                ? resumen(prefs)
-                : 'Elegís a qué hora te llega, si es sobre los eventos de ese mismo día o los del siguiente, y si te dice sólo cuántos son o el título de cada uno.'}
-            </p>
+        <section className="config-seccion">
+          <div className="config-row">
+            <div className="config-info">
+              <strong>Notificaciones</strong>
+              <p className="lede muted">
+                Un aviso en el celular o la compu cuando tenés algo en la agenda: un evento oficial
+                de tu sala o grado, o uno propio.{' '}
+                {estado && estado.activo
+                  ? resumen(prefs)
+                  : 'Elegís a qué hora te llega, si es sobre los eventos de ese mismo día o los del siguiente, y si te dice sólo cuántos son o el título de cada uno.'}
+              </p>
+            </div>
+
+            {estado === null ? (
+              <span className="empty-note">Consultando…</span>
+            ) : !estado.soportado ? (
+              <span className="empty-note">No disponible en este navegador.</span>
+            ) : (
+              <div className="config-row-acciones">
+                {/* Sólo tiene sentido probar algo que ya está activo: si no,
+                    "Probar" no haría más que repetir el mismo pedido de
+                    permiso que ya hace "Activar". */}
+                {estado.activo && (
+                  <>
+                    <button type="button" className="mbtn" onClick={probar} disabled={ocupado}>
+                      {probando ? 'Mandando…' : 'Probar'}
+                    </button>
+                    <button type="button" className="mbtn" onClick={probarElAviso} disabled={ocupado}>
+                      {probandoAviso ? 'Simulando…' : 'Probar aviso'}
+                    </button>
+                  </>
+                )}
+                <button
+                  type="button"
+                  className={`mbtn${estado.activo ? '' : ' primary'}`}
+                  onClick={alternar}
+                  disabled={ocupado}
+                >
+                  {cambiando ? 'Un momento…' : estado.activo ? 'Desactivar' : 'Activar'}
+                </button>
+              </div>
+            )}
           </div>
 
-          {estado === null ? (
-            <span className="empty-note">Consultando…</span>
-          ) : !estado.soportado ? (
-            <span className="empty-note">No disponible en este navegador.</span>
-          ) : (
-            <div className="config-row-acciones">
-              {/* Sólo tiene sentido probar algo que ya está activo: si no,
-                  "Probar" no haría más que repetir el mismo pedido de
-                  permiso que ya hace "Activar". */}
-              {estado.activo && (
-                <>
-                  <button type="button" className="mbtn" onClick={probar} disabled={ocupado}>
-                    {probando ? 'Mandando…' : 'Probar'}
-                  </button>
-                  <button type="button" className="mbtn" onClick={probarElAviso} disabled={ocupado}>
-                    {probandoAviso ? 'Simulando…' : 'Probar aviso'}
-                  </button>
-                </>
-              )}
-              <button
-                type="button"
-                className={`mbtn${estado.activo ? '' : ' primary'}`}
-                onClick={alternar}
-                disabled={ocupado}
-              >
-                {cambiando ? 'Un momento…' : estado.activo ? 'Desactivar' : 'Activar'}
-              </button>
+          {/* Las preferencias son de ESTE navegador (ver PushSubscription en
+              schema.prisma), así que sólo tienen sentido con la suscripción ya
+              creada: sin eso no hay fila donde guardarlas. */}
+          {estado && estado.soportado && estado.activo && (
+            <div className="config-prefs">
+              <label className="config-pref">
+                <span>Avisarme a las</span>
+                <select
+                  value={prefs.hora}
+                  onChange={(e) => cambiarPref('hora', Number(e.target.value))}
+                  disabled={guardando || ocupado}
+                >
+                  {HORAS.map((h) => (
+                    <option key={h} value={h}>{hhmm(h)}</option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="config-pref">
+                <span>Sobre los eventos</span>
+                <select
+                  value={prefs.dia}
+                  onChange={(e) => cambiarPref('dia', e.target.value)}
+                  disabled={guardando || ocupado}
+                >
+                  <option value="siguiente">Del día siguiente</option>
+                  <option value="hoy">De ese mismo día</option>
+                </select>
+              </label>
+
+              <label className="config-pref">
+                <span>En el aviso</span>
+                <select
+                  value={prefs.detalle}
+                  onChange={(e) => cambiarPref('detalle', e.target.value)}
+                  disabled={guardando || ocupado}
+                >
+                  <option value="cantidad">Sólo cuántos son</option>
+                  <option value="titulos">El título de cada evento</option>
+                </select>
+              </label>
+
+              <p className="lede muted config-pref-nota">
+                Es la configuración de este dispositivo: el celular y la compu pueden tener horas
+                distintas. La hora es la de Argentina.
+                {prefs.dia === 'hoy' && ' Ojo que con los eventos del mismo día, si elegís una hora tardía el aviso llega cuando ya pasaron.'}
+              </p>
             </div>
           )}
-        </div>
 
-        {/* Las preferencias son de ESTE navegador (ver PushSubscription en
-            schema.prisma), así que sólo tienen sentido con la suscripción ya
-            creada: sin eso no hay fila donde guardarlas. */}
-        {estado && estado.soportado && estado.activo && (
-          <div className="config-prefs">
-            <label className="config-pref">
-              <span>Avisarme a las</span>
-              <select
-                value={prefs.hora}
-                onChange={(e) => cambiarPref('hora', Number(e.target.value))}
-                disabled={guardando || ocupado}
-              >
-                {HORAS.map((h) => (
-                  <option key={h} value={h}>{hhmm(h)}</option>
-                ))}
-              </select>
-            </label>
+          {error && <p className="err">{error}</p>}
+          {aviso && <p className="lede muted">{aviso}</p>}
+        </section>
 
-            <label className="config-pref">
-              <span>Sobre los eventos</span>
-              <select
-                value={prefs.dia}
-                onChange={(e) => cambiarPref('dia', e.target.value)}
-                disabled={guardando || ocupado}
-              >
-                <option value="siguiente">Del día siguiente</option>
-                <option value="hoy">De ese mismo día</option>
-              </select>
-            </label>
-
-            <label className="config-pref">
-              <span>En el aviso</span>
-              <select
-                value={prefs.detalle}
-                onChange={(e) => cambiarPref('detalle', e.target.value)}
-                disabled={guardando || ocupado}
-              >
-                <option value="cantidad">Sólo cuántos son</option>
-                <option value="titulos">El título de cada evento</option>
-              </select>
-            </label>
-
-            <p className="lede muted config-pref-nota">
-              Es la configuración de este dispositivo: el celular y la compu pueden tener horas
-              distintas. La hora es la de Argentina.
-              {prefs.dia === 'hoy' && ' Ojo que con los eventos del mismo día, si elegís una hora tardía el aviso llega cuando ya pasaron.'}
-            </p>
-          </div>
-        )}
-
-        {error && <p className="err">{error}</p>}
-        {aviso && <p className="lede muted">{aviso}</p>}
+        <CalendarioGoogleSeccion />
       </div>
 
       <div className="modal-foot">

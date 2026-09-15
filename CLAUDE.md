@@ -15,7 +15,9 @@ navegador. Entrar con Google sirve para dos cosas:
   que ya estaban en el navegador se suben solos en el primer ingreso (ver
   "Eventos personales: navegador o cuenta"). **Nadie más los ve**, ni el
   colegio, salvo que la propia cuenta decida compartirlos (ver "Compartir
-  eventos personales") — eso es opt-in y explícito, no cambia el default;
+  eventos personales") — eso es opt-in y explícito, no cambia el default. Lo
+  mismo vale para copiarlos al Google Calendar de la propia cuenta (ver
+  "Calendario San Gabriel en Google Calendar"): nunca se pide solo;
 - **los emails de `ADMIN_EMAILS`** (hoy `leviatas@gmail.com`) además pueden
   editar el calendario oficial en `/oficial`, ver en `/usuarios` la lista de
   cuentas que entraron con Google (nombre, mail, si es admin y desde cuándo) y
@@ -130,8 +132,9 @@ oficial), `PersonalEvent` (los eventos de cada familia) y `EventSubscription`
 link de un solo evento no tiene modelo propio, es un JWT que apunta a un
 `PersonalEvent` existente). Aparte están los que no son eventos y tienen su
 propia sección acá abajo: `Visita` (métricas), `PushSubscription`
-(notificaciones) y `Novedad` + `NovedadCierre` (los avisos de arriba del
-calendario).
+(notificaciones), `Novedad` + `NovedadCierre` (los avisos de arriba del
+calendario) y `CalendarioGoogle` (el permiso opcional para mantener el
+calendario "San Gabriel" en Google).
 
 **Las fechas son `String 'YYYY-MM-DD'`, no `DateTime`.** Son fechas de
 calendario sin hora, y un `DateTime` en SQLite se guarda en UTC: un
@@ -417,7 +420,8 @@ Al lado de **cada** evento —oficial, propio o compartido— hay un botón que 
 pasa al Google Calendar de quien lo toca (`client/src/components/
 BotonGoogleCalendar.jsx`, con la URL armada en `client/src/lib/googleCalendar.js`).
 
-**No hay integración con la API de Google, y es a propósito**: es la URL
+**Este botón no usa la API de Google, y es a propósito** (lo que sí la usa es
+el calendario "San Gabriel", la sección siguiente): es la URL
 pública del formulario de Google (`calendar/render?action=TEMPLATE`), que abre
 el evento precargado para que la persona confirme en su propia cuenta. Así no
 hace falta pedir scopes de Calendar en el login (hoy sólo se pide la identidad),
@@ -458,6 +462,80 @@ sirve igual a quien no piensa entrar.
 El botón se anunció con un aviso arriba del calendario, que era texto fijo en
 el código; ahora ese cartelito es una **novedad** cargada por el admin (ver
 "Novedades" más abajo), así que anunciar lo próximo no pide tocar el código.
+
+### Calendario San Gabriel en Google Calendar
+
+Distinto del botón de arriba: en **Configuración → Google Calendar**, "Dar
+permiso" le deja a la agenda **crear y mantener** un calendario "San Gabriel" en
+el Google Calendar de esa cuenta, con lo mismo que la cuenta ve en "Ver la
+agenda": los oficiales que le tocan según sus picks, sus eventos propios y los
+compartidos por código. Todo vive en `server/src/lib/calendarioGoogle.js`.
+
+**Es opcional y nunca se pide solo.** El login sigue pidiendo sólo la
+identidad; la ventana del permiso de Calendar se abre únicamente al tocar "Dar
+permiso". Quien no lo da (no lo toca, cierra la ventana, toca Cancelar o
+destilda el permiso de calendarios) no tiene fila en `CalendarioGoogle`, y para
+esa cuenta todos los disparadores de abajo son un no-op. Sin
+`GOOGLE_CLIENT_SECRET` el feature se apaga para todos (Configuración lo muestra
+como no disponible, igual que las push sin VAPID). No agregar ningún prompt
+automático: si algún día se anuncia, que sea con una novedad que lleve a
+Configuración.
+
+**El permiso es el scope `calendar.app.created`**: sólo deja crear calendarios y
+tocar los que creó la propia app, nunca el resto del calendario de la persona.
+
+- El cliente pide el permiso con el popup de Google Identity Services
+  (`initCodeClient`, `client/src/lib/calendarioGoogle.js`) y manda **el código**
+  a `POST /api/calendario-google/conectar`; el server lo canjea (redirect URI
+  `postmessage`, que no se registra en Cloud Console) y guarda el **refresh
+  token cifrado** con AES-256-GCM y una clave derivada de `JWT_SECRET`. El
+  cliente nunca ve un token de Google. **Cambiar `JWT_SECRET` desconecta a todo
+  el mundo**: el token queda ilegible, la fila se borra en la próxima pasada y
+  cada cuenta vuelve a dar el permiso si quiere.
+- **El popup se abre dentro del mismo click, sin un `await` antes**, o el
+  navegador lo bloquea: por eso `CalendarioGoogleSeccion.jsx` precarga el script
+  de GIS al abrir Configuración (`lib/gsi.js`, compartido con el botón de
+  login). Precargarlo no muestra ni pide nada.
+- Google devuelve el refresh token **sólo la primera vez** que se da el permiso.
+  Desconectar lo revoca para que volver a conectar lo traiga de nuevo.
+
+**No hay tabla de mapeo entre eventos de la agenda y de Google.** Cada evento
+creado lleva en `extendedProperties.private` la clave de la agenda (`o12`
+oficial, `p34` personal) y una huella del contenido. Cada pasada lista lo que
+hay en el calendario, lo compara con lo que tendría que haber y crea, actualiza
+(huella distinta) o borra sólo la diferencia; los duplicados de una misma clave
+se borran. Mismo espíritu que las push: se recalcula de cero, no hay estado que
+se desincronice. Corolarios:
+
+- **Un cambio hecho a mano en Google no se pisa** hasta que cambie algo del lado
+  de la agenda (la huella es de lo que se mandó, no de lo que hay allá). Un
+  evento que la persona borra allá vuelve en la próxima pasada.
+- Si borran el calendario entero desde Google, la próxima pasada lo crea de
+  nuevo. Si sacan el permiso (`invalid_grant`), la fila se borra y en
+  Configuración vuelve a aparecer "Dar permiso".
+- La conversión fecha/hora → evento de Google es **un espejo** de
+  `client/src/lib/googleCalendar.js` (mismo huso, mismo fin exclusivo en día
+  completo, mismos formatos de `time`): si cambiás uno, cambiá el otro.
+
+**Qué dispara una pasada** (`programarSync`, con debounce por cuenta y una sola
+pasada a la vez por cuenta — dos en paralelo crearían cada evento dos veces):
+`PUT /api/auth/me/picks`, alta/edición/borrado de un evento propio (también para
+quien suscribió el código de esa cuenta), aceptar un link, canjear un código o
+cortar una suscripción, y cualquier cambio en `/oficial` (todas las cuentas
+conectadas, escalonadas). Además corre para todas al minuto de arrancar y cada 6
+horas, que es lo que cubre al seed reinsertando un oficial borrado. Nada de eso
+demora la respuesta: se programa después de responder.
+
+**Desconectar borra el calendario "San Gabriel" de Google** (con `useConfirm`):
+una copia que ya no se actualiza sólo confunde cuando el colegio cambia una
+fecha.
+
+**Fuera del repo, en Google Cloud Console**: la *Google Calendar API* habilitada
+en el proyecto y el scope `.../auth/calendar.app.created` agregado a la pantalla
+de consentimiento. Es un scope sensible: mientras la app no pase la
+verificación de Google, las cuentas que no estén como *test users* ven el aviso
+de "app no verificada" (o no pueden seguir, si la app está en *Testing*).
+Agregarlo a la pantalla de consentimiento **no** hace que el login lo pida.
 
 ### Novedades
 

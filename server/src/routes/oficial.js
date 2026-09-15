@@ -8,10 +8,18 @@ const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { parseEvento } = require('../lib/validate');
 const { LEVELS, TAGS } = require('../lib/catalogo');
 const { serializeOficial } = require('./eventos');
+const { programarSyncTodos } = require('../lib/calendarioGoogle');
 
 const router = express.Router();
 
 router.use(requireAuth, requireAdmin);
+
+// Un cambio del oficial le puede tocar a cualquier cuenta con el calendario
+// "San Gabriel" conectado (lib/calendarioGoogle.js). Después de responder y
+// sin await: Google no tiene por qué demorar la pantalla del admin.
+function sincronizarCalendarios() {
+  programarSyncTodos().catch((err) => console.error('[calendario-google] no se pudo programar la sincronización', err));
+}
 
 function parseOficial(body) {
   const base = parseEvento(body);
@@ -48,6 +56,7 @@ router.post('/', async (req, res) => {
 
   const evento = await prisma.event.create({ data: parsed.value });
   res.status(201).json({ evento: serializeOficial(evento) });
+  sincronizarCalendarios();
 });
 
 router.put('/:id', async (req, res) => {
@@ -60,6 +69,7 @@ router.put('/:id', async (req, res) => {
 
   const evento = await prisma.event.update({ where: { id }, data: parsed.value });
   res.json({ evento: serializeOficial(evento) });
+  sincronizarCalendarios();
 });
 
 router.delete('/:id', async (req, res) => {
@@ -69,6 +79,7 @@ router.delete('/:id', async (req, res) => {
 
   await prisma.event.delete({ where: { id } });
   res.status(204).end();
+  sincronizarCalendarios();
 });
 
 module.exports = router;

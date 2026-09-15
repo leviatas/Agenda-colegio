@@ -3,6 +3,7 @@ const { OAuth2Client } = require('google-auth-library');
 const prisma = require('../lib/prisma');
 const { signToken, requireAuth } = require('../middleware/auth');
 const { registrarLogin } = require('../lib/telemetria');
+const { programarSync } = require('../lib/calendarioGoogle');
 
 const router = express.Router();
 
@@ -128,6 +129,9 @@ router.put('/me/picks', requireAuth, async (req, res) => {
     data: { picks: JSON.stringify(picks) },
   });
   res.json({ user: serializeUser(user) });
+  // Otros filtros, otros oficiales en el calendario "San Gabriel" de Google
+  // (sólo si esta cuenta lo conectó; si no, no hace nada).
+  programarSync(user.id);
 });
 
 module.exports = router;

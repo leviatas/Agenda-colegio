@@ -45,6 +45,7 @@ model User {
   accesos           Visita[]
   suscripcionesPush PushSubscription[]
   novedadesCerradas NovedadCierre[]
+  calendarioGoogle  CalendarioGoogle?
 }
 
 // Calendario oficial del colegio. Lo edita SOLO un admin (routes/oficial.js);
@@ -239,4 +240,34 @@ model NovedadCierre {
   // routes/novedades.js se apoya en este unique.
   @@unique([novedadId, userId])
   @@index([userId])
+}
+
+// El permiso que una cuenta le dio a la agenda para mantener un calendario
+// "San Gabriel" en SU Google Calendar (ver server/src/lib/calendarioGoogle.js).
+// Es opt-in: la fila existe sólo si la persona tocó "Dar permiso" en
+// Configuración, y desconectar la borra.
+//
+// `refreshToken` va CIFRADO (AES-256-GCM con una clave derivada de
+// JWT_SECRET): es lo que deja escribir en el calendario de esa persona sin
+// que esté presente, así que una copia de la base no tiene que alcanzar para
+// usarlo. Cambiar JWT_SECRET lo vuelve ilegible y cada cuenta tiene que volver
+// a dar el permiso.
+//
+// `calendarId` es nulo hasta la primera sincronización, y vuelve a crearse si
+// la persona borra el calendario desde Google.
+model CalendarioGoogle {
+  id     Int  @id @default(autoincrement())
+  userId Int  @unique
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  refreshToken String
+  calendarId   String?
+
+  // Para mostrar en Configuración: cuándo salió bien la última pasada y, si la
+  // última falló, por qué (texto para el usuario, no el error crudo).
+  ultimaSync  DateTime?
+  ultimoError String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

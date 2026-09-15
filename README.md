@@ -23,6 +23,13 @@ Calendario escolar del Colegio San Gabriel, ciclo lectivo 2026.
   cargado, para confirmarlo en la cuenta de quien lo toca. No pide permisos ni
   guarda nada: es un link (ver "Agregar a Google Calendar" en
   [`CLAUDE.md`](CLAUDE.md)).
+- **Calendario "San Gabriel" en Google Calendar, opcional.** Desde
+  Configuración, quien quiera puede darle permiso a la agenda para crear ese
+  calendario con sus eventos filtrados y personales; se actualiza solo al
+  cambiar los filtros o los eventos. Nunca se pide solo: quien no toca el botón
+  no da ningún permiso extra (ver "Calendario San Gabriel en Google Calendar"
+  en [`CLAUDE.md`](CLAUDE.md)). Necesita `GOOGLE_CLIENT_SECRET` y la Calendar
+  API habilitada.
 - **Notificaciones push opcionales**, con la app cerrada: un aviso una vez por
   día si hay algo en la agenda. Cada dispositivo elige a qué hora le llega,
   si es sobre los eventos del día siguiente (lo de fábrica: a las 17 se avisa
@@ -57,6 +64,16 @@ Services**:
    **Authorized redirect URIs: ninguno.** Google Identity Services valida el
    origen, no un redirect.
 
+3. **Opcional, para el calendario "San Gabriel" en Google Calendar**:
+   - **Library → Google Calendar API → Enable.**
+   - En **OAuth consent screen → Data access / Scopes**, agregá
+     `https://www.googleapis.com/auth/calendar.app.created`. No cambia lo que
+     pide el login: sólo se pide cuando alguien toca "Dar permiso". Es un scope
+     sensible: sin pasar la verificación de Google, sólo las cuentas cargadas
+     como *test users* pueden darlo sin trabas (las demás ven el aviso de app
+     no verificada).
+   - Copiá el **Client secret** del mismo OAuth client a `GOOGLE_CLIENT_SECRET`.
+
 Un origen que falte se manifiesta como un botón de Google que no renderiza o un
 login que falla sin error visible; el mensaje real está en la consola del
 browser.
@@ -72,6 +89,8 @@ Completá:
 - `GOOGLE_CLIENT_ID` — el Client ID del paso anterior.
 - `JWT_SECRET` — `openssl rand -hex 32`.
 - `ADMIN_EMAILS` — quién puede editar el calendario oficial, separados por coma.
+- `GOOGLE_CLIENT_SECRET` — opcional, para el calendario "San Gabriel" en Google
+  Calendar (paso 1.3). Sin esto la opción aparece como no disponible.
 - `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` — opcional, para las notificaciones
   push. Generalas con `node -e "console.log(require('web-push').generateVAPIDKeys())"`
   (necesita `web-push` instalado: `cd server && npm install` primero). Sin

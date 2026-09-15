@@ -1,33 +1,10 @@
 import { useEffect, useRef } from 'react';
+import { CLIENT_ID, cargarGsi } from '../lib/gsi';
 
-// Google Identity Services se carga como <script> en runtime, NO como paquete
-// de npm. Google sólo valida el ORIGEN (no hay redirect URI), así que cada
-// origen desde el que se sirva el cliente tiene que estar en "Authorized
-// JavaScript origins" del Client ID.
-const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-
-// El <script> se pide una sola vez para toda la app: el efecto vuelve a correr
-// cuando cambia la forma del botón (al pasar a celular) y sin esto cada
-// re-render que llegue antes de que cargue agregaría otra copia al documento.
-let cargando = null;
-
-function cargarGsi() {
-  if (window.google) return Promise.resolve();
-  if (cargando) return cargando;
-  cargando = new Promise((listo, falla) => {
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
-    script.async = true;
-    script.defer = true;
-    script.onload = () => listo();
-    script.onerror = () => {
-      cargando = null;
-      falla(new Error('No se pudo cargar el login de Google.'));
-    };
-    document.body.appendChild(script);
-  });
-  return cargando;
-}
+// Google sólo valida el ORIGEN (no hay redirect URI), así que cada origen desde
+// el que se sirva el cliente tiene que estar en "Authorized JavaScript origins"
+// del Client ID. El login pide sólo la identidad: el permiso de Google Calendar
+// es aparte y opcional (lib/calendarioGoogle.js).
 
 export default function GoogleLoginButton({ onCredential, tipo = 'standard', tema = 'outline', tamano = 'large' }) {
   const buttonRef = useRef(null);

@@ -116,6 +116,16 @@ export const api = {
     },
   },
 
+  // El calendario "San Gabriel" en Google Calendar, opcional (ver
+  // server/src/lib/calendarioGoogle.js). `conectar` manda el código del popup
+  // de Google; el server lo canjea y sincroniza en segundo plano.
+  calendarioGoogle: {
+    estado: (token) => request('/calendario-google', { token }),
+    conectar: (token, code) => request('/calendario-google/conectar', { method: 'POST', body: { code }, token }),
+    sincronizar: (token) => request('/calendario-google/sincronizar', { method: 'POST', token }),
+    desconectar: (token) => request('/calendario-google', { method: 'DELETE', token }),
+  },
+
   oficial: {
     list: (token) => request('/oficial', { token }),
     create: (token, data) => request('/oficial', { method: 'POST', body: data, token }),

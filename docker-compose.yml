@@ -18,6 +18,9 @@ services:
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
       VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:soporte@example.com}
+      # El calendario "San Gabriel" en Google Calendar: opcional como las
+      # push. Sin el secret, Configuración lo muestra como no disponible.
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
     volumes:
       # Todo lo que tenga que sobrevivir a un rebuild va acá adentro: la base
       # y los uploads. Lo que quede fuera de /app/data se pierde.

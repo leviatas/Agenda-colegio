@@ -3,8 +3,17 @@ const prisma = require('../lib/prisma');
 const { requireAuth, optionalAuth } = require('../middleware/auth');
 const { parseEvento } = require('../lib/validate');
 const { firmarEventoCompartido, leerEventoCompartido, generarCodigo } = require('../lib/compartir');
+const { programarSync, programarSyncSuscriptores } = require('../lib/calendarioGoogle');
 
 const router = express.Router();
+
+// Un evento propio que cambia está en el calendario "San Gabriel" de Google de
+// su dueño y en el de quien le canjeó el código, si lo conectaron
+// (lib/calendarioGoogle.js). Se llama después de responder y sin await.
+function sincronizarDueno(userId) {
+  programarSync(userId);
+  programarSyncSuscriptores(userId).catch((err) => console.error('[calendario-google] no se pudo programar la sincronización', err));
+}
 
 function serializeOficial(e) {
   return {
@@ -113,6 +122,7 @@ router.post('/mios', requireAuth, async (req, res) => {
     data: { ...parsed.value, userId: req.user.id },
   });
   res.status(201).json({ evento: serializePersonal(evento) });
+  sincronizarDueno(req.user.id);
 });
 
 router.put('/mios/:id', requireAuth, async (req, res) => {
@@ -129,6 +139,7 @@ router.put('/mios/:id', requireAuth, async (req, res) => {
     data: parsed.value,
   });
   res.json({ evento: serializePersonal(evento) });
+  sincronizarDueno(req.user.id);
 });
 
 router.delete('/mios/:id', requireAuth, async (req, res) => {
@@ -139,6 +150,7 @@ router.delete('/mios/:id', requireAuth, async (req, res) => {
 
   await prisma.personalEvent.delete({ where: { id: actual.id } });
   res.status(204).end();
+  sincronizarDueno(req.user.id);
 });
 
 // Genera el link de UN evento propio. findFirst con userId, como todo lo de
@@ -210,6 +222,7 @@ router.post('/compartir/evento/:token/aceptar', requireAuth, async (req, res) =>
     },
   });
   res.status(201).json({ evento: serializePersonal(copia) });
+  sincronizarDueno(req.user.id);
 });
 
 // El código propio: null mientras no se generó o después de apagarlo.
@@ -259,6 +272,7 @@ router.delete('/compartir/suscriptores/:userId', requireAuth, async (req, res) =
     where: { ownerId: req.user.id, subscriberId: Number(req.params.userId) },
   });
   res.status(204).end();
+  programarSync(Number(req.params.userId));
 });
 
 // A quiénes veo yo.
@@ -278,6 +292,7 @@ router.delete('/compartir/suscripciones/:ownerId', requireAuth, async (req, res)
     where: { subscriberId: req.user.id, ownerId: Number(req.params.ownerId) },
   });
   res.status(204).end();
+  programarSync(req.user.id);
 });
 
 // Canjear el código de otra cuenta: crea la EventSubscription. No es un login
@@ -298,6 +313,7 @@ router.post('/compartir/canjear', requireAuth, async (req, res) => {
   }
 
   res.status(201).json({ owner: { id: owner.id, name: owner.name, avatarUrl: owner.avatarUrl } });
+  programarSync(req.user.id);
 });
 
 module.exports = { router, serializeOficial, parseGroups };

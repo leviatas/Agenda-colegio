@@ -1194,6 +1194,11 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .config-pref select { max-width: 100%; }
 .config-pref-nota { margin: .3rem 0 0; }
 
+/* Cada opción de Configuración (notificaciones, Google Calendar) es una
+   sección, separadas por una línea. */
+.config-seccion + .config-seccion { margin-top: 1.2rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
+.config-seccion .err { margin: .7rem 0 0; }
+
 /* El prompt de notificaciones reusa .ev-menu (ver NotificacionesPrompt.jsx),
    pero con dos botones en fila en vez de la fila de íconos de EventoMenu. */
 .notif-prompt-lede { margin-top: 0; }

@@ -11,7 +11,9 @@ const metricasRoutes = require('./routes/metricas');
 const pushRoutes = require('./routes/push');
 const novedadesRoutes = require('./routes/novedades');
 const novedadesAdminRoutes = require('./routes/novedadesAdmin');
+const calendarioGoogleRoutes = require('./routes/calendarioGoogle');
 const { iniciarScheduler } = require('./lib/push');
+const { iniciarSyncCalendarios } = require('./lib/calendarioGoogle');
 
 // Fallar temprano y con un mensaje claro: sin estas dos variables la app
 // arranca igual y recién falla en el primer login, que es mucho peor de
@@ -52,6 +54,7 @@ app.use('/api/push', pushRoutes);
 // tenga que esquivar el /:id/cerrar del otro router.
 app.use('/api/novedades/admin', novedadesAdminRoutes);
 app.use('/api/novedades', novedadesRoutes);
+app.use('/api/calendario-google', calendarioGoogleRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err);
@@ -67,3 +70,6 @@ app.listen(PORT, () => {
 // app.listen y no antes: no depende del puerto, pero así el log de arranque
 // sale en orden si VAPID no está configurado y avisa por consola.
 iniciarScheduler();
+// El calendario "San Gabriel" en Google de cada cuenta que lo conectó: una
+// pasada al arrancar y otra cada tanto (ver lib/calendarioGoogle.js).
+iniciarSyncCalendarios();
