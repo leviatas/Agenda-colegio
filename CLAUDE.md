@@ -781,7 +781,7 @@ un solo trabajo, no uno solo que hace de todo:
   excepción sólo en "Próximas fechas": al admin, `Upcoming.jsx` le hace
   clickeables también las tarjetas de los oficiales, que abren
   `EditOficialDialog.jsx` —los mismos campos que `/oficial`, compartidos en
-  `CamposOficial.jsx`— para editarlos sin salir del calendario.) Ese
+  `CamposOficial.jsx`— para editarlos o borrarlos sin salir del calendario.) Ese
   renglón clickeable es un `<button>` real, no un `<div onClick>`: todo lo
   interactivo de la app ya lo es (las celdas del calendario, por ejemplo),
   para que funcione con teclado y lector de pantalla sin nada extra.
