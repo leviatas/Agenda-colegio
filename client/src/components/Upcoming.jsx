@@ -2,7 +2,9 @@ import { DIAS, MES_AB, isoDow, parse, textoHora } from '../lib/agenda';
 import BotonGoogleCalendar from './BotonGoogleCalendar';
 
 // Las próximas ocho fechas que quedan por delante con los filtros activos.
-export default function Upcoming({ eventos, visible, today, onEventoClick }) {
+// Con `onOficialClick` (sólo se pasa al admin) las tarjetas de los eventos
+// oficiales también se pueden tocar, y abren su edición directo.
+export default function Upcoming({ eventos, visible, today, onEventoClick, onOficialClick }) {
   const seen = new Set();
   const lista = eventos
     .filter((ev) => {
@@ -49,7 +51,15 @@ export default function Upcoming({ eventos, visible, today, onEventoClick }) {
         // Mismo criterio que en Month.jsx: sólo lo propio se puede tocar para
         // editar, compartir o borrar. Oficiales y compartidos quedan como antes.
         const esPropio = ev.level === 'per' && !ev.de;
-        const Tag = esPropio ? 'button' : 'div';
+        const esOficialEditable = Boolean(onOficialClick) && ev.level !== 'per';
+        const clickable = esPropio || esOficialEditable;
+        const Tag = clickable ? 'button' : 'div';
+        const onClick = esPropio ? () => onEventoClick(ev)
+          : esOficialEditable ? () => onOficialClick(ev)
+          : undefined;
+        const etiqueta = esPropio ? `Opciones de "${ev.title}"`
+          : esOficialEditable ? `Editar "${ev.title}"`
+          : undefined;
 
         // El botón de Google Calendar es hermano de la tarjeta y no un hijo:
         // la tarjeta propia ya es un <button>, y un botón adentro de otro no
@@ -61,10 +71,10 @@ export default function Upcoming({ eventos, visible, today, onEventoClick }) {
             style={{ '--c': `var(--${ev.level})` }}
           >
             <Tag
-              type={esPropio ? 'button' : undefined}
-              className={`up-card${esFeriado ? ' feriado' : ''}${esPropio ? ' clickable' : ''}`}
-              onClick={esPropio ? () => onEventoClick(ev) : undefined}
-              aria-label={esPropio ? `Opciones de "${ev.title}"` : undefined}
+              type={clickable ? 'button' : undefined}
+              className={`up-card${esFeriado ? ' feriado' : ''}${clickable ? ' clickable' : ''}`}
+              onClick={onClick}
+              aria-label={etiqueta}
             >
               <span className="dt">{cuando}</span>
               <span className="cd">{DIAS[isoDow(s)]} · {cd}</span>

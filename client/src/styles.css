@@ -1727,3 +1727,7 @@ footer .version { font-variant-numeric: tabular-nums; opacity: .7; }
 .compartir-card .gcal-txt { margin-right: .5rem; }
 
 
+
+/* Los campos del evento oficial también van en un modal (EditOficialDialog):
+   mismo auto-fit que en .card-form, así los cinco campos se acomodan solos. */
+.campos-oficial .field-row { grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); }
