@@ -8,6 +8,7 @@ import AdderDialog from '../components/AdderDialog';
 import EventoMenu from '../components/EventoMenu';
 import EventosPersonales from '../components/EventosPersonales';
 import EditEventDialog from '../components/EditEventDialog';
+import EditOficialDialog from '../components/EditOficialDialog';
 import AvisoNovedad from '../components/AvisoNovedad';
 import { useCompartirTodo } from '../components/CompartirTodoDialog';
 import { useAuth } from '../context/AuthContext';
@@ -15,7 +16,7 @@ import { useEventos } from '../context/EventosContext';
 import { CAT, DIAS, MESES, MONTHS, hoy, isoDow, key, matcher, ordenarPicks } from '../lib/agenda';
 
 export default function Calendario() {
-  const { picks, setPicks } = useAuth();
+  const { user, picks, setPicks } = useAuth();
   const { todos, byDay, loading, error } = useEventos();
 
   // "Eventos Personales" (Masthead.jsx) es la misma pantalla, no una lista
@@ -38,6 +39,9 @@ export default function Calendario() {
   // el mismo evento. Los tres modales son independientes entre sí.
   const [eventoMenu, setEventoMenu] = useState(null);
   const [eventoEditar, setEventoEditar] = useState(null);
+  // El admin puede tocar un evento oficial en "Próximas fechas" y editarlo
+  // ahí mismo, sin ir a /oficial.
+  const [oficialEditar, setOficialEditar] = useState(null);
   const [flash, setFlash] = useState(null);
   const flashTimer = useRef(null);
 
@@ -77,6 +81,7 @@ export default function Calendario() {
   // apertura no arranca con datos viejos.
   const cerrarMenu = useCallback(() => setEventoMenu(null), []);
   const cerrarEditar = useCallback(() => setEventoEditar(null), []);
+  const cerrarOficial = useCallback(() => setOficialEditar(null), []);
   const editarDesdeMenu = useCallback((ev) => {
     setEventoMenu(null);
     setEventoEditar(ev);
@@ -150,7 +155,13 @@ export default function Calendario() {
                     hoy es {DIAS[isoDow(today)]} {today.getDate()} de {MESES[today.getMonth()]}
                   </span>
                 </div>
-                <Upcoming eventos={todos} visible={visible} today={today} onEventoClick={setEventoMenu} />
+                <Upcoming
+                  eventos={todos}
+                  visible={visible}
+                  today={today}
+                  onEventoClick={setEventoMenu}
+                  onOficialClick={user?.isAdmin ? setOficialEditar : undefined}
+                />
               </section>
 
               <div>
@@ -178,6 +189,7 @@ export default function Calendario() {
       <AdderDialog open={adder} onClose={() => setAdder(false)} />
       <EventoMenu evento={eventoMenu} onClose={cerrarMenu} onEditar={editarDesdeMenu} />
       <EditEventDialog evento={eventoEditar} onClose={cerrarEditar} />
+      <EditOficialDialog evento={oficialEditar} onClose={cerrarOficial} />
     </>
   );
 }

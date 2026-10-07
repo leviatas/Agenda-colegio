@@ -3,39 +3,10 @@ import { useAuth } from '../context/AuthContext';
 import { useEventos } from '../context/EventosContext';
 import { useConfirm } from '../components/ConfirmDialog';
 import { api } from '../api';
-import {
-  ANIOS, CAT, DESDE, GRADOS, GRUPOS, HASTA, MESES, MES_AB, NIVELES, SALAS,
-  fmtHora, parse, textoHora,
-} from '../lib/agenda';
-
-const VACIO = { id: null, title: '', date: '', endDate: '', time: '', endTime: '', level: 'ins', groups: [] };
-
-// Qué tags tiene sentido marcar según el nivel. Un feriado o un evento
-// institucional son de todo el colegio: no llevan tags, y por eso no se
-// muestran (el server igual acepta la lista vacía).
-function tagsDeNivel(level) {
-  if (level === 'ini') {
-    return [
-      ...GRUPOS.map((g) => ({ id: g.k, n: g.lbl })),
-      ...SALAS.map((s) => ({ id: s.id, n: `Sala ${s.n}`, c: s.c })),
-      { id: 'maternal', n: 'Todo maternal' },
-      { id: 'infantes', n: 'Todo infantes' },
-    ];
-  }
-  if (level === 'pri') return GRADOS;
-  if (level === 'sec') return ANIOS;
-  return [];
-}
-
-function nombreTag(id) {
-  const o = CAT[id];
-  if (o) return o.c ? `Sala ${o.n}` : o.n;
-  const grupo = GRUPOS.find((g) => g.k === id);
-  if (grupo) return grupo.lbl;
-  if (id === 'maternal') return 'Maternal';
-  if (id === 'infantes') return 'Infantes';
-  return id;
-}
+import CamposOficial, {
+  VACIO_OFICIAL as VACIO, datosOficial, formularioOficial, nombreTag,
+} from '../components/CamposOficial';
+import { MESES, MES_AB, parse, textoHora } from '../lib/agenda';
 
 export default function Oficial() {
   const { user, token } = useAuth();
@@ -48,7 +19,6 @@ export default function Oficial() {
   const [busqueda, setBusqueda] = useState('');
 
   const editando = form.id !== null;
-  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
   const listados = useMemo(() => {
     const q = busqueda.trim().toLowerCase();
@@ -81,35 +51,10 @@ export default function Oficial() {
     );
   }
 
-  function cambiarNivel(e) {
-    const level = e.target.value;
-    // Los tags que ya no aplican al nivel nuevo se descartan: dejar un 'g3' en
-    // un evento de secundaria lo haría invisible para todo el mundo.
-    const validos = new Set(tagsDeNivel(level).map((t) => t.id));
-    setForm((f) => ({ ...f, level, groups: f.groups.filter((g) => validos.has(g)) }));
-  }
-
-  function toggleTag(id) {
-    setForm((f) => ({
-      ...f,
-      groups: f.groups.includes(id) ? f.groups.filter((g) => g !== id) : [...f.groups, id],
-    }));
-  }
-
   async function guardar() {
     setError('');
-    if (!form.title.trim()) return setError('Falta el título.');
-    if (!form.date) return setError('Falta la fecha.');
-
-    const data = {
-      title: form.title.trim(),
-      date: form.date,
-      endDate: form.endDate || null,
-      time: fmtHora(form.time),
-      endTime: fmtHora(form.endTime),
-      level: form.level,
-      groups: form.groups,
-    };
+    const { error: invalido, data } = datosOficial(form);
+    if (invalido) return setError(invalido);
 
     setGuardando(true);
     try {
@@ -143,23 +88,9 @@ export default function Oficial() {
 
   function editar(ev) {
     setError('');
-    setForm({
-      id: ev.id,
-      title: ev.title,
-      date: ev.date,
-      endDate: ev.endDate || '',
-      // Tal cual está guardada ("8.10", "8 a 15"): el campo es de texto libre,
-      // así que mostrarla en formato de <input type="time"> ("08:10") sólo
-      // confundiría. fmtHora la deja igual al guardar.
-      time: ev.time || '',
-      endTime: ev.endTime || '',
-      level: ev.level,
-      groups: ev.groups,
-    });
+    setForm(formularioOficial(ev));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
-
-  const tags = tagsDeNivel(form.level);
 
   return (
     <div className="wrap">
@@ -170,67 +101,7 @@ export default function Oficial() {
       </div>
 
       <div className="card-form">
-        <div className="field">
-          <label htmlFor="of-t">Título</label>
-          <input id="of-t" type="text" maxLength={90} value={form.title} onChange={set('title')} />
-        </div>
-
-        <div className="field-row">
-          <div className="field">
-            <label htmlFor="of-n">Nivel</label>
-            <select id="of-n" value={form.level} onChange={cambiarNivel}>
-              {['ini', 'pri', 'sec', 'ins', 'fer'].map((l) => (
-                <option key={l} value={l}>{NIVELES[l]}</option>
-              ))}
-            </select>
-          </div>
-          <div className="field">
-            <label htmlFor="of-d">Fecha</label>
-            <input id="of-d" type="date" min={DESDE} max={HASTA} value={form.date} onChange={set('date')} />
-          </div>
-          <div className="field">
-            <label htmlFor="of-e">Hasta <span className="hint">(opcional)</span></label>
-            <input id="of-e" type="date" min={form.date || DESDE} max={HASTA} value={form.endDate} onChange={set('endDate')} />
-          </div>
-          <div className="field">
-            {/* Texto libre y no <input type="time">: el calendario del colegio
-                tiene horarios como "8 a 15" que el input nativo no acepta. */}
-            <label htmlFor="of-h">Hora <span className="hint">(8.15, 8 a 15…)</span></label>
-            <input id="of-h" type="text" maxLength={20} value={form.time} onChange={set('time')} />
-          </div>
-          <div className="field">
-            {/* Independiente de "Hasta": un acto puede ser de 8.15 a 12.30 el
-                mismo día. Sin hora de inicio el server la rechaza. */}
-            <label htmlFor="of-hh">Hora hasta <span className="hint">(opcional)</span></label>
-            <input id="of-hh" type="text" maxLength={20} value={form.endTime} onChange={set('endTime')} />
-          </div>
-        </div>
-
-        {tags.length > 0 && (
-          <div className="field">
-            <label>
-              A quiénes les toca <span className="hint">(sin marcar nada: a todo el nivel)</span>
-            </label>
-            {/* --lv es lo que pinta el estado "elegido" de .opt, y en el CSS de
-                origen sólo lo definen los .grp del picker. Acá se setea con el
-                color del nivel elegido, así los tags se ven del mismo color que
-                los eventos que van a filtrar. */}
-            <div className="opts" style={{ '--lv': `var(--${form.level})` }}>
-              {tags.map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  className="opt"
-                  aria-pressed={form.groups.includes(t.id)}
-                  onClick={() => toggleTag(t.id)}
-                >
-                  {t.c && <span className="sw" style={{ background: t.c }} />}
-                  {t.n}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+        <CamposOficial form={form} setForm={setForm} />
 
         {error && <p className="err">{error}</p>}
 

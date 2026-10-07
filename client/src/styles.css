@@ -414,7 +414,9 @@ dialog::backdrop { background: rgba(12,18,15,.55); }
   color: var(--ink-soft);
 }
 .mbtn.primary { background: var(--btn-bg); border-color: var(--btn-bg); color: var(--btn-fg); }
+.mbtn.danger { border-color: var(--ini); color: var(--ini); }
 .mbtn:hover { opacity: .85; }
+.modal-foot-der { display: flex; gap: .6rem; flex-wrap: wrap; justify-content: flex-end; }
 .mbtn:focus-visible { outline: 2px solid var(--ins); outline-offset: 2px; }
 
 .no-results {
@@ -1727,3 +1729,7 @@ footer .version { font-variant-numeric: tabular-nums; opacity: .7; }
 .compartir-card .gcal-txt { margin-right: .5rem; }
 
 
+
+/* Los campos del evento oficial también van en un modal (EditOficialDialog):
+   mismo auto-fit que en .card-form, así los cinco campos se acomodan solos. */
+.campos-oficial .field-row { grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); }
