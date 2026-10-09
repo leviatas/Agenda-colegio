@@ -6,7 +6,10 @@ import BotonGoogleCalendar from './BotonGoogleCalendar';
 // la derecha. `esPrimero` hace que el mes de arranque absorba los días de la
 // semana anterior que caen en el mes previo (no dibujado), para que no queden
 // eventos sin ninguna fila donde mostrarse.
-export default function Month({ year, mon, byDay, visible, todayKey, esPrimero, onDayClick, onEventoClick, flash }) {
+// Con `onOficialClick` (sólo se pasa al admin) los renglones de los eventos
+// oficiales también se pueden tocar, y abren su edición directo, igual que las
+// tarjetas de "Próximas fechas".
+export default function Month({ year, mon, byDay, visible, todayKey, esPrimero, onDayClick, onEventoClick, onOficialClick, flash }) {
   const { celdas, filas, cuenta } = useMemo(() => {
     const first = new Date(year, mon, 1);
     const dias = new Date(year, mon + 1, 0).getDate();
@@ -109,7 +112,7 @@ export default function Month({ year, mon, byDay, visible, todayKey, esPrimero, 
               </div>
               <div className="ev-list">
                 {f.occs.map((o) => (
-                  <Evento key={`${o.ev.level}-${o.ev.id}-${o.idx}`} occ={o} onEventoClick={onEventoClick} />
+                  <Evento key={`${o.ev.level}-${o.ev.id}-${o.idx}`} occ={o} onEventoClick={onEventoClick} onOficialClick={onOficialClick} />
                 ))}
               </div>
             </div>
@@ -120,7 +123,7 @@ export default function Month({ year, mon, byDay, visible, todayKey, esPrimero, 
   );
 }
 
-function Evento({ occ, onEventoClick }) {
+function Evento({ occ, onEventoClick, onOficialClick }) {
   const { ev } = occ;
   let range = '';
   if (occ.span) {
@@ -131,14 +134,23 @@ function Evento({ occ, onEventoClick }) {
       : `día ${occ.idx + 1} de ${occ.total}`;
   }
 
-  // Sólo se puede editar/compartir/borrar lo propio: un oficial no es tuyo, y
-  // uno compartido (trae `de`) es de sólo lectura para quien lo ve por
-  // suscripción.
+  // Lo propio se toca para editar/compartir/borrar; uno compartido (trae `de`)
+  // es de sólo lectura para quien lo ve por suscripción. Un oficial se puede
+  // tocar sólo si sos admin (`onOficialClick` viene definido), y abre su
+  // edición.
   const esPropio = ev.level === 'per' && !ev.de;
+  const esOficialEditable = Boolean(onOficialClick) && ev.level !== 'per';
+  const clickable = esPropio || esOficialEditable;
   // <button> y no un div con onClick: todo lo clickeable de la app ya es un
   // botón real (las celdas del calendario, acá arriba), por teclado y lector
-  // de pantalla de una. Lo que no es propio sigue siendo un div sin más.
-  const Tag = esPropio ? 'button' : 'div';
+  // de pantalla de una. Lo que no se puede tocar sigue siendo un div sin más.
+  const Tag = clickable ? 'button' : 'div';
+  const onClick = esPropio ? () => onEventoClick(ev)
+    : esOficialEditable ? () => onOficialClick(ev)
+    : undefined;
+  const etiqueta = esPropio ? `Opciones de "${ev.title}"`
+    : esOficialEditable ? `Editar "${ev.title}"`
+    : undefined;
 
   // El botón de Google Calendar va de hermano del renglón y no adentro: cuando
   // el evento es propio el renglón ya es un <button>, y un botón adentro de
@@ -146,10 +158,10 @@ function Evento({ occ, onEventoClick }) {
   return (
     <div className="ev-row">
       <Tag
-        type={esPropio ? 'button' : undefined}
-        className={`ev ${ev.level}${occ.span ? ' span' : ''}${esPropio ? ' clickable' : ''}`}
-        onClick={esPropio ? () => onEventoClick(ev) : undefined}
-        aria-label={esPropio ? `Opciones de "${ev.title}"` : undefined}
+        type={clickable ? 'button' : undefined}
+        className={`ev ${ev.level}${occ.span ? ' span' : ''}${clickable ? ' clickable' : ''}`}
+        onClick={onClick}
+        aria-label={etiqueta}
       >
         <span className="dot" />
         <span className="h">{ev.time ? `${textoHora(ev)}hs` : ''}</span>
