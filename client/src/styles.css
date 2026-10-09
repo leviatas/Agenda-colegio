@@ -767,7 +767,7 @@ button.cell:focus-visible { outline: 2px solid var(--ins); outline-offset: -2px;
   font-size: .9rem;
   line-height: 1.4;
 }
-/* Un evento propio es un <button> (ver Month.jsx): esto le saca el look de
+/* Un evento propio (o un oficial, para el admin) es un <button> (ver Month.jsx): esto le saca el look de
    botón del navegador para que siga siendo un renglón como cualquier otro,
    sólo que clickeable. Lo oficial/compartido sigue siendo un <div> sin más. */
 button.ev {
@@ -789,6 +789,12 @@ button.ev {
 }
 .ev.clickable:hover { background: var(--per-bg); }
 .ev.clickable:focus-visible { outline: 2px solid var(--per); outline-offset: 2px; }
+/* Un oficial clickeable (sólo para el admin) toma el fondo de su nivel. */
+.ev.ini.clickable:hover { background: var(--ini-bg); }
+.ev.pri.clickable:hover { background: var(--pri-bg); }
+.ev.sec.clickable:hover { background: var(--sec-bg); }
+.ev.ins.clickable:hover { background: var(--ins-bg); }
+.ev.fer.clickable:hover { background: var(--fer-bg); }
 .ev .dot {
   width: .5rem; height: .5rem; border-radius: 50%;
   align-self: center;

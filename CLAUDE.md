@@ -778,8 +778,9 @@ un solo trabajo, no uno solo que hace de todo:
   lo tanto tiene este menú) es `level === 'per' && !de` (`Month.jsx`,
   `Upcoming.jsx`) — un compartido también es `'per'` pero trae `de`, así que
   queda como un `<div>` sin más, de sólo lectura como corresponde. (Con una
-  excepción sólo en "Próximas fechas": al admin, `Upcoming.jsx` le hace
-  clickeables también las tarjetas de los oficiales, que abren
+  excepción para el admin: `Upcoming.jsx` y `Month.jsx` le hacen clickeables
+  también las tarjetas y los renglones de los oficiales (`onOficialClick`, que
+  `Calendario.jsx` pasa sólo con `isAdmin`), que abren
   `EditOficialDialog.jsx` —los mismos campos que `/oficial`, compartidos en
   `CamposOficial.jsx`— para editarlos o borrarlos sin salir del calendario.) Ese
   renglón clickeable es un `<button>` real, no un `<div onClick>`: todo lo

@@ -226,6 +226,7 @@ export default function Calendario() {
                     esPrimero={i === 0}
                     onDayClick={onDayClick}
                     onEventoClick={setEventoMenu}
+                    onOficialClick={user?.isAdmin ? setOficialEditar : undefined}
                     flash={flash}
                   />
                 ))}
