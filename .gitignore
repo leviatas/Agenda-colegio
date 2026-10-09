@@ -149,3 +149,4 @@ server/prisma/dev.db-journal
 # Uploads del dev local
 server/data/
 secreto_google.json
+download/*

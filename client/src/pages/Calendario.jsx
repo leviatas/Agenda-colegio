@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { useLocation } from 'react-router-dom';
 import Legend from '../components/Legend';
 import Month from '../components/Month';
@@ -58,18 +59,47 @@ export default function Calendario() {
     [soloPersonales, picks],
   );
 
+  // La agenda arranca en el mes actual: los que ya pasaron quedan plegados
+  // detrás de un botón cada uno. Si el ciclo todavía no empezó no hay nada que
+  // plegar, y si ya terminó tampoco: se plegarían todos y quedaría la pantalla
+  // vacía.
+  const anteriores = useMemo(() => {
+    const actual = today.getFullYear() * 12 + today.getMonth();
+    const pasados = MONTHS.filter(([year, mon]) => year * 12 + mon < actual);
+    return pasados.length === MONTHS.length ? [] : pasados;
+  }, [today]);
+  const [abiertos, setAbiertos] = useState(() => new Set());
+  const alternarMes = useCallback((id) => {
+    setAbiertos((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+  const plegado = (year, mon) =>
+    !abiertos.has(`${year}-${mon}`) && anteriores.some(([y, m]) => y === year && m === mon);
+
   // Click en una celda del calendario: lleva a la fila del día en la agenda y
   // la resalta un momento. El flash se limpia solo para que volver a tocar el
   // mismo día lo vuelva a disparar.
   const onDayClick = useCallback((kk) => {
-    const row = document.getElementById(`d-${kk}`);
+    let row = document.getElementById(`d-${kk}`);
+    if (!row && (byDay[kk] || []).some((o) => visible(o.ev))) {
+      // La grilla del mes actual muestra también los últimos días del
+      // anterior: si ese mes está plegado, se abre para que la fila exista.
+      // Sólo si ese día tiene algo: un día vacío no tiene fila en ningún lado.
+      const [y, m] = kk.split('-').map(Number);
+      flushSync(() => setAbiertos((prev) => new Set(prev).add(`${y}-${m - 1}`)));
+      row = document.getElementById(`d-${kk}`);
+    }
     if (!row) return;
     row.scrollIntoView({ behavior: 'smooth', block: 'center' });
     clearTimeout(flashTimer.current);
     setFlash(null);
     requestAnimationFrame(() => setFlash(kk));
     flashTimer.current = setTimeout(() => setFlash(null), 1600);
-  }, []);
+  }, [byDay, visible]);
 
   const guardarPicks = useCallback((lista) => {
     setPicks(ordenarPicks(lista));
@@ -164,8 +194,28 @@ export default function Calendario() {
                 />
               </section>
 
+              {anteriores.length > 0 && (
+                <div className="meses-ant">
+                  <span className="lbl">Meses anteriores</span>
+                  {anteriores.map(([year, mon]) => {
+                    const id = `${year}-${mon}`;
+                    return (
+                      <button
+                        key={id}
+                        type="button"
+                        className="mes-ant"
+                        aria-pressed={abiertos.has(id)}
+                        onClick={() => alternarMes(id)}
+                      >
+                        {MESES[mon]}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
               <div>
-                {MONTHS.map(([year, mon], i) => (
+                {MONTHS.map(([year, mon], i) => plegado(year, mon) ? null : (
                   <Month
                     key={`${year}-${mon}`}
                     year={year}

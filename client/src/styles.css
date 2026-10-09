@@ -597,6 +597,40 @@ button.up-card { text-align: left; font: inherit; cursor: pointer; }
 
 /* ══════════ Month ══════════ */
 
+/* Los meses que ya pasaron: un botón chico por mes, que lo despliega arriba
+   del actual. Rectangulares a propósito, para que no se confundan con los
+   .btn redondeados, que son acciones. */
+.meses-ant {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .4rem;
+  margin-bottom: 1rem;
+}
+.meses-ant .lbl {
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-right: .2rem;
+}
+.mes-ant {
+  font: inherit;
+  font-size: .74rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  padding: .22rem .6rem;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid var(--line-strong);
+  background: transparent;
+  color: var(--ink-soft);
+}
+.mes-ant:hover { color: var(--ink); border-color: var(--ink); }
+.mes-ant[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.mes-ant:focus-visible { outline: 2px solid var(--ins); outline-offset: 2px; }
+
 .month {
   margin-bottom: 2.75rem;
   border-top: 2px solid var(--ink);
