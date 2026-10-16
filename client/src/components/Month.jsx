@@ -9,8 +9,11 @@ import BotonGoogleCalendar from './BotonGoogleCalendar';
 // Con `onOficialClick` (sólo se pasa al admin) los renglones de los eventos
 // oficiales también se pueden tocar, y abren su edición directo, igual que las
 // tarjetas de "Próximas fechas".
-export default function Month({ year, mon, byDay, visible, todayKey, esPrimero, onDayClick, onEventoClick, onOficialClick, flash }) {
-  const { celdas, filas, cuenta } = useMemo(() => {
+// En el mes de hoy (`ocultarPasados`) los días que ya pasaron no se listan en
+// la agenda —la grilla los sigue mostrando— salvo con `mostrarPasados`: quedan
+// detrás de un botón chico, el mismo de "Meses anteriores".
+export default function Month({ year, mon, byDay, visible, todayKey, esPrimero, ocultarPasados, mostrarPasados, onTogglePasados, onDayClick, onEventoClick, onOficialClick, flash }) {
+  const { celdas, filas, cuenta, pasados } = useMemo(() => {
     const first = new Date(year, mon, 1);
     const dias = new Date(year, mon + 1, 0).getDate();
     const lead = isoDow(first);
@@ -41,6 +44,7 @@ export default function Month({ year, mon, byDay, visible, todayKey, esPrimero, 
 
     const filas = [];
     const uniq = new Set();
+    let pasados = 0;
     let desde = new Date(year, mon, 1);
     if (esPrimero) desde = addDays(desde, -isoDow(desde));
     const hasta = new Date(year, mon, dias);
@@ -50,7 +54,11 @@ export default function Month({ year, mon, byDay, visible, todayKey, esPrimero, 
       const occs = (byDay[kk] || []).filter((o) => visible(o.ev));
       if (!occs.length) continue;
       occs.forEach((o) => uniq.add(`${o.ev.level}-${o.ev.id}`));
+      // Las claves son 'YYYY-MM-DD': comparar strings es comparar fechas.
+      const pasado = ocultarPasados && kk < todayKey;
+      if (pasado) pasados += 1;
       filas.push({
+        pasado,
         kk,
         dia: dt.getDate(),
         dow: DIAS_AB[isoDow(dt)],
@@ -61,8 +69,10 @@ export default function Month({ year, mon, byDay, visible, todayKey, esPrimero, 
       });
     }
 
-    return { celdas, filas, cuenta: uniq.size };
-  }, [year, mon, byDay, visible, todayKey, esPrimero]);
+    return { celdas, filas, cuenta: uniq.size, pasados };
+  }, [year, mon, byDay, visible, todayKey, esPrimero, ocultarPasados]);
+
+  const filasVisibles = mostrarPasados ? filas : filas.filter((f) => !f.pasado);
 
   return (
     <section className="month">
@@ -99,8 +109,23 @@ export default function Month({ year, mon, byDay, visible, todayKey, esPrimero, 
         </div>
 
         <div className="agenda">
+          {pasados > 0 && (
+            <div className="dias-ant">
+              <button
+                type="button"
+                className="mes-ant"
+                aria-pressed={Boolean(mostrarPasados)}
+                onClick={onTogglePasados}
+              >
+                {mostrarPasados ? 'Ocultar días anteriores' : `Días anteriores (${pasados})`}
+              </button>
+            </div>
+          )}
           {filas.length === 0 && <p className="empty-note">Nada en este mes con los filtros activos.</p>}
-          {filas.map((f) => (
+          {filas.length > 0 && filasVisibles.length === 0 && (
+            <p className="empty-note">No quedan fechas este mes con los filtros activos.</p>
+          )}
+          {filasVisibles.map((f) => (
             <div
               key={f.kk}
               id={`d-${f.kk}`}
