@@ -630,6 +630,9 @@ button.up-card { text-align: left; font: inherit; cursor: pointer; }
 .mes-ant:hover { color: var(--ink); border-color: var(--ink); }
 .mes-ant[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
 .mes-ant:focus-visible { outline: 2px solid var(--ins); outline-offset: 2px; }
+/* El botón de "Días anteriores" arriba de la agenda del mes actual. */
+.dias-ant { margin-bottom: .6rem; }
+.dias-ant .mes-ant { text-transform: none; }
 
 .month {
   margin-bottom: 2.75rem;

@@ -77,6 +77,10 @@ export default function Calendario() {
       return next;
     });
   }, []);
+  // En el mes actual, los días que ya pasaron también arrancan plegados (ver
+  // Month.jsx): un solo botón para todos, sin recordar nada entre cargas.
+  const [verPasados, setVerPasados] = useState(false);
+  const alternarPasados = useCallback(() => setVerPasados((v) => !v), []);
   const plegado = (year, mon) =>
     !abiertos.has(`${year}-${mon}`) && anteriores.some(([y, m]) => y === year && m === mon);
 
@@ -88,9 +92,14 @@ export default function Calendario() {
     if (!row && (byDay[kk] || []).some((o) => visible(o.ev))) {
       // La grilla del mes actual muestra también los últimos días del
       // anterior: si ese mes está plegado, se abre para que la fila exista.
+      // Si no, es un día ya pasado del mes actual, que está plegado aparte.
       // Sólo si ese día tiene algo: un día vacío no tiene fila en ningún lado.
       const [y, m] = kk.split('-').map(Number);
-      flushSync(() => setAbiertos((prev) => new Set(prev).add(`${y}-${m - 1}`)));
+      const deMesAnterior = anteriores.some(([ay, am]) => ay === y && am === m - 1);
+      flushSync(() => {
+        if (deMesAnterior) setAbiertos((prev) => new Set(prev).add(`${y}-${m - 1}`));
+        else setVerPasados(true);
+      });
       row = document.getElementById(`d-${kk}`);
     }
     if (!row) return;
@@ -99,7 +108,7 @@ export default function Calendario() {
     setFlash(null);
     requestAnimationFrame(() => setFlash(kk));
     flashTimer.current = setTimeout(() => setFlash(null), 1600);
-  }, [byDay, visible]);
+  }, [byDay, visible, anteriores]);
 
   const guardarPicks = useCallback((lista) => {
     setPicks(ordenarPicks(lista));
@@ -224,6 +233,9 @@ export default function Calendario() {
                     visible={visible}
                     todayKey={todayKey}
                     esPrimero={i === 0}
+                    ocultarPasados={year === today.getFullYear() && mon === today.getMonth()}
+                    mostrarPasados={verPasados}
+                    onTogglePasados={alternarPasados}
                     onDayClick={onDayClick}
                     onEventoClick={setEventoMenu}
                     onOficialClick={user?.isAdmin ? setOficialEditar : undefined}
