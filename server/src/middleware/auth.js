@@ -3,8 +3,14 @@ const prisma = require('../lib/prisma');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
+// 30 días, y se renueva solo: GET /api/auth/me (que el cliente pide en cada
+// carga) devuelve un token nuevo, así que sólo se vence si la cuenta pasa un
+// mes entero sin abrir la agenda. Un rebuild no lo invalida: la firma depende
+// de JWT_SECRET, que vive en el .env y no cambia con la imagen.
+const DURACION_SESION = '30d';
+
 function signToken(user) {
-  return jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
+  return jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: DURACION_SESION });
 }
 
 function bearer(req) {

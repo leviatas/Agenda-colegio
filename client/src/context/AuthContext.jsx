@@ -82,26 +82,48 @@ export function AuthProvider({ children }) {
       return;
     }
     let vivo = true;
-    api
-      .me(token)
-      .then(({ user: u }) => {
-        if (!vivo) return;
-        setUser(u);
-        return adoptarPicks(u.picks, token);
-      })
-      .catch(() => {
-        // Token vencido o inválido: se vuelve a anónimo en silencio. El
-        // calendario oficial sigue viéndose, que es lo que importa.
-        if (!vivo) return;
-        escribir(TOKEN_KEY, null);
-        setToken(null);
-        setUser(null);
-      })
-      .finally(() => {
-        if (vivo) setLoading(false);
-      });
+    let timer;
+    const intentar = (n) => {
+      api
+        .me(token)
+        .then(({ token: renovado, user: u }) => {
+          if (!vivo) return;
+          // El token renovado va sólo a localStorage, no al estado: cambiar el
+          // estado volvería a disparar este efecto. El de ahora sigue valiendo
+          // para esta carga; el nuevo se usa desde la próxima.
+          if (renovado) escribir(TOKEN_KEY, renovado);
+          setUser(u);
+          return Promise.resolve(adoptarPicks(u.picks, token)).finally(() => {
+            if (vivo) setLoading(false);
+          });
+        })
+        .catch((err) => {
+          if (!vivo) return;
+          if (err.status === 401) {
+            // Token vencido o inválido: se vuelve a anónimo en silencio. El
+            // calendario oficial sigue viéndose, que es lo que importa.
+            escribir(TOKEN_KEY, null);
+            setToken(null);
+            setUser(null);
+            setLoading(false);
+            return;
+          }
+          // Cualquier otra cosa (sin red, o el 502 de nginx mientras el server
+          // arranca después de un rebuild) NO es una sesión inválida: se
+          // conserva el token y se reintenta. Borrarlo acá era lo que
+          // desconectaba a todo el mundo en cada deploy.
+          // 2, 4, 8 y 16 s: alcanza para que el contenedor termine de migrar.
+          if (n < 4) {
+            timer = setTimeout(() => intentar(n + 1), 2000 * 2 ** n);
+          } else {
+            setLoading(false);
+          }
+        });
+    };
+    intentar(0);
     return () => {
       vivo = false;
+      clearTimeout(timer);
     };
   }, [token, adoptarPicks]);
 
