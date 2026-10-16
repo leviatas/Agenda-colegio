@@ -107,8 +107,10 @@ router.post('/google', async (req, res) => {
   res.json({ token: signToken(user), user: serializeUser(user) });
 });
 
+// Devuelve además un token nuevo: la sesión se estira 30 días desde la última
+// vez que se abrió la agenda, no desde el login.
 router.get('/me', requireAuth, (req, res) => {
-  res.json({ user: serializeUser(req.user) });
+  res.json({ token: signToken(req.user), user: serializeUser(req.user) });
 });
 
 // Los filtros del picker, para que la selección viaje entre dispositivos. Se

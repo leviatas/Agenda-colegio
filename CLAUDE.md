@@ -45,7 +45,8 @@ corridos por separado:
 
 - `server/` — Node.js + Express, SQLite vía Prisma, login con Google (verifica
   el ID token en el server con `google-auth-library`, nunca confía en la
-  identidad que manda el cliente), sesión por JWT propio de 7 días.
+  identidad que manda el cliente), sesión por JWT propio de 30 días
+  que se renueva en cada carga (ver "Auth y permisos").
 - `client/` — React + Vite, "Sign in with Google" vía Google Identity Services
   (cargado como `<script>` en runtime, no como paquete npm).
 
@@ -601,6 +602,15 @@ El cliente saca el ID token con Google Identity Services →
 (audience = `GOOGLE_CLIENT_ID`) → crea/actualiza el `User` seteando `isAdmin`
 desde `ADMIN_EMAILS` → firma y devuelve su propio JWT → el cliente lo guarda en
 `localStorage` y manda `Authorization: Bearer <token>` en cada request.
+
+**La sesión dura 30 días desde la última vez que se abrió la agenda**, no
+desde el login: `GET /api/auth/me`, que el cliente pide en cada carga, devuelve
+un token nuevo y el cliente lo guarda en `localStorage` (no en el estado, que
+volvería a disparar el pedido). Y **el cliente borra el token sólo ante un
+401**: un error de red o el 502 de nginx mientras el server arranca después de
+un rebuild se reintenta (2, 4, 8 y 16 s) sin tocar la sesión — borrarlo ahí
+desconectaba a todo el mundo en cada deploy. Lo único que invalida todas las
+sesiones de golpe es cambiar `JWT_SECRET` del `.env`.
 
 Se rechaza el login si Google devuelve `email_verified === false`: como el admin
 se decide por mail, una cuenta creada con la dirección de otra persona
