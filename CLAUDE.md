@@ -949,6 +949,14 @@ celular el fondo deja de estar a la vista, así que **todo modal nuevo tiene que
 tener su propio botón de Cancelar/Cerrar** — tocar afuera ya no es una salida
 posible.
 
+**Vista previa al compartir el link**: las etiquetas `og:`/`twitter:` van en
+`client/index.html` estático (los robots de WhatsApp/Facebook no corren JS), con
+la URL **absoluta** de producción, así que valen para cualquier ruta — también
+para el link de un evento compartido. La imagen es `client/public/og-image.png`
+(1200×630), renderizada desde `docs/og-image.html` con Chrome headless; el
+comando está en ese archivo. Si se cambia, cambiarle también el nombre: esos
+servicios cachean la vista previa por URL de imagen.
+
 **Tipografía en `rem`/`em`**: no hay un solo `font-size` en px, así que una sola
 regla sobre `:root` escala toda la app. Los breakpoints sí van en px a
 propósito: al agrandar la letra crece el texto, no se reacomoda el layout.
