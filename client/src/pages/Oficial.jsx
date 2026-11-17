@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useEventos } from '../context/EventosContext';
 import { useConfirm } from '../components/ConfirmDialog';
@@ -6,7 +6,7 @@ import { api } from '../api';
 import CamposOficial, {
   VACIO_OFICIAL as VACIO, datosOficial, formularioOficial, nombreTag,
 } from '../components/CamposOficial';
-import { MESES, MES_AB, parse, textoHora } from '../lib/agenda';
+import { MESES, MES_AB, hoy, key, parse, textoHora } from '../lib/agenda';
 
 export default function Oficial() {
   const { user, token } = useAuth();
@@ -37,6 +37,34 @@ export default function Oficial() {
       });
     return [...grupos.entries()];
   }, [oficiales, busqueda]);
+
+  // Igual que la agenda de la página principal (Calendario.jsx / Month.jsx):
+  // los meses que ya pasaron quedan plegados detrás de un botón cada uno, y en
+  // el mes de hoy los eventos ya terminados detrás de "Días anteriores". Así,
+  // al repasar la lista para ver qué falta cargar, no se mezcla lo que ya fue.
+  // Con una búsqueda escrita no se pliega nada: se busca justamente para
+  // encontrar algo, sea de cuando sea.
+  const todayKey = useMemo(() => key(hoy()), []);
+  const mesHoy = todayKey.slice(0, 7);
+  const plegar = busqueda.trim() === '';
+  const anteriores = useMemo(() => {
+    if (!plegar) return [];
+    const pasados = listados.map(([mes]) => mes).filter((mes) => mes < mesHoy);
+    // Si ya pasaron todos (terminó el ciclo), plegarlos dejaría la pantalla vacía.
+    return pasados.length === listados.length ? [] : pasados;
+  }, [listados, mesHoy, plegar]);
+  const [abiertos, setAbiertos] = useState(() => new Set());
+  const alternarMes = useCallback((mes) => {
+    setAbiertos((prev) => {
+      const next = new Set(prev);
+      if (next.has(mes)) next.delete(mes);
+      else next.add(mes);
+      return next;
+    });
+  }, []);
+  const [verPasados, setVerPasados] = useState(false);
+  // Un evento de varios días sigue vigente hasta su último día.
+  const terminado = (ev) => (ev.endDate || ev.date) < todayKey;
 
   // Va DESPUÉS de todos los hooks: un return temprano arriba los saltearía y
   // React se rompe si la cantidad de hooks cambia entre renders.
@@ -133,11 +161,45 @@ export default function Oficial() {
 
       {listados.length === 0 && <p className="empty-note">No hay eventos que coincidan.</p>}
 
-      {listados.map(([mes, eventos]) => (
+      {anteriores.length > 0 && (
+        <div className="meses-ant">
+          <span className="lbl">Meses anteriores</span>
+          {anteriores.map((mes) => (
+            <button
+              key={mes}
+              type="button"
+              className="mes-ant"
+              aria-pressed={abiertos.has(mes)}
+              onClick={() => alternarMes(mes)}
+            >
+              {MESES[Number(mes.slice(5, 7)) - 1]}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {listados.map(([mes, eventos]) => {
+        if (anteriores.includes(mes) && !abiertos.has(mes)) return null;
+        const pasados = plegar && mes === mesHoy ? eventos.filter(terminado).length : 0;
+        const mostrados = pasados > 0 && !verPasados ? eventos.filter((ev) => !terminado(ev)) : eventos;
+        return (
         <section key={mes} className="of-mes">
           <h3>{MESES[Number(mes.slice(5, 7)) - 1]} {mes.slice(0, 4)}</h3>
+          {pasados > 0 && (
+            <div className="dias-ant">
+              <button
+                type="button"
+                className="mes-ant"
+                aria-pressed={verPasados}
+                onClick={() => setVerPasados((v) => !v)}
+              >
+                {verPasados ? 'Ocultar días anteriores' : `Días anteriores (${pasados})`}
+              </button>
+            </div>
+          )}
+          {mostrados.length === 0 && <p className="empty-note">No quedan fechas este mes.</p>}
           <ul className="of-list">
-            {eventos.map((ev) => {
+            {mostrados.map((ev) => {
               const s = parse(ev.date);
               const en = ev.endDate ? parse(ev.endDate) : null;
               return (
@@ -163,7 +225,8 @@ export default function Oficial() {
             })}
           </ul>
         </section>
-      ))}
+        );
+      })}
     </div>
   );
 }
